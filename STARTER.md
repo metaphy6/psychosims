@@ -24,7 +24,7 @@ Designed as a zero-server-compute model to completely eliminate scalable AI clou
 
 
 * Frontend UI: Built with Flutter for cross-platform deployment across iOS, Android, Windows, Mac, and Linux.
-* Local AI Execution: Utilizes llama.cpp compiled as a shared library via Flutter FFI. Runs highly quantized, low-RAM small models entirely on the user's local hardware. [1] 
+* Local AI Execution: Utilizes llama.cpp compiled as a shared library via Flutter FFI. Runs highly quantized, low-RAM small models entirely on the user's local hardware.
 * Hybrid P2P Network: Relies on a WebRTC data network (p2p_dart) to share patient data files directly between users without a database.
 * Lightweight Central Server: Hosted on an affordable VPS to run a Signaling / STUN / TURN architecture (via Coturn) to pierce cell-network firewalls, validate anti-cheat global leaderboards, and execute the core automated Patient Creation & AI Training Pipeline.
 
@@ -111,19 +111,26 @@ To attract increasingly complex, prestigious, or rare patient files from the net
 * Gameplay Impact: Highly complex patient manifests scan this number before spawning. A patient suffering from an ultra-rare, fused trauma scenario will outright bypass a therapist's inbox if their absolute count of unlocked study fields is too low to guarantee professional competence.
 
 ------------------------------
-## 7. Decentralized Public Profiles (P2P Mesh Ledger)
-Because the game runs without a heavy central database, player profile metrics are verified and displayed transparently across the peer network.
+## 7. Hybrid State Management: BaaS Managed Free-Tier & P2P Swarm
+To ensure ironclad progress preservation and prevent file tampering without incurring database scaling costs, the architecture deploys a Hybrid Storage Vector. Heavy narrative data remains inside the P2P network, while strict user profile variables are anchored securely to a high-utility cloud platform.
+## The Backend-as-a-Service (BaaS) Footprint
 
-[Local App Profile Modifies Stats] ──► [Encrypted & Signed with Private Key]
-                                                   │
-                                                   ▼
-[Broadcasted via WebRTC Data]      ──► [Publicly Readable by P2P Swarm Network]
+* The Free-Tier Infrastructure: The architecture utilizes a managed relational cloud database tier (e.g., Supabase PostgreSQL Free Tier) paired with built-in ecosystem plugins for Apple/Google authentication and row-level security.
+* The Primitive Payload Schema: The server-side cloud table strictly forbids the storage of rich text logs, conversational transcripts, or massive binary scripts. It functions exclusively as a primitive matrix tracking atomic player metrics under 0.5 KB per profile, permitting up to 1,000,000 active players to fit comfortably within the 500 MB database limits:
 
+{
+  "user_id": "auth_uuid_99218",
+  "experience_points": 4520,
+  "reputation_rating": 89,
+  "session_pricing": 150,
+  "unlocked_study_ids": ["cbt_anxiety_01", "somatic_panic_02"]
+}
 
-* The Public Card File: Your Reputation, Pricing, and Number of Study Fields are compiled into a tiny, standardized cryptographic data snippet hosted locally on your device.
-* P2P Visibility & Referrals: When exploring the network, entering matchmaking boards, or browsing friends lists for patient referrals, this card file is visible to other active nodes.
-* Referral Filtering: A player looking to refer a volatile, broken model can quickly read the network's public statistics to choose an ideal destination: "I will transfer this severe panic-attack case to User X, because their public profile proves they have 12 Study Fields and a 95% Reputation rating."
-* Tamper Verification: To prevent local file hacking from breaking the economy, these stats are cross-validated during P2P matches using a lightweight consensus check managed by the central signaling server.
+## The Synchronization & Anti-Cheat Validation Loop
+
+   1. Session Handshake: Upon application boot, the Flutter application pulls the authenticated user's primitive JSON map from the cloud database via secure SQL calls. This data initializes the variables inside the local Dart Game Brain.
+   2. P2P Profile Sync: When broadcasting presence to the WebRTC P2P swarm, the Flutter client signs this cloud-verified data packet using its private cryptographic key. Other network nodes read this signed block to populate the public matchup and referral directories.
+   3. Session Conclusion Verification: When a therapy round finishes, the Flutter app calculates the resulting metrics local-side and pushes a verified execution receipt to the server API. The cloud database updates the primitive numerical stats, ensuring that if a user clears their device cache or switches devices, their economic position, tech tree certifications, and network ranking remain permanently safe.
 
 ------------------------------
 ## 8. The "Brain vs. Mouth" Mechanics
@@ -326,7 +333,7 @@ To execute this advanced mechanical logic without server-side processing overhea
 ## The Dart Logic Layer (The Mechanical Judge)
 The client app handles the math and category assignment instantly using localized lookup matrices inside the game code. Before passing data to the local AI actor, Dart checks the played card ID against the active tags in the patient's manifest.json, calculates the categorical assignment for that turn, and mutates the active stats or triggers a deranged state flag.
 ## The Manifest JSON Layer (The Data Framework)
-The manifest.json file generated on the server and transferred via P2P includes specific keyword, condition, and modifier maps to feed the Dart engine: [2] 
+The manifest.json file generated on the server and transferred via P2P includes specific keyword, condition, and modifier maps to feed the Dart engine:
 
 {
   "patient_id": "gov_officer_404",
@@ -372,7 +379,7 @@ The Peer-to-Peer network operates as an active narrative ecosystem where patient
 No patient model is ever deleted; they move through a living decentralized lifecycle.
 
 * P2P Patient Referrals: Players can directly package a patient's custom manifest.json file (including dialogue history) and transfer them across the WebRTC network to a friend's device if they lack the card deck required to treat them.
-* The Mental Hospital Loop: If a local small model suffers a technical glitch or character break, the player clicks "Commit to Mental Hospital." The app freezes the file, uploads the bug logs to the central server for automated monthly retraining, and places the patient in an in-game asylum registry until the player finishes the academic studies needed to treat them again. [3] 
+* The Mental Hospital Loop: If a local small model suffers a technical glitch or character break, the player clicks "Commit to Mental Hospital." The app freezes the file, uploads the bug logs to the central server for automated monthly retraining, and places the patient in an in-game asylum registry until the player finishes the academic studies needed to treat them again.
 
 ------------------------------
 ## 19. Monetization Blueprint
@@ -389,12 +396,8 @@ No patient model is ever deleted; they move through a living decentralized lifec
 * Low-Cost / High-Impact Art Styles: The visuals will leverage moody graphic-novel silhouettes, clean clinical vectors, or dynamic Rorschach inkblots. This bypasses expensive 3D face animation and lip-syncing entirely, while subtle looping environmental filters (e.g., moving rain shadows, pulsing EKG vitals lines) keep the screen feeling alive.
 
 ------------------------------
-The unified framework is finalized. If you are ready to begin writing your actual software code, let me know if you would like me to draft:
+The architecture framework is now perfectly complete, integrated, and scaled to optimize phone security and server economy.
+When you are ready to pivot into codebase preparation, let me know if you would like me to draft:
 
-* The foundational Flutter project file structure and repository template setup.
-* A boilerplate example of the background Dart Isolate worker file to pipeline text generation to your llama.cpp wrapper.
-
-
-[1] [https://www.instagram.com](https://www.instagram.com/reel/DVMrQSvkdwL/)
-[2] [https://github.com](https://github.com/storybookjs/ds-mcp-experiment-reshaped/discussions/1)
-[3] [https://talkpython.fm](https://talkpython.fm/episodes/show/549/great-docs)
+* The core Flutter library dependency tree needed in your pubspec.yaml to unify WebRTC, FFI isolates, and SQLite/Supabase components.
+* An exact setup example for the local AES-256 in-memory decryption pipeline used to guard manifest data strings from cheaters.
