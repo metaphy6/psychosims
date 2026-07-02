@@ -1,9 +1,6 @@
-## Project Blueprint: Decentralized AI Psychiatric Simulator## 1. Core Concept & Gameplay Modes
+## Project Blueprint: Decentralized AI Psychiatric Simulator## 1. Core Concept & Single-Track Progression Architecture
 The game is a choice-driven, strategic "psychological detective" simulator where players diagnose and treat patients over daily sessions.
-
-* Daily Mode (Casual B2C): A mystery-driven loop where players receive randomized patients, decode behavioral triggers, and attempt to uncover a hidden pathology.
-* Professional Mode (B2B): A high-fidelity clinical training sandbox featuring rigorous diagnostic rubrics, built for medical and psychology institutions.
-
+Instead of separating the product into distinct commercial and institutional applications, the game deploys a Unified Single-Track System. Every player begins their career as an entry-level counselor dealing with straightforward behavioral anomalies. As the player invests time, logs successful clinical outcomes, and expands their academic credentials, the entire game engine—including the UI, the depth of the AI simulation, and the grading complexity—organically evolves into a rigorous, professional-tier medical simulator.
 ------------------------------
 ## 2. Technical Architecture & Stack
 Designed as a zero-server-compute model to completely eliminate scalable AI cloud hosting costs.
@@ -39,8 +36,8 @@ To maintain high-quality simulation, patient models are created, verified, and d
 
 ## Player Distribution Framework
 
-* Free-Tier Mechanics (System Assigned): Free users do not choose their cases. The client app pings the signaling server to request a randomized patient seed. The asset is then dynamically fetched directly from nearby peer nodes in the P2P swarm.
-* Paid-Tier Mechanics (On-Demand Catalog): Premium players unlock full access to the medical registry. They can manually search, filter, and choose specific patient archetypes, workspaces, or pathological profiles to build their custom practice.
+* Free-to-Play Mechanics (System Assigned): Standard players do not choose their cases. The client app pings the signaling server to request a randomized patient seed matching their exact profile tier. The asset is then dynamically fetched directly from nearby peer nodes in the P2P swarm.
+* Premium Catalog Access (On-Demand Selection): Players can purchase access to the global medical registry archive. This allows them to manually search, filter, and bypass random generation to select specific clinical profiles, career workspaces, or complex pathologies for dedicated study and practice.
 
 ------------------------------
 ## 4. Single-Discipline Role: The Clinic "Therapist"
@@ -51,34 +48,36 @@ To keep gameplay highly focused and minimize design bloat, all players assume a 
 * The Treatment Tightrope: Prescribing medicine can temporarily lower a patient's hidden agitationLevel or suppress severe symptoms, but it triggers unique side effects that alter the patient's dialogue behavior, forcing the player to adapt their strategy.
 
 ------------------------------
-## 5. Experience Scaling & Daily Study Point Economy
-Progression balances passive time-gating with active player achievement to control game difficulty and monetize engagement.
+## 5. Career Evolution & Daily Study Point Economy
+The game experience organically transitions from a casual narrative game into a clinical simulator via the interlocking mechanics of experience metrics and academic expansion.
 
-                  ┌────────────────────────────────────────┐
-                  │          DAILY RESET MECHANIC          │
-                  └───────────────────┬────────────────────┘
-                                      │
-                                      ▼
-                  ┌────────────────────────────────────────┐
-                  │     Earn 1 Free Study Point / Day      │
-                  └───────────────────┬────────────────────┘
-                                      │
-                     ┌────────────────┴────────────────┐
-                     ▼                                 ▼
-         [Spend on Tech Tree]                 [Save for Advanced Cert]
-         • Unlock Basic Anxiety               • Unlock High-Tier Psyche
-         • Access Standard Decks              • Unlocks Complex Crises
+                      [CAREER EVOLUTION PIPELINE]
+                                   │
+                                   ▼
+          [Level 1-10: Casual Detective / Basic Tech Tree]
+          • Straightforward workplace burnout cases.
+          • High UI assists, basic card decks.
+                                   │
+                                   ▼
+          [Level 11-30: Intermediate Clinical Practice]
+          • Nested defense mechanisms and somatic symptoms unlock.
+          • Introduction of fictional psychopharmacology.
+                                   │
+                                   ▼
+          [Level 31+: Professional Practitioner (Endgame)]
+          • Unlocks the automated "Attending Physician" Assessment Rubric.
+          • Complex, volatile multi-axis trauma files dominate the inbox.
 
 ## The "Experience Magnet" Mechanic
 
-* Progression-Gated Pathologies: Free users start by treating low-stakes, straightforward cases (e.g., mild workplace burnout).
-* The Experience Vector: As players log successful treatments and diagnoses, their overall profile Experience Rating increases. Higher experience acts as a mechanical "magnet" in the client's local generation code, unlocking a higher probability for the P2P system to route deeply complex, unstable, and rare pathological profiles to their inbox.
+* Progression-Gated Pathologies: Early-stage players only attract low-stakes, highly expressive cases (e.g., simple anxiety surrounding an office transition).
+* The Complexity Vector: As a player wins sessions, their profile Experience Rating climbs. High XP metrics modify the client's internal routing seed, turning their profile into an "experience magnet" that pulls increasingly unstable, multi-layered, and pathologically volatile patient manifest files out of the network swarm.
 
 ## The Daily Study Point Economy
 
 * The Free Daily Point: Every 24 hours, the game awards every player exactly one Free Study Point upon login.
-* The Education Tree: Points are spent in the "University Hub" to study specific medical specializations (e.g., Somatoform Mechanics, Advanced Behavioral Defense Systems).
-* Card Unlocks: Completing a course permanently injects specialized "Action Cards" into the player's deck. Without spending these points to specialize, players will lack the necessary cards to counter advanced psychological crises, causing the patient to break down and walk out.
+* The University Hub Tree: Points are spent to study specialized medical fields (e.g., Somatoform Mechanics, Advanced Behavioral Defense Systems).
+* Knowledge Pool Unlock: Unlocking a field makes matching specialty techniques available. However, players must manually load these acquired skills into an active format before a session to counteract advanced psychological crises.
 
 ------------------------------
 ## 6. Patient Attraction Vector: The Three-Parameter Evaluation Framework
@@ -140,12 +139,13 @@ To prevent small local models from hallucinating or breaking rules, the game eng
 * The Local LLM (The Mouth): Never manages game logic. It simply reads a real-time system prompt generated by Dart string interpolation (e.g., "Your trust is low, act defensive using scuba slang") and acts as a realistic conversational translator.
 
 ------------------------------
-## 9. Choice-Driven Interface (The Therapy Deck)
-Open-ended text/voice typing is replaced by structured, high-stakes tactical inputs to ensure flawless gameplay stability.
+## 9. Choice-Driven Interface (The Therapy Deck & Loadout System)
+Open-ended text/voice typing is replaced by structured, high-stakes tactical inputs to ensure flawless gameplay stability and prevent cognitive clutter in the endgame.
 
-* The Therapy Card Deck: Players spend focus energy points to play specialized text cards representing clinical techniques (e.g., Empathy, Challenge, Silence).
+* The Active Therapy Loadout: To combat interface bloat as a player scales their academic specializations, players cannot take all unlocked cards into a session. They face a hard restriction limit of 5 or 6 Active Card Slots per session layout.
+* The Clinical Preparation Phase: Prior to initiation, the player evaluates the initial patient profile intake details and curates an active deck configuration (e.g., matching Somatic Grounding cards to a suspected panic presentation). Equipping incorrect loadouts leaves the player functionally exposed, forcing tactical retreats or reliance on suboptimal techniques.
 * Graphical Controllers: Flutter UI sliders and dials allow players to dynamically alter their conversation focus (e.g., Childhood vs. Workspace) and emotional delivery posture (Warm vs. Objective).
-* Jailbreak Immunity: Because the AI model only receives rigid inputs from a predetermined card system, it is mathematically impossible for users to trick or break the AI's character.
+* Jailbreak Immunity: Because the AI model only receives rigid inputs from a predetermined card setup, it is mathematically impossible for users to trick or break the AI's character.
 
 ------------------------------
 ## 10. Procedural Manifests & Advanced Psychological Fusion
@@ -239,7 +239,7 @@ To prevent a permanent failure loop where a player's profile metrics collapse, t
 * The Outcome: The player's baseline clinic reputation automatically scales back up to a minimum safe floor value based entirely on their academic credentials. They forfeit all potential currency earnings during the downtime, but they return to active practice fully optimized to face complex pathologies without spending a single cent of real-world money.
 
 ------------------------------
-## 14. The Advanced Clinical Tension Engine: Dynamic Card Specs & Case Diagnostics
+## 14. The Advanced Clinical Tension Engine: Dynamic Card Specs & Endgame Evolution
 To challenge experienced players and prevent late-game monotony, the system scales patient complexity in direct proportion to academic advancement. The game transitions from a simple diagnostic guessing game into a multi-session strategic chess match.
 
                   ┌────────────────────────────────────────┐
@@ -264,14 +264,20 @@ To challenge experienced players and prevent late-game monotony, the system scal
                   │ • Trigger dramatic clinical breakthrough│
                   └────────────────────────────────────────┘
 
-## The Academic Complexity Scalar
+## The Professional-Tier Shift (Endgame Grading Rubric)
 
-* The Specialization Magnet: As the therapist completes courses on the Number of Study Fields tech tree, the server-side router and local P2P seed calculator adjust the matching algorithm.
-* The Multi-Session Siege: High-tier patients possess nested, multi-layered defensive frameworks. They cannot be diagnosed or cured in a single encounter. The patient's manifest is hard-coded to resist standard tactics, forcing the player to spend real-world time between daily sessions reviewing case notes and researching corresponding medical manuals in the app's database.
+* The Automated "Attending Physician" Report: Once a player crosses a high-tier Experience threshold (e.g., Level 30+), the game unlocks its analytical endgame simulator. Simple win/loss notifications are replaced by an advanced Clinical Assessment Matrix. The local Dart engine tracks card sequence selections to deliver a multi-page analytical report scoring the user on Therapeutic Alliance Maintenance, Diagnostic Path Efficiency, and Pharmacological Safety.
+* The Multi-Session Siege: High-tier patients possess nested, multi-layered defensive frameworks that resist immediate resolution. The player must exit active daily check-ups to analyze collected linguistic clues, comparing text histories against the app's diagnostic encyclopedia before entering subsequent rounds.
 
 ------------------------------
-## 15. The Four-Tier Functional Card Taxonomy
-Instead of static "win/lose" options, cards possess context-dependent behavioral properties. A single technique card dynamically shifts its property classification depending on the patient's active biography, defense mechanism, and current numerical stats.
+## 15. The Four-Tier Functional Card Taxonomy & AI Fatigue Countermeasures
+Instead of static "win/lose" options, cards possess context-dependent behavioral properties. To guarantee veteran players do not face behavioral redundancy from the core AI actor, dynamic conversational variances alter execution vectors.
+## Linguistic Vector Mutation & Conversational Curveballs
+
+* Linguistic Archetype Prompt Components: To bypass repetitive syntax loops, the 50 KB player manifest shifts the base model's prompt layout using a style filter (e.g., The Cynic vs. The Intellectual), making identical underlying conditions sound entirely distinct.
+* The Transference Spike: High-trauma sessions prompt sudden relational shifts where conventional Empathy cards are read programmatically as Manipulative Failures, completely flipping the required tactical strategy.
+
+## The Dynamic Card Spec Matrix
 
        ┌────────────────────────────────────────────────────────┐
        │               DYNAMIC CARD SPEC MATRIX                 │
@@ -387,7 +393,6 @@ No patient model is ever deleted; they move through a living decentralized lifec
 * Premium Case Files: Selling targeted thematic character packs (e.g., The Corridor of Power Pack, The Forensic Psych Pack).
 * Specialty Expansion Decks: Selling advanced card mechanics or immediate access to university study modules, bypassing real-world cooldown timers.
 * Emergency Consultations: Microtransactions allowing players to temporarily rent a highly specialized card mid-session to save a rare patient from walking out.
-* B2B Institutional SaaS: High-ticket recurring licensing for university medical modules featuring programmatic rubric grading.
 * Cosmetic Customization: Selling visual office overhauls (e.g., Manhattan High-Rise Office) and custom UI engine layouts.
 
 ------------------------------
@@ -396,8 +401,198 @@ No patient model is ever deleted; they move through a living decentralized lifec
 * Low-Cost / High-Impact Art Styles: The visuals will leverage moody graphic-novel silhouettes, clean clinical vectors, or dynamic Rorschach inkblots. This bypasses expensive 3D face animation and lip-syncing entirely, while subtle looping environmental filters (e.g., moving rain shadows, pulsing EKG vitals lines) keep the screen feeling alive.
 
 ------------------------------
-The architecture framework is now perfectly complete, integrated, and scaled to optimize phone security and server economy.
-When you are ready to pivot into codebase preparation, let me know if you would like me to draft:
+## 21. The Peer-to-Peer Medical Director Framework (Endgame User-Generated Content Engine)
+Once a player reaches the highest levels of practice and experience, their career path transitions into institutional oversight. The game interface permanently unlocks the Medical Director Dashboard Panel, transforming veteran players into content creators who supply the decentralized P2P swarm network.
 
-* The core Flutter library dependency tree needed in your pubspec.yaml to unify WebRTC, FFI isolates, and SQLite/Supabase components.
-* An exact setup example for the local AES-256 in-memory decryption pipeline used to guard manifest data strings from cheaters.
+* Procedural Injection Design Tools: Medical Directors use a localized design panel to build custom stageplay manifest templates. They manually specify advanced track rules, including custom Workspace Cultures, hyper-targeted Somatic Vulnerability Axes, and explicit Core Maladaptive Schemas.
+* The Validation Test Interview: To prevent broken, un-winnable, or toxic files from entering the ecosystem, a newly created template cannot be published immediately. The Medical Director must personally complete a successful test therapy session with their own created manifest using the local LLM engine.
+* Decentralized Swarm Publishing: Once validated, the created patient file (manifest.json) is cryptographically signed with the player's unique identity key and pushed to the global P2P matchmaking board. Every time another active player across the WebRTC network downloads, pays a treatment fee, or successfully treats that custom manifest, the original creator earns continuous passive royalties in clinic currency and prestige points.
+
+------------------------------
+## 22. Clinical Operations & Environmental Matrix (The Dynamic Clinic Sandbox)
+To deepen the strategic gameplay loops, the game implements a simulated business ecosystem. The player is not just an interviewer; they are managing a high-stakes, regulated medical practice.
+
+              ┌────────────────────────────────────────────────────────┐
+              │             DAILY OPERATIONAL TAX CLIPS                │
+              └───────┬───────────────────┬────────────────────┬───────┘
+                      │                   │                    │
+                      ▼                   ▼                    ▼
+          ┌─────────────────────────┐ ┌──────────────┐ ┌───────────────────┐
+          │ FIXED OVERHEAD          │ │ REGULATIONS  │ │ GLOBAL CHANCE     │
+          │ • Rent vs. Office Debt  │ │ • Audits     │ │ • Political Events│
+          │ • Utility Infrastructure│ │ • Tax Slabs  │ │ • Weather Crises  │
+          └─────────────────────────┘ └──────────────┘ └───────────────────┘
+
+
+## Fixed Overhead & Property Logistics
+
+* Office Options (Rent vs. Buy): Early-stage players start by renting a modest office asset, triggering a static deduction for lease overhead every virtual week. As players accumulate capital, they can access the local real estate ledger to completely buy their clinic office, neutralizing rent costs but incurring minor cyclical utility upkeep bills. Offices can be dynamically sold back to the market to raise instant liquid capital during financial emergencies.
+* Taxes & Audits: Clinic earnings are subject to progressive tax brackets based on the user's current session Pricing per Patient setting. High-earning clinics are randomly flagged for institutional regulatory audits, penalizing reputation metrics if compliance failures or over-medication histories are logged in the database files.
+
+## Macro Environmental & Social Events
+
+* Sociopolitical Shifts: The central signaling server periodically seeds macro events into the P2P mesh network (e.g., Economic Recession, Mass Workspace Burnout Strikes). These events warp customer profiles across the swarm—shifting baseline patient attraction probabilities toward specific workspace tracks and spiking the baseline agitationLevel of incoming cases.
+* Meteorological Events: Localized climate occurrences (e.g., Heatwaves, Seasonal Affective Winter Shifts) inject temporary global multipliers into patient profiles, changing chemical pill side-effect limits or causing somatic anxiety triggers to flare faster.
+
+------------------------------
+## 23. The Therapist Well-Being Core: Secondary Trauma & The Healer Economy
+Because the simulation enforces total biological and psychological realism, the act of treating profound human trauma carries an implicit, destructive cost to the player's own character avatar.
+
+                  ┌────────────────────────────────────────┐
+                  │      TRAUMA LOADING & DECAY LOOP       │
+                  └───────────────────┬────────────────────┘
+                                      │
+                                      ▼
+                  ┌────────────────────────────────────────┐
+                  │ Active Sessions / Complex Trauma Files │
+                  │ • Spikes Therapist Secondary Distress  │
+                  │ • Deducts from Well-Being Point Pool   │
+                  └───────────────────┬────────────────────┘
+                                      │
+                     ┌────────────────┴────────────────┐
+                     ▼                                 ▼
+         [Option A: Premium Recharge]         [Option B: P2P Healer Session]
+         • Instant wellness card play.        • Schedule with peer specialist.
+         • Fast cash/microtransaction.        • Real-time tactical gameplay card exchange.
+
+## The Well-Being Metric Engine
+
+* Secondary Distress Accumulation: Every active session conducted—especially those involving deep trauma files, severe defense mechanisms, or structural Psychological Derangements—loads a permanent stress penalty onto the player's character profile.
+* The Well-Being Pool: This stress strips points away from a secondary pool called Well-Being Points. As this metric declines, the player experiences visual UI degradation (e.g., screen blurring, jittering UI controller sliders), and the focus energy point pool shrinks, rendering advanced choice cards unplayable.
+
+## The Healer-to-Healer WebRTC Economy
+When a player's therapist avatar experiences a total mental breakdown due to low Well-Being metrics, they can no longer accept active cases. They must seek professional treatment from another real-world player who has chosen to specialize in Therapist Rehabilitation talk therapy.
+
+* The Interactive Referral: The broken therapist uses the WebRTC network to refer themselves as a patient manifest object to an active peer node.
+* Malicious Conduct Protection (Severe Penalties): To prevent malicious trolling or toxic gameplay behavior in this vulnerable state, the engine applies strict anti-griefing code logic. If a treating therapist intentionally uses inappropriate Manipulative card scripts or treats their peer badly, the network runs an automatic cryptographic verification loop. The malicious peer suffers a devastating, permanent markdown to their Public Reputation Rating, a massive financial clawback penalty, and a suspension from high-tier patient matching algorithms.
+* The Specialty Reward Core: Conversely, therapists who successfully stabilize and heal a peer avatar are heavily incentivized. Reconstituting a fellow therapist grants maximum global experience point multipliers and premium clinic currency drops.
+
+## Non-Intrusive Wellness Monetization
+
+* The Fast-Track Recovery Option: To bypass real-world waiting times or the need to schedule an interactive session with another peer node, players can spend premium tokens or watch targeted ads to execute an instant wellness action (e.g., Mandatory Spa Sabbatical, Self-Care Kit). Unlocking this card instantly restores a safe minimum threshold to their Well-Being Point ledger, allowing continuous standalone gameplay without forcing pay-to-win mechanics onto the competitive global leadership boards.
+
+------------------------------
+## 24. Institutional Corporate Sub-Systems: The Group Practice Economy
+To introduce corporate business gameplay and support clan/guild style configurations over the WebRTC layer, therapists can choose to bypass standalone operations entirely and enter the Hiring & Group Practice Sub-System.
+
+              ┌────────────────────────────────────────────────────────┐
+              │             EMPLOYER CLINIC MASTER CONTRACT            │
+              ├────────────────────────────────────────────────────────┤
+              │  Employer Benefits:                                    │
+              │  • +25% Session Revenue Yield multiplier per employee. │
+              ├────────────────────────────────────────────────────────┤
+              │  Employee Benefits:                                    │
+              │  • Shared Card Deck Library & Knowledge Pool access.   │
+              │  • 2.0x Double Study Point Generation Multiplier.      │
+              ├────────────────────────────────────────────────────────┤
+              │  The Operational Risk Vectors:                         │
+              │  • Employee Mistreatment = Structural Clinic Damage.   │
+              │  • Total Structural Collapse = Forced Eviction / Debt. │
+              └────────────────────────────────────────────────────────┘
+
+## Entry Gate Requirements
+The ability to open corporate listings and hire real-world players is locked behind institutional infrastructure minimums. To unlock the Group Practice Panel, a player must simultaneously meet high-tier baseline thresholds: a designated elite Therapist Character Level combined with a high-value, owned Clinic Facility Asset Tier. Lower-tier rented offices cannot support subordinate employees.
+## The Associate Employee Mechanics
+When an uncertified or mid-tier therapist signs an employment contract with an Employer Clinic, their progression mechanics are altered to trade performance rating margins for accelerated structural education:
+
+* The Revenue and XP Penalty: A percentage of all experience points and session currency generated by the employee is automatically skimmed by the engine and routed to the Employer's ledger.
+* The Academic Accelerator: In return for this financial tax, the app applies a 2.0x Double Study Point Multiplier to the employee's account for every daily reset cycle they work under the corporate framework. This allows junior players to sprint through advanced tech trees at double speed.
+* The Shared Deck Library Advantage: Associate employees gain full operational access to the employer’s unlocked Card Decks, Fictionalized Pharmacology Inventories, and In-House Knowledge Bases. As long as they remain hired, they can deploy high-tier cards they do not personally own yet.
+
+## Employee Case Gating & The Capability Gap
+While associates can borrow the employer's card library, they cannot treat every high-tier client assigned to the firm. The engine enforces a strict Capability Ceiling:
+
+* An employee can accept patient manifests rated up to a maximum of +5 levels above their personal character level, utilizing the employer's card deck to manage complex trauma configurations.
+* If a manifest surpasses this ceiling (e.g., a Level 40 volatile case assigned to a Level 20 employee), the case file is automatically locked out of their workstation, requiring them to route the manifest directly back to the Employer's master intake list.
+
+## Employer Yield Multipliers
+For the corporate founder, managing a staff of real-world associates functions as an exponential profit scaling mechanism. For each active associate employee currently working a clinical shift under their corporate contract, the engine applies a stacking +25% Revenue Yield Multiplier to all patient session fees processed across the firm, generating massive passive wealth for elite directors.
+## The Accountability & Infrastructure Damage Matrix
+Corporate expansion carries extreme operational risk vectors based on the performance of the hired staff. If an associate employee mismanages a high-stakes patient session—triggering a Psychological Derangement or forcing a patient to walk out—the failure triggers a severe dual-layer penalty:
+
+[Employee Fails / Mistreats Patient]
+                 │
+                 ├──────────────────────────────┐
+                 ▼                              ▼
+     [Employee Personal Penalty]    [Employer Corporate Penalty]
+     • Hard Well-Being Point Drop   • Structural Infrastructure Damage
+     • Severe Public Rep Markdown   • System Audits & Compliance Fines
+                 │                              │
+                 ▼                              ▼
+     [Career Stagnation Loop]       [Total Structural Failure (<20%)]
+                                    • Asset Foreclosure & Eviction
+                                    • Forced to Purchase New Clinic
+
+
+* Hired Staff Penalties: The associate employee who executed the bad treatment suffers an immediate, devastating deduction from their personal Well-Being Point Pool and a severe markdown to their public P2P Reputation Metric, locking them out of advanced practice.
+* Employer Corporate Damages: The failure instantly triggers Structural Infrastructure Damage to the employer's clinic property asset map. Mismanaged psychiatric crises are simulated as physical and institutional damage to the practice (e.g., vandalism, legal structural hazards, regulatory liability degradation).
+* Facility Bankruptcy & Eviction: If an employer's staff repeatedly fails sessions and allows the clinic's Structural Health Metric to drop below 20%, the facility faces a catastrophic structural collapse. The asset is permanently foreclosed and condemned by the system. The employer is instantly evicted, loses all historical office cosmetic upgrades, and is forced to expend massive capital reserves to buy an entirely new base-tier clinic asset from the real estate ledger to restart operations.
+
+------------------------------
+## 25. High-Level Game State Machine Loop (Client Execution Script)
+The baseline operational turn flow loop for individual standalone clients or employed corporate associates during an active session behaves according to this runtime state flow:
+
+             +-------------------------------------------------+
+
+             |              START CLINICAL TURNS               |
+             +------------------------┬------------------------+
+                                      │
+                                      ▼
+             +-------------------------------------------------+
+
+             |      Local Dart Reads Stageplay Manifest        |
+             | • Loads Biographical, Relational Variables      |
+             | • Injects Workspace & Custom Slang Strings      |
+             +------------------------┬------------------------+
+                                      │
+                                      ▼
+             +-------------------------------------------------+
+
+             |       User Pulls Local Card Deck UI             |
+             | • Displays 5-6 Equipped Active Cards            |
+             +------------------------┬------------------------+
+                                      │
+                                      ▼
+             +-------------------------------------------------+
+
+             |       Player Deploys Action Choice Card         |
+             | • Adjusts Sliders: Focus & Posture Tone         |
+             +------------------------┬------------------------+
+                                      │
+                                      ▼
+             +-------------------------------------------------+
+
+             |         Dart Core Calculates Mutation           |
+             | • Runs Index Check: Matches Card to Manifest   |
+             | • Outputs Enum: 1, 2, 3, or 4 Card Category     |
+             +------------------------┬------------------------+
+                                      │
+                                      ▼
+             +-------------------------------------------------+
+
+             |    Background Isolate Compiles Prompter Text    |
+             | • Mutates live metrics: Trust & Agitation Scores|
+             | • Appends dynamic behavior constraint payload   |
+             +------------------------┬------------------------+
+                                      │
+                                      ▼
+             +-------------------------------------------------+
+
+             |     Local GGUF Core LLM Executes Inference       |
+             | • Generates contextually accurate dialogue       |
+             +------------------------┬------------------------+
+                                      │
+                                      ▼
+             +-------------------------------------------------+
+
+             |             Check Win / Loss State              |
+             +------------------------┬------------------------+
+                                      │
+             ┌────────────────────────┴────────────────────────┐
+             ▼                                                 ▼
+     [Session Continues]                                [Session Concludes]
+     • Loop to next turn state.                         • Appends transaction log string.
+                                                        • Cryptographically signs file.
+                                                        • Pushes payload to Supabase tables.
+
+------------------------------
