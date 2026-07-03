@@ -91,6 +91,17 @@ The game experience organically transitions from an introductory psychological s
 * Level-Gated Fields: The total number of study fields that can be unlocked is capped by a player’s current level; players can reach higher levels without unlocking every field, but they cannot unlock every field without first reaching the required level thresholds.
 * Highest-Level Correlation: Maximum career level is directly correlated with the number of study fields designed into the game. The full set of fields becomes available only as the player rises through the career tiers.
 
+### Early Game Retention: The New Clinician Track
+
+* Introductory cases should feel like meaningful psychology scenarios instead of a dry tutorial.
+* Start with a strong first patient narrative that frames the player as a new clinician helping someone avoid a career or relationship crisis.
+* Introduce mechanics one at a time and reward progress quickly with small XP gains, new study notes, new cards, or reputation boosts.
+* Offer diverse early cases: workplace stress, social anxiety, sleep disruption, and interpersonal conflict.
+* Give the player meaningful choices on each case, with 2–3 plausible treatment options and visible consequences.
+* Avoid harsh punishment for early failure; use mistakes to teach and redirect instead of drive players away.
+* Include a “safe practice clinic” mode or mentor guidance system for newcomers to experiment with low-consequence strategies.
+* Provide daily login hooks and a short “first week” reward path to keep new players coming back.
+
 ### Free Source Inspiration for Study Fields
 
 * Open educational resources such as OpenStax Psychology, MIT OpenCourseWare, and Khan Academy can inspire course themes and terminology.
@@ -108,7 +119,7 @@ To attract increasingly complex, prestigious, or rare patient manifests from the
           └───────┬───────────────────┬────────────────────┬───────┘
                   │                   │                    │
                   ▼                   ▼                    ▼
-┌────────────────────────┐ ┌──────────────┐ ┌────────────────────┐ ┌───────────────────────────┐
+          ┌────────────────────────┐ ┌──────────────┐ ┌────────────────────┐ ┌───────────────────────────┐
           │    1. REPUTATION       │ │ 2. PRICING   │ │ 3. STUDY FIELDS    │ │ 4. WELL-BEING (MIND)      │
           │ • Lifetime Client Count│ │ • Session Fee│ │ • Total Unlocked   │ │ • Stress / Energy Levels  │
           │ • Success / Cure Rate  │ │   Set by User│ │   Specializations  │ │ • Burnout / Recovery Speed│
