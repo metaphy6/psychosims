@@ -220,6 +220,20 @@ To ensure ironclad progress preservation and prevent file tampering without incu
    2. P2P Profile Sync: When broadcasting presence to the WebRTC P2P swarm, the Flutter client signs this cloud-verified data packet using its private cryptographic key. Other network nodes read this signed block to populate the public matchup and referral directories.
    3. Session Conclusion Verification: When a therapy round finishes, the Flutter app calculates the resulting metrics local-side and pushes a verified execution receipt to the server API. The cloud database updates the primitive numerical stats, ensuring that if a user clears their device cache or switches devices, their economic position, tech tree certifications, and network ranking remain permanently safe.
 
+### Simulation Sandbox & Rule-Testing Framework
+
+The project should include a dedicated simulation framework for rapid verification of game rules and feature balance. This framework is not intended as a replacement for normal gameplay, but as a fast, controllable environment for stress-testing the systems during development.
+
+* Accelerated Sandbox Runtime: The game should support a sandbox mode where values, parameters, and state transitions can be run in an accelerated time setting so designers and developers can observe long-term outcomes in minutes rather than days.
+* Parameter Mutation Testing: Developers should be able to modify game values such as patient difficulty, case rewards, study point gain, reputation decay, clinic attraction thresholds, and trauma multipliers in a controlled manner without altering the live production ruleset.
+* Bot-Driven Simulation: The framework should support simulated players who execute test cases automatically. Each bot should have a configurable expert level from 1 to the maximum supported tier, allowing different levels of competence and decision quality to be tested.
+* Profile and Clinic State Injection: The sandbox should permit preloading specific player states, including unlocked study fields, clinic attributes, reputation values, pricing settings, and well-being states, so the system can simulate different progression conditions quickly.
+* Admin Override Layer: A master or admin control panel should allow the operator to set static, default values that override the normal rule evaluation for specific test scenarios and time windows. These overrides should remain stable during the test run and should not be silently altered by ordinary gameplay logic.
+* Test Case Scenarios: The framework should support scenario-based testing for common gameplay flows such as patient cure, patient walkout, reputation recovery, study field unlocking, card reward distribution, trauma escalation, and clinic financial stress.
+* Result Tracking & Diagnostics: Each simulation run should emit structured logs and summary metrics so designers can compare outcomes before and after rule changes.
+
+This testing layer should be treated as a core infrastructure requirement because it will greatly shorten iteration time, surface design issues early, and make balance tuning far more practical.
+
 ------------------------------
 ## 8. The Simulation Core vs. the Dialogue Layer
 To keep the experience stable, readable, and mechanically fair, the game engine is split into two clearly defined layers.
@@ -238,6 +252,19 @@ Open-ended text/voice typing is replaced by structured, high-stakes tactical inp
 * Graphical Controllers: Flutter UI sliders and dials allow players to dynamically alter their conversation focus (e.g., Childhood vs. Workspace) and emotional delivery posture (Warm vs. Objective).
 * Jailbreak Immunity: Because the AI model only receives rigid inputs from a predetermined card setup, it is mathematically impossible for users to trick or break the AI's character.
 
+### Private Master Playbook & Adaptive Card Benchmarking
+
+Even though the game is not designed as a single-ended victory loop, it should still maintain a private, evolving benchmark layer that is visible only to the designer or operator. This benchmark is not meant to be shown to players; it exists to keep balance consistent and to calibrate the relative strength of card combinations.
+
+* Secret Initial Cheat Sheet: For untreated patients who have not yet been exposed to clinical intervention, the system should maintain a hidden reference sheet that identifies the strongest known card combination for that patient profile. This sheet acts as the initial best-practice baseline for success-rate tuning.
+* Calibration Function: The hidden sheet should be used to estimate the expected success percentage of other card combinations relative to that benchmark. In practice, this allows the team to make sure that alternative decks are meaningfully strong, weak, or situational rather than arbitrarily random.
+* Benchmark Decay & Mutation: Once a patient has been treated, partially treated, or materially altered by the session state, the credibility of the original benchmark should gradually decay. The original sheet should not remain a fixed truth forever; instead, it should mutate over time as the patient state evolves.
+* Adaptive Master Algorithm: The game should maintain a master algorithm that continuously recomputes the best card combination for treated patients, mutated patients, and patients whose condition has drifted from the original profile. This algorithm should evaluate current trust, agitation, symptom pressure, prior card history, medication state, and study-field compatibility.
+* Internal Balance Control: The adaptive algorithm should be the canonical mechanism for maintaining consistency across the entire card system. It should prevent the game from drifting into situations where some deck combinations become universally dominant or universally useless.
+* Output Layer: The system should expose a private diagnostic output for the designer, including the recommended deck, expected win probability band, and the current confidence score of the recommendation.
+
+This hidden benchmark layer is a balance tool, not a player-facing mechanic. It ensures that the game remains manageable, internally coherent, and tunable as patient states evolve over time.
+
 ------------------------------
 ## 10. Procedural Manifests & Advanced Psychological Fusion
 Patients are unique data objects (.JSON patient manifests) generated server-side and transferred via P2P. To maximize simulation realism, the content engine procedurally weaves an extensive multi-axis framework encompassing nine distinct human tracks:
@@ -252,6 +279,19 @@ Patients are unique data objects (.JSON patient manifests) generated server-side
    7. Somatic Vulnerability Axis: Targeted physical manifestations of distress (e.g., Hyper-ventilation, gastric nausea) triggered during active panic crises.
    8. Core Maladaptive Schema: The deeply buried, subconscious childhood trauma lens (e.g., Defectiveness, Abandonment) serving as the ultimate endgame case resolution goal.
    9. Insight / Stage of Change Axis: The active self-awareness metric (Pre-contemplation, Contemplation, Action) determining how receptive the patient is to direct clinical interpretations.
+
+### Patient Ownership, Forgetful Chronic Cases & Transfer Risk
+
+To preserve integrity and reduce case fragmentation, individual patients should be assigned to one therapist at a time until the case reaches a meaningful end state.
+
+* One-Therapist Ownership: A patient manifest should remain owned by a single active therapist across sessions until the case is closed through successful cure, explicit abandonment, or a hard failure threshold where the case is considered no longer recoverable for that therapist.
+* Social Chronic Patients: Patients in the social/chronic pool should be treated as memory-poor cases. They do not retain meaningful user data, therapist identity, or long-term personal history across clinics. Their state should be based on the current case context rather than on preserved player-specific memory.
+* Doubt Pressure: Each patient should carry a hidden Doubt value that rises gradually over time and can increase when the therapist uses Manipulative cards repeatedly or when session prices rise sharply across consecutive sessions. This should feel emergent and contextual rather than deterministic.
+* Transfer Escape Valve: If Doubt crosses a threshold and a stochastic roll succeeds, the patient may decide to leave the current clinic and be reassigned to a different available therapist of the same progression tier in the network. This should be rare enough to preserve tension, but frequent enough to feel like a real risk.
+* Balance Intent: The chance of transfer should remain low in ordinary play, with a small base probability per session and stronger escalation only after sustained pressure. A good target is a low base chance of roughly 2% to 4% per session, increasing to a more noticeable range only after repeated stressors, with a hard cap that prevents constant churn.
+* Fair Reassignment: Reassigned patients should be routed to a free, compatible therapist of similar level rather than to a random high-level specialist, ensuring the system remains fair, readable, and enjoyable rather than punishing the player with arbitrary case loss.
+
+This rule set creates a strong ownership model for cases while still allowing occasional, believable patient migration when a therapist's approach becomes too risky or unstable.
 
 ------------------------------
 ## 11. The "Universal Actor" Storage & Asset Pipeline
@@ -414,10 +454,14 @@ DYNAMIC CARD SPEC MATRIX
 
 ### 4. Manipulative (The Psychological Double-Edged Sword)
 
-* The Interaction: High-risk, assertive interventions such as gaslighting, reverse psychology, or intense emotional provocation designed to bypass a rigid defensive shield.
+* The Interaction: Manipulative cards are not simple "bad" actions; they are high-risk, precision-based interventions that exploit relational pressure, strategic contradiction, or emotional inversion to break rigid defenses. They are designed for moments where the patient is too guarded, too defensive, or too emotionally over-controlled for standard rapport-building.
+* The Strategic Setup: A Manipulative play is most effective when the therapist has already established a strong enough foundation of trust, timing, or clinical leverage. If used too early, it can backfire immediately; if used at the right threshold, it can collapse a defense structure and unlock otherwise inaccessible narrative layers.
 * The Result: A volatile, structural gamble evaluated dynamically by the client/Dart engine:
-* Success (High Trust State): Instantly shatters the patient's defense mechanism, bypassing normal study tree requirements and dropping massive clue drops.
-   * Failure / Derangement (Low Trust State): Psychologically deranges the patient layout. The Dart engine permanently breaks the patient's patient manifest, mutating their baseline condition into a chaotic, unmapped secondary pathology (e.g., turning a manageable Anxiety state into an erratic, hyper-defensive Paranoia state). The existing study cards the player owns lose their effectiveness, rapidly accelerating the patient's trajectory toward the Mental Hospital loop.
+* Success (High Trust State): The patient’s defense mechanism is shattered, revealing hidden insight, cracked narrative layers, or a core trauma node. This can bypass normal study-tree requirements, accelerate clue discovery, and create a dramatic breakthrough that would otherwise be unreachable.
+* Partial Success (Ambiguous State): The patient does not fully collapse, but the pressure exposes a new vulnerability. The therapist gains partial information, the patient becomes more unstable, and the next turn becomes more dangerous.
+* Failure / Derangement (Low Trust State): The patient becomes psychologically deranged by the pressure. The Dart engine may mutate the patient's manifest into a chaotic, secondary pathology state, such as a hyper-defensive paranoia loop, a dissociative collapse, or an emotionally fragmented response. In this state, the existing study cards lose effectiveness, and the patient may move rapidly toward a crisis loop or institutional referral.
+* Reputation and Tension Tradeoff: Manipulative cards should create a meaningful risk-reward loop. They can generate elite breakthroughs and rapid progression, but they also increase the chance of therapist reputation loss, patient hostility, or long-term emotional damage if overused.
+* Narrative Identity: Unlike other cards, Manipulative actions should feel psychologically sharp and morally ambiguous. They should carry an aura of danger, precision, and coercive insight rather than simple aggression.
 
 ------------------------------
 ## 16. Concrete Architecture: The Prompt/Logic Processing Split
@@ -514,7 +558,11 @@ No patient model is ever deleted; they move through a living decentralized lifec
 ## 19. Monetization Blueprint
 
 * Premium Case Files: Selling targeted thematic character packs (e.g., The Corridor of Power Pack, The Forensic Psych Pack).
-* Specialty Expansion Decks: Selling advanced card mechanics or immediate access to university study modules, bypassing real-world cooldown timers.
+* Specialty Expansion Decks: Users should be able to purchase up to 4 additional card decks, each sold as a separate item. These decks are available to players at any level and expand the available tactical repertoire without forcing progression gates.
+* Currency-Based Purchases: Any monetized item should be purchasable using in-game currency earned from curing patients, maintaining a soft economic loop between gameplay success and customization. Prices should be meaningful but not so high that they feel punitive.
+* Avatar Identity Pack: User avatars should be auto-assigned at character creation, but players should be able to purchase a rename pack to personalize their therapist identity.
+* Study Point Purchases: Study points should be purchasable only using in-game currency, not real money. The cost should be moderate: not too cheap to devalue progression, but not so expensive that it becomes a barrier to normal play.
+* Subspecialty Point System: A new resource called Subspecialty Points should be introduced. Players may buy up to 100 of these points per month, and they are the only progression point that can be purchased or gifted. They should be used for advanced humanities-driven subspecialty unlocks and should be distinct from regular study points.
 * Emergency Consultations: Microtransactions allowing players to temporarily rent a highly specialized card mid-session to save a rare patient from walking out.
 * Cosmetic Customization: Selling visual office overhauls (e.g., Manhattan High-Rise Office) and custom UI engine layouts.
 
