@@ -59,12 +59,12 @@ To keep gameplay highly focused and minimize design bloat, all players assume a 
 
 ------------------------------
 ## 5. Career Evolution & Daily Study Point Economy
-The game experience organically transitions from a casual narrative game into a clinical simulator via the interlocking mechanics of experience metrics and academic expansion.
+The game experience organically transitions from an introductory psychological simulation into a clinical simulator via the interlocking mechanics of experience metrics and academic expansion.
 
                       [CAREER EVOLUTION PIPELINE]
                                    │
                                    ▼
-          [Level 1-10: Casual Detective / Basic Tech Tree]
+          [Level 1-10: Introductory Clinical Simulation / Basic Tech Tree]
           • Straightforward workplace burnout cases.
           • High UI assists, basic card decks.
                                    │
@@ -88,6 +88,8 @@ The game experience organically transitions from a casual narrative game into a 
 * The Free Daily Point: Every 24 hours, the game awards every player exactly one Free Study Point upon login.
 * The University Hub Tree: Points are spent to study specialized medical fields (e.g., Somatoform Mechanics, Advanced Behavioral Defense Systems).
 * Knowledge Pool Unlock: Unlocking a field makes matching specialty techniques available. However, players must manually load these acquired skills into an active format before a session to counteract advanced psychological crises.
+* Level-Gated Fields: The total number of study fields that can be unlocked is capped by a player’s current level; players can reach higher levels without unlocking every field, but they cannot unlock every field without first reaching the required level thresholds.
+* Highest-Level Correlation: Maximum career level is directly correlated with the number of study fields designed into the game. The full set of fields becomes available only as the player rises through the career tiers.
 
 ### Free Source Inspiration for Study Fields
 
@@ -101,31 +103,58 @@ The game experience organically transitions from a casual narrative game into a 
 ## 6. Patient Attraction Vector: The Three-Parameter Evaluation Framework
 To attract increasingly complex, prestigious, or rare patient manifests from the network, a player's clinic profile is evaluated dynamically across three primary metrics. These metrics determine the "attraction weight" for incoming P2P patient requests.
 
-       ┌────────────────────────────────────────────────────────┐
-       │               CLINIC ATTRACTION ENGINE                 │
-       └───────┬───────────────────┬────────────────────┬───────┘
-               │                   │                    │
-               ▼                   ▼                    ▼
-   ┌───────────────────────┐ ┌──────────────┐ ┌────────────────────┐
-   │    1. REPUTATION      │ │ 2. PRICING   │ │ 3. STUDY FIELDS    │
-   │ • Lifetime Client Count│ │ • Session Fee│ │ • Total Unlocked   │
-   │ • Success / Cure Rate │ │   Set by User│ │   Specializations  │
-   └───────────────────────┘ └──────────────┘ └────────────────────┘
+          ┌────────────────────────────────────────────────────────┐
+          │               CLINIC ATTRACTION ENGINE                 │
+          └───────┬───────────────────┬────────────────────┬───────┘
+                  │                   │                    │
+                  ▼                   ▼                    ▼
+┌────────────────────────┐ ┌──────────────┐ ┌────────────────────┐ ┌───────────────────────────┐
+          │    1. REPUTATION       │ │ 2. PRICING   │ │ 3. STUDY FIELDS    │ │ 4. WELL-BEING (MIND)      │
+          │ • Lifetime Client Count│ │ • Session Fee│ │ • Total Unlocked   │ │ • Stress / Energy Levels  │
+          │ • Success / Cure Rate  │ │   Set by User│ │   Specializations  │ │ • Burnout / Recovery Speed│
+          └────────────────────────┘ └──────────────┘ └────────────────────┘ └───────────────────────────┘
 
 ### 1. Reputation (Practice Health)
 
 * Growth Triggers: This value updates strictly based on clinical outcomes. It increases with the total volume of treated patients and the percentage of successful therapeutic conclusions (cures).
 * Gameplay Impact: Higher reputation scores unlock complex workplace patient tiers (e.g., high-level politicians or secret agents) who refuse to sit with unproven therapists. Conversely, letting patients walk out or misdiagnosing them penalizes this metric.
 
-### 2. Pricing per Patient (The Financial Position)
+### 2. Therapist Well-Being (Mental Health Resilience)
+
+* Core Role: This hidden stat represents the player character's own mental health, emotional stamina, and ability to process patient trauma safely.
+* Degradation: Well-being declines over time and with consecutive therapy sessions, especially when treating high-agitation patients, chaotic manifests, or repeated failures.
+* Gameplay Impact: Low well-being lowers the clinic's effective performance, slows recovery between cases, and increases the chance that complex patients bypass the therapist's inbox. It also enables mechanics like forced rest, burnout freezes, and mandatory Academic Sabbaticals.
+
+### 3. Pricing per Patient (The Financial Position)
 
 * User-Controlled Slider: Players can manually set their session price rate (in-game currency).
 * The Economic Balancing Act: Setting high prices increases profit margins per session but shrinks the pool of casual, blue-collar, or standard patients willing to schedule an appointment. Setting competitive low prices floods the inbox with high-volume, lower-paying cases, functioning as an organic gameplay difficulty scaling slider.
 
-### 3. Number of Study Fields (Academic Authority)
+### 4. Number of Study Fields (Academic Authority)
 
 * The Credential Count: Measures the total sum of completed academic courses and certifications unlocked via the Daily Study Point tech tree.
 * Gameplay Impact: Highly complex patient manifests scan this number before spawning. A patient suffering from an ultra-rare, fused trauma scenario will outright bypass a therapist's inbox if their absolute count of unlocked study fields is too low to guarantee professional competence.
+
+### Stat Formulas & Percentage Calculations
+
+* Reputation % = (Successful Cases / Total Cases) × 100
+  - Example: 180 successful / 200 total = 90%
+* Study Field Coverage % = (Unlocked Study Fields / Total Study Fields) × 100
+  - Example: 12 unlocked / 20 total = 60%
+* Experience Progress % = (Current XP / XP required for next level) × 100
+  - Example: 2,250 XP / 3,000 XP = 75%
+* Price Accessibility % = 100 - ((Current Price - Min Price) / (Max Price - Min Price) × 100)
+  - Example: min=50, max=300, price=150 → 60%
+* Clinic Attraction % = (Reputation % + Price Accessibility % + Study Field Coverage %) / 3
+  - Example: (80 + 60 + 50) / 3 = 63.3%
+* Well-Being % = (Current Well-Being / Max Well-Being) × 100
+  - Example: 32 / 100 = 32%
+
+### Well-Being Recovery & Burnout Thresholds
+
+* Well-Being Loss: Each session reduces well-being by a base percent, increased by case difficulty and agitation impact.
+* Recovery Actions: Rest, lower caseload, or complete a study sabbatical to regenerate well-being.
+* Burnout Trigger: If Well-Being % falls below a defined threshold (for example, 25%), the clinic enters a burnout state with reduced performance and forced recovery mechanics.
 
 ------------------------------
 ## 7. Hybrid State Management: BaaS Managed Free-Tier & P2P Swarm
