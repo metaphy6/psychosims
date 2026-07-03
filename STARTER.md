@@ -114,6 +114,11 @@ The game experience organically transitions from an introductory psychology simu
 * Knowledge Pool Unlock: Unlocking a field makes matching specialty techniques available. However, players must manually load these acquired skills into an active format before a session to counteract advanced psychological crises.
 * Level-Gated Fields: The total number of study fields that can be unlocked is capped by a player’s current level; players can reach higher levels without unlocking every field, but they cannot unlock every field without first reaching the required level thresholds.
 * Highest-Level Correlation: The maximum career level is not fixed at the outset; it scales with the number of study fields, specializations, and progression tiers designed into the game. The full set of fields becomes available progressively as the player advances through the career path.
+* Study Field Cost Balance: The study tree should use a balanced cost structure where foundational psychology fields can be unlocked with a single study point, while more advanced, high-impact, or highly specialized fields require multiple points to preserve meaningful progression and avoid over-saturation.
+* Subspecialty Layer: A second layer of study fields should be introduced beneath the core psychology tree. These subspecialties should be treated as advanced cross-disciplinary branches that draw from humanities such as literature, sociology, philosophy, cultural theory, and social science. Each subspecialty should receive an effective value multiplier, where 1 study point spent there behaves as if it were worth 6 points in terms of unlock power, card access, and narrative influence.
+* Core vs. Subspecialty Identity: Regular psychology fields should primarily reinforce Disclosing-style breakthrough logic, while humanities-driven subspecialties should bias toward Relatable, Postponing, and Manipulative card generation, giving the player distinct playstyles and tactical identities.
+* Regular Field Reward Logic: When a player completes a regular study field, they should occasionally receive a bonus Relatable card as a reward. This should occur with a 75% chance, making the reward common and reinforcing the idea that steady rapport-building is a useful everyday tool.
+* Subspecialty Reward Logic: When a player completes a subspecialty field, the reward distribution should be weighted toward more tactical and socially expressive cards: 25% Relatable, 35% Postponing, and 40% Manipulative. This creates a stronger identity difference between standard psychology study and humanities-driven subspecialty study.
 
 ### Early Game Retention: The New Clinician Track
 
@@ -365,26 +370,35 @@ Instead of static "win/lose" options, cards possess context-dependent behavioral
 ```text
 DYNAMIC CARD SPEC MATRIX
 
-1. BULL'S EYE
-• Perfect Context
-• Triggers Break-thru
+1. DISCLOSING
+• Signature: Precision / Breakthrough
+• Best at: revealing hidden truth
 
 2. RELATABLE
-• Soft Comfort
-• Minor Rapport
+• Signature: Rapport / Stabilization
+• Best at: warming the exchange
 
 3. POSTPONING
-• Tactical Delay
-• Freezes Crisis
+• Signature: Deferral / Tempo Control
+• Best at: slowing crisis pressure
 
 4. MANIPULATIVE
-• High-Stakes Gamble
-• Risk Psych Derange
+• Signature: Pressure / Disruption
+• Best at: breaking rigid defenses
 ```
 
-### 1. Bull's Eye (The Clinical Catalyst)
+### The Signature Card Principle
 
-* The Interaction: Triggered only when the selected card matches the exact intersection of the patient's current active trauma node, insight level, and workspace culture.
+* Context-Over-Deck Logic: Sessions should be governed primarily by the current emotional, relational, and narrative context of the patient rather than by a rigid deck-based assumption that one card is always correct.
+* Correct vs. Incorrect Fit: A card can be correct even if it is not Disclosing. Sometimes a Relatable or Postponing card is the most appropriate response, and sometimes a Disclosing card is a poor choice. The system should reward tactical reading of the scene rather than simple card memorization.
+* Contextual Bias: When a card is played in a situation that aligns with its signature, it produces its intended effect strongly and clearly. When it is used in a mismatched context, it still functions, but its payoff is less precise and more unstable.
+* Identity Separation: This system keeps the four card types distinct from one another, ensuring that each one still feels like a recognizable tactical role rather than a generic interchangeable action.
+* Aesthetic Variety: The four card types should not all look the same. Some should present as full-sentence therapeutic prompts, while others should appear as compact phrases, coded words, symbolic figures, or image-based clinical cues. This preserves a rich visual identity without bloating the interface and helps make the card system feel psychologically evocative rather than merely text-heavy.
+* Advertising Through Mechanics: A card should mostly deliver what its name and role imply. Disclosing should feel like a breakthrough tool, Relatable should feel like rapport-building, Postponing should feel like tempo control, and Manipulative should feel like pressure and disruption.
+
+### 1. Disclosing (The Clinical Catalyst)
+
+* The Interaction: Triggered when the selected card matches the current emotional and narrative context of the patient, especially at moments where a sharp truth, insight, or hidden pattern needs to be exposed.
 * The Result: Drastically drops the patient's agitationLevel, permanently increments trustScore, cracks open their defensive shield, and unlocks deep, core narrative backstory dialogue.
 
 ### 2. Relatable (The Safe Rapport Builder)
