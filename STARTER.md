@@ -1,7 +1,7 @@
 ## Project Blueprint: Decentralized AI Psychiatric Simulator
 
 ## 1. Core Concept & Single-Track Progression Architecture
-The game is a choice-driven, strategic "psychological detective" simulator where players diagnose and treat patients over daily sessions.
+The game is a choice-driven, strategic psychology simulation where players diagnose and treat patients over daily sessions.
 Instead of separating the product into distinct commercial and institutional applications, the game deploys a Unified Single-Track System. Every player begins their career as an entry-level counselor dealing with straightforward behavioral anomalies. As the player invests time, logs successful clinical outcomes, and expands their academic credentials, the entire game engine—including the UI, the depth of the AI simulation, and the grading complexity—organically evolves into a rigorous, professional-tier medical simulator.
 ------------------------------
 ## 2. Technical Architecture & Stack
@@ -40,6 +40,25 @@ To maintain high-quality simulation, patient models are created, verified, and d
 
 * Free-to-Play Mechanics (System Assigned): Standard players do not choose their cases. The client app pings the signaling server to request a randomized patient seed matching their exact profile tier. The asset is then dynamically fetched directly from nearby peer nodes in the P2P swarm.
 * Premium Catalog Access (On-Demand Selection): Players can purchase access to the global medical registry archive. This allows them to manually search, filter, and bypass random generation to select specific clinical profiles, career workspaces, or complex pathologies for dedicated study and practice.
+
+### Open Content Authoring Framework
+
+The project is envisioned not only as a finished game, but also as an extensible content framework. A web-based authoring portal will allow developers, psychologists, humanities researchers, and other contributors to create, edit, and refine key gameplay content such as patient profiles and study fields through an intuitive UI/UX.
+
+Contributors will be able to define narrative structure, clinical tone, difficulty tiers, prerequisite relationships, and educational content without needing to work directly inside the game code. The platform will support draft creation, validation, previewing, versioning, and publication workflows so that new patient cases and academic modules can be introduced into the ecosystem in a controlled and structured way. This makes the project suitable both as a playable experience and as an open content infrastructure for collaborative expansion.
+
+### Governance & Moderation Backdoor
+
+Although the system is designed around a decentralized P2P architecture, the project will preserve a controlled administrative backdoor for trust and safety enforcement. This authority will be limited to explicit moderation operations and will remain inaccessible to ordinary users.
+
+The operator or designated moderation team will retain the ability to:
+
+* Ban or suspend user accounts for cheating, abuse, exploitation, or policy violations.
+* Modify or revoke account privileges, reputation state, or access to premium content where necessary.
+* Remove, quarantine, or modify specific patient models or manifest files from the network when they are malicious, corrupted, exploitative, or otherwise unsafe.
+* Freeze or invalidate suspicious content propagation within the P2P swarm.
+
+This moderation layer will be implemented through a secure administrative control plane that operates alongside the decentralized content network, rather than replacing it. The goal is to preserve the open and distributed nature of the ecosystem while maintaining a final authority for safety, integrity, and anti-cheat enforcement when absolutely necessary.
 
 ------------------------------
 ## 4. Single-Discipline Role: The Clinic "Therapist"
