@@ -27,6 +27,18 @@ Designed as a zero-server-compute model to completely eliminate scalable AI clou
 * Hybrid P2P Network: Relies on a WebRTC data network (p2p_dart) to share patient data files directly between users without a database.
 * Lightweight Central Server: Hosted on an affordable VPS to run a Signaling / STUN / TURN architecture (via Coturn) to pierce cell-network firewalls, validate anti-cheat global leaderboards, and execute the core automated Patient Creation & AI Training Pipeline.
 
+### Implementation Priority: Minimal Cross-Platform Runtime First
+
+Before any large-scale networking, content distribution, or advanced economy systems are built, the first engineering milestone should be a minimal proof-of-concept that proves the core loop works inside Flutter on both an Android emulator and a Linux Ubuntu machine.
+
+* Minimal Model First: The initial implementation should target the smallest practical local model that can run through llama.cpp via Flutter FFI and produce believable, structured session responses. The goal is not maximum fidelity at this stage, but reliable execution and stable integration.
+* Minimal Manifest First: A tiny patient manifest JSON should be designed as the first playable content object. It should contain only the essential fields needed to drive a single-session interaction, such as patient identity, baseline mood, trust state, symptom pressure, and a few card or response tags.
+* End-to-End Loop: The first build should connect the following path in a single flow: Flutter UI → load patient manifest JSON → compose a prompt from the manifest and game state → run local inference through the model → render the output back into the session view.
+* Cross-Platform Validation: The same build path must be tested on both Android emulator and Linux desktop so the engineering team can confirm that model loading, asset bundling, JSON parsing, and runtime execution behave consistently across environments.
+* Success Criteria: If the minimal model and minimal manifest can produce a coherent session result on both targets, the team has proven the foundational architecture. Only after that should the project expand into richer content, P2P transfer, or advanced clinical simulation logic.
+
+This milestone should be treated as the true first implementation phase, because it validates the project's core promise: that a lightweight local model, a compact patient manifest, and a Flutter-based game loop can run effectively on real devices and desktop environments.
+
 ------------------------------
 ## 3. Server-Side Patient Generation & Distribution Frame
 To maintain high-quality simulation, patient models are created, verified, and distributed through a trusted server framework.
@@ -233,6 +245,19 @@ The project should include a dedicated simulation framework for rapid verificati
 * Result Tracking & Diagnostics: Each simulation run should emit structured logs and summary metrics so designers can compare outcomes before and after rule changes.
 
 This testing layer should be treated as a core infrastructure requirement because it will greatly shorten iteration time, surface design issues early, and make balance tuning far more practical.
+
+### Realistic P2P & Client Simulation Environment
+
+In addition to the fast-paced rule-testing framework, the project should also include a more realistic simulation environment for observing how the Flutter client and the P2P network behave under closer-to-production conditions. This environment is distinct from the rapid balance sandbox and is intended for debugging runtime behavior, networking issues, client-state transitions, and distributed case flow.
+
+* High-Fidelity Network Sandbox: The team should be able to run multiple local client instances in a controlled test environment that mimics the real P2P topology, including peer discovery, file transfer, case handoff, and signaling behavior.
+* Flutter Runtime Inspection: This environment should allow developers to observe how the Flutter app behaves under realistic conditions, including cold starts, state synchronization, reconnects, manifest loading, and local model invocation.
+* P2P Failure Injection: The sandbox should support deliberate network disturbances such as dropped peers, delayed packet delivery, partial file transfer, duplicate manifests, and temporary disconnects so engineers can study resilience and recovery.
+* Client-State Reproduction: Developers should be able to reproduce specific clinic or patient-flow conditions in a controlled way, including patient transfer events, session interruptions, and therapist reassignment scenarios.
+* Separate from Balance Testing: Unlike the accelerated rule sandbox, this environment is not primarily for tuning card balance or progression math. Its purpose is to verify that the distributed client and P2P layer behave in a stable, observable, and debuggable way.
+* Expected Outcome: When this environment is mature, it will let the team investigate real-world network behavior before the game is exposed to broader testing, reducing the risk of subtle issues that only appear under actual peer-to-peer conditions.
+
+This realistic sandbox should be treated as a second, parallel test infrastructure layer: one for fast iteration on game rules, and one for faithful investigation of the distributed client and network system.
 
 ------------------------------
 ## 8. The Simulation Core vs. the Dialogue Layer
