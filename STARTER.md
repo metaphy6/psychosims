@@ -659,15 +659,42 @@ No patient model is ever deleted; they move through a living decentralized lifec
 
 ## 19. Monetization Blueprint
 
+The monetization model should support the game’s identity as a long-term clinical simulation while preserving a fair, non-punitive progression loop. It should be designed so that purchases feel like optional convenience, customization, or strategic acceleration rather than a requirement for meaningful play.
 
-* Premium Case Files: Selling targeted thematic character packs (e.g., The Corridor of Power Pack, The Forensic Psych Pack).
-* Specialty Expansion Decks: Users should be able to purchase up to 4 additional card decks, each sold as a separate item. These decks are available to players at any level and expand the available tactical repertoire without forcing progression gates.
-* Currency-Based Purchases: Any monetized item should be purchasable using in-game currency earned from curing patients, maintaining a soft economic loop between gameplay success and customization. Prices should be meaningful but not so high that they feel punitive.
-* Avatar Identity Pack: User avatars should be auto-assigned at character creation, but players should be able to purchase a rename pack to personalize their therapist identity.
-* Study Point Purchases: Study points should be purchasable only using in-game currency, not real money. The cost should be moderate: not too cheap to devalue progression, but not so expensive that it becomes a barrier to normal play.
-* Subspecialty Point System: A new resource called Subspecialty Points should be introduced. Players may buy up to 100 of these points per month, and they are the only progression point that can be purchased or gifted. They should be used for advanced humanities-driven subspecialty unlocks and should be distinct from regular study points.
-* Emergency Consultations: Microtransactions allowing players to temporarily rent a highly specialized card mid-session to save a rare patient from walking out.
-* Cosmetic Customization: Selling visual office overhauls (e.g., Manhattan High-Rise Office) and custom UI engine layouts.
+### Core Monetization Principles
+
+* Non-Pay-to-Win Structure: Premium content should never replace core progression, core card access, or essential treatment outcomes. It should enhance expression, convenience, and personalization rather than gate fundamental gameplay.
+* Currency Loop Integrity: In-game currency should remain the main economic driver for optional progression purchases. The player should feel that curing patients, managing a clinic, and surviving difficult cases create value that can be spent meaningfully.
+* Progression Respect: Any paid shortcut should be limited in impact so that it never invalidates the player’s normal growth through study, casework, and clinic management.
+* Cosmetic and Strategic Separation: Cosmetic items should be clearly cosmetic, while strategic convenience items should stay bounded so they do not overpower competitive or narrative progression.
+
+### Core Revenue Streams
+
+* Premium Case Files: Sell targeted thematic patient packs such as The Corridor of Power Pack or The Forensic Psych Pack. These should provide aesthetic variety, new narrative flavor, and occasionally new challenge profiles without replacing the standard case pool.
+* Specialty Expansion Decks: Allow players to purchase up to 4 additional card decks, each sold as a separate item. These decks should expand tactical options and create new playstyles without forcing the player to pay to participate in core gameplay.
+* Currency-Based Purchases: Any monetized item should be purchasable using in-game currency earned from curing patients, maintaining a soft loop between gameplay success and customization. Prices should be meaningful but not so high that they feel punitive.
+* Avatar Identity Pack: User avatars should be auto-assigned at character creation, but players should be able to purchase rename packs, portrait variants, and identity customization options to personalize their therapist identity.
+* Study Point Purchases: Study points should be purchasable only using in-game currency, not real money. Their cost should be moderate so they feel like earned utility rather than a shortcut to total domination.
+* Subspecialty Point System: Introduce a separate progression resource called Subspecialty Points. Players should be able to earn a small amount through play and optionally purchase a capped amount over time. These points should be used for advanced humanities-driven subspecialty unlocks and should remain distinct from regular study points.
+* Emergency Consultations: Offer limited-use, mid-session consultations that let the player temporarily rent a highly specialized card or tactical support to recover a difficult patient from walking out. These should feel like a clutch tool, not a standard replacement for good play.
+* Cosmetic Customization: Sell visual office overhauls, clinic themes, UI skins, and environmental styling options that reinforce player identity and long-term engagement.
+
+### Retention-Oriented Monetization
+
+* Daily and Weekly Offers: Offer rotating bundles tied to current case themes, new study fields, or seasonal clinical events. These should create a reason to return without being required for progress.
+* Time-Limited Cosmetic Drops: Introduce exclusive visual themes or office makeovers that appear for a limited window, encouraging return visits and reinforcing the feeling of an evolving clinic.
+* Premium Practice Modes: Add optional challenge or sandbox access that is unlocked through premium progression or currency-based purchase for players who want deeper replayability and experimentation.
+* Legacy Unlocks: Let players purchase permanent content unlocks that preserve their achievements in a way that feels rewarding rather than transactional.
+
+### Economic Balance Constraints
+
+* Soft Cap on Premium Advantage: Paid items should never provide a massive edge in cure rate, case access, or patient attraction beyond a narrowly bounded threshold.
+* Fairness Guardrails: High-impact purchases should be carefully priced so they remain optional and do not invalidate the value of good play, discipline, and study.
+* Optional Recovery Tools: Any premium recovery or rescue mechanic should be framed as emergency assistance, not as a substitute for the core treatment loop.
+
+### Monetization Tone
+
+The tone should feel like a mature clinic economy rather than a shallow loot shop. Players should feel that they are investing in their practice, identity, and long-term clinic brand, not just buying random power-ups.
 
 
 ## 20. Visual Safeguards
