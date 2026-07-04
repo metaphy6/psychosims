@@ -19,12 +19,12 @@ The architecture is intentionally hybrid. The project uses a lightweight server 
           (HTTPS / WebSocket)  (WebRTC Data)       (FFI / C++)
                   │                   │                    │
                   ▼                   ▼                    ▼
-      ┌───────────────────────┐ ┌──────────────┐ ┌────────────────────┐
-      │  Minimal Control Plane│ │  P2P Swarm   │ │  Local Inference   │
-      │ • Identity & Auth    │ │ • Content    │ │ • llama.cpp (GGUF) │
-      │ • Matchmaking        │ │   Distribution│ │ • Session Prompt   │
-      │ • Moderation & Policy│ │ • Peer Presence│ │   Assembly         │
-      └───────────────────────┘ └──────────────┘ └────────────────────┘
+      ┌───────────────────────┐ ┌────────────────┐ ┌────────────────────┐
+      │  Minimal Control Plane│ │  P2P Swarm     │ │  Local Inference   │
+      │ • Identity & Auth     │ │ • Content      │ │ • llama.cpp (GGUF) │
+      │ • Matchmaking         │ │   Distribution │ │ • Session Prompt   │
+      │ • Moderation & Policy │ │ • Peer Presence│ │   Assembly         │
+      └───────────────────────┘ └────────────────┘ └────────────────────┘
 
 * Frontend UI: Built with Flutter for cross-platform deployment across iOS, Android, Windows, Mac, and Linux.
 * Local AI Execution: Uses llama.cpp via Flutter FFI for locally running small inference models on user hardware.
@@ -87,7 +87,8 @@ Once validated, patient cases should be distributed through a hybrid flow that b
 
 The project should not be limited to internally generated content. It should also support an extensible authoring ecosystem.
 
-* Authoring Portal: A web-based tool should allow developers, psychologists, humanities researchers, and community contributors to create patient profiles and study-field content through a structured UI.
+* Authoring Portal: A web-based tool should allow developers, psychologists, humanities researchers, and community contributors to create patient profiles, study-field content, and study-field modifications through a structured UI.
+* Study Field Contributions: Authors should be able to define new study fields, revise existing field structure, adjust progression requirements, and tune how those fields influence gameplay and case matching.
 * Draft-to-Publish Workflow: Authors should be able to create drafts, preview them, validate them, version them, and publish them through a controlled pipeline.
 * Controlled Expansion: This framework makes the project suitable both as a polished game experience and as a modular content platform for collaborative expansion over time.
 
@@ -107,13 +108,13 @@ This moderation layer should operate as a secure administrative control plane al
 
 ## 4. Role Diversity and Institution Layers
 
-The game is not centered on a single professional identity. Instead, it supports a layered set of roles that reflect the social and institutional nature of the experience.
+The game is not centered on a single fixed professional identity. Instead, it unfolds through a progression of roles that players gradually inhabit as their career advances and the institution around them expands.
 
-* Clinical Practice Role: Players may begin as individual practitioners handling cases, managing dialogue, and building a reputation through successful sessions.
-* Medical Director Role: Advanced players may oversee broader case flow, institutional standards, and high-level decisions that shape the clinic experience.
-* Employer Clinic Role: Players can build or join employer clinics, coordinate staff, and manage a larger operational structure.
-* Peer-Healer Role: Players may participate in peer-based support and recovery systems that reinforce the social platform side of the experience.
-* Corporate Sub-System Role: At higher levels, players can engage with group-practice mechanics, institutional growth, and organizational management.
+* Clinical Practice Role: Players begin by working as individual practitioners, handling cases, managing dialogue, and building a reputation through successful sessions.
+* Medical Director Role: As players gain experience and credibility, they begin overseeing broader case flow, institutional standards, and high-level decisions that shape the clinic experience.
+* Employer Clinic Role: With greater influence, players can expand into managing employer clinics, coordinating staff, and operating larger institutional structures.
+* Peer-Healer Role: Through the social layer of the platform, players may also take on peer-based support and recovery responsibilities that reinforce the broader community network.
+* Corporate Sub-System Role: At higher levels, players can engage with group-practice mechanics, institutional growth, and organizational management as part of the evolving endgame.
 
 * Fictionalized Pharmacology: To fully neutralize legal risks and App Store rejection, the game utilizes an immersive index of made-up, sci-fi/noir sounding medicine names (e.g., Zenithium for acute anxiety, Lucidex for manic detachment).
 * The Treatment Tightrope: Prescribing medicine can temporarily alter case pressure, symptom intensity, and dialogue behavior, forcing the player to adapt their strategy.
