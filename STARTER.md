@@ -46,40 +46,55 @@ This milestone should be treated as the true first implementation phase, because
 
 ## 3. Server-Side Patient Generation & Distribution Frame
 
-To maintain high-quality simulation, patient models are created, verified, and distributed through a trusted server framework.
+To maintain a high-quality simulation, patient content should move through a clear lifecycle: generation, validation, routing, and distribution. This section defines the server-side framework that produces, verifies, and publishes patient cases in a way that remains controllable and scalable.
 
-### Automated Generation & Training Pipeline (Server-Side)
+### 3.1 Content Generation Pipeline
 
-* The Content Engine: The central server runs an automated generation engine that creates unique patient narratives by procedurally fusing nine independent clinical and biographical data tracks.
-* Model Fine-Tuning: The server converts these fused blueprints into synthetic clinical transcripts and utilizes high-efficiency LoRA scripts (via Unsloth/Axolotl) to fine-tune compact base open-source models.
-* patient manifest Seeding: Once a narrative is procedurally generated and verified for consistency on the server, it is compiled into a lightweight profile package and seeded into the P2P swarm.
+The server should act as the authoritative content factory for patient cases. It should combine structured author input, procedural synthesis, and gameplay rules into a playable patient manifest.
 
+* Content Assembly: The server should generate patient narratives by combining nine core axes: clinical profile, workplace culture, domestic pressure, cultural context, cognitive distortions, attachment style, somatic vulnerability, maladaptive schema, and insight stage.
+* Procedural Variation: Each generated case should receive a unique combination of difficulty, emotional volatility, reward weight, and narrative tone while staying within the intended progression tier.
+* Synthetic Training Material: The server may also create synthetic dialogue transcripts or training examples from approved manifests to support local model tuning, but these should remain secondary to the gameplay manifest itself.
+* Manifest Output: Each patient case should be compiled into a compact manifest package including identity data, state values, compatibility rules, reward metadata, and a versioned content checksum.
 
-### Player Distribution Framework
+### 3.2 Validation & Safety Gate
 
-* Free-to-Play Mechanics (System Assigned): Standard players do not choose their cases. The client app pings the signaling server to request a randomized patient seed matching their exact profile tier. The asset is then dynamically fetched directly from nearby peer nodes in the P2P swarm.
-* Premium Catalog Access (On-Demand Selection): Players can purchase access to the global medical registry archive. This allows them to manually search, filter, and bypass random generation to select specific clinical profiles, career workspaces, or complex pathologies for dedicated study and practice.
+A generated patient should not be published directly. It should pass through a validation pipeline before it can enter the live content network.
 
+* Structural Validation: The server should verify that the manifest is syntactically valid, contains all required fields, and conforms to the current schema version.
+* Gameplay Validation: Each patient should be checked for basic playability, including solvability, difficulty fit, narrative coherence, and the presence of meaningful but fair session dynamics.
+* Toxicity & Safety Screening: The content should be screened for disallowed material, exploitative patterns, or design states that could create broken or abusive outcomes.
+* Versioning & Rollback: Every published manifest should carry a version number and checksum so corrupted, outdated, or invalid files can be revoked or replaced without breaking the wider ecosystem.
 
-### Open Content Authoring Framework
+### 3.3 Distribution & Matching Framework
 
-The project is envisioned not only as a finished game, but also as an extensible content framework. A web-based authoring portal will allow developers, psychologists, humanities researchers, and other contributors to create, edit, and refine key gameplay content such as patient profiles and study fields through an intuitive UI/UX.
+Once validated, patient cases should be distributed through a hybrid flow that balances fairness, discoverability, and network efficiency.
 
-Contributors will be able to define narrative structure, clinical tone, difficulty tiers, prerequisite relationships, and educational content without needing to work directly inside the game code. The platform will support draft creation, validation, previewing, versioning, and publication workflows so that new patient cases and academic modules can be introduced into the ecosystem in a controlled and structured way. This makes the project suitable both as a playable experience and as an open content infrastructure for collaborative expansion.
+* System-Assigned Cases: Standard players should receive randomized patient cases that match their current level, study-field access, and clinic profile. The client should request a suitable case from the signaling server, then fetch the manifest from the P2P swarm.
+* Premium Catalog Access: Advanced users should be able to browse, filter, and unlock curated patient files from a catalog layer. This preserves a premium experience without undermining the free-to-play routing system.
+* Peer Delivery: The P2P network should serve as the main delivery mechanism for manifest files and optional attached assets, while the server remains responsible for indexing, authorization, and matchmaking metadata.
+* Routing Intelligence: The distribution system should consider reputation, study-field coverage, clinic pricing, and well-being status so that patients are matched to appropriate therapists rather than randomly assigned.
 
+### 3.4 Open Content Authoring Framework
 
-### Governance & Moderation Backdoor
+The project should not be limited to internally generated content. It should also support an extensible authoring ecosystem.
 
-Although the system is designed around a decentralized P2P architecture, the project will preserve a controlled administrative backdoor for trust and safety enforcement. This authority will be limited to explicit moderation operations and will remain inaccessible to ordinary users.
+* Authoring Portal: A web-based tool should allow developers, psychologists, humanities researchers, and community contributors to create patient profiles and study-field content through a structured UI.
+* Draft-to-Publish Workflow: Authors should be able to create drafts, preview them, validate them, version them, and publish them through a controlled pipeline.
+* Controlled Expansion: This framework makes the project suitable both as a polished game experience and as a modular content platform for collaborative expansion over time.
 
-The operator or designated moderation team will retain the ability to:
+### 3.5 Governance & Moderation Backdoor
 
-* Ban or suspend user accounts for cheating, abuse, exploitation, or policy violations.
-* Modify or revoke account privileges, reputation state, or access to premium content where necessary.
-* Remove, quarantine, or modify specific patient models or manifest files from the network when they are malicious, corrupted, exploitative, or otherwise unsafe.
+Although the system is designed around a decentralized P2P architecture, it should still preserve a controlled administrative backdoor for safety and integrity enforcement.
+
+The operator or designated moderation team should retain the ability to:
+
+* Ban or suspend accounts involved in cheating, abuse, exploitation, or policy violations.
+* Modify or revoke privileges, reputation state, or access to premium content when necessary.
+* Remove, quarantine, or replace patient manifests that are malicious, corrupted, exploitative, or otherwise unsafe.
 * Freeze or invalidate suspicious content propagation within the P2P swarm.
 
-This moderation layer will be implemented through a secure administrative control plane that operates alongside the decentralized content network, rather than replacing it. The goal is to preserve the open and distributed nature of the ecosystem while maintaining a final authority for safety, integrity, and anti-cheat enforcement when absolutely necessary.
+This moderation layer should operate as a secure administrative control plane alongside the decentralized network, not instead of it. Its purpose is to preserve openness and community participation while retaining a final authority for safety, integrity, and anti-cheat enforcement when absolutely necessary.
 
 
 ## 4. Single-Discipline Role: The Clinic "Therapist"
