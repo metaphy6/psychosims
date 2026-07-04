@@ -40,6 +40,15 @@ The system should be explicit about what is decentralized and what is administra
 * Progressive Distribution: User account information should eventually be spread across the P2P network as the active user base grows, and it should be removed from the central database entirely once a safe threshold is reached and the network can reliably distribute it.
 * Purpose of the Boundary: This keeps the project hybrid rather than purely centralized, while still preserving a minimal and manageable control surface for safety, integrity, and moderation.
 
+### User-to-User Chatrooms
+
+The platform should support chatrooms as a core social feature, allowing players to communicate directly with one another in public, topic-based, and peer group spaces.
+
+* Hybrid Chat Architecture: Use the server for chatroom discovery, presence signaling, and moderation metadata, while actual message exchange should favor P2P delivery where possible to reduce server load and reinforce the decentralized social layer.
+* Public and Private Rooms: Provide public community rooms for general discussion (e.g. case strategy, study fields, roleplay themes) and private rooms for invited peer groups, mentorship, and clinic collaboration.
+* Moderation and Safety: The server control plane should enforce chatroom policies, manage banned users, and provide moderation tools. Messages may be logged lightly for abuse detection while preserving the design goal of decentralized social interaction.
+* Career Integration: Chatrooms should connect directly to progression systems by enabling peer support, referral coordination, group practice planning, and shared study-field discussion. This makes social communication a functional part of the platform, not just a separate add-on.
+
 ### Implementation Priority: Minimal Cross-Platform Runtime First
 
 Before any large-scale networking, content distribution, or advanced economy systems are built, the first engineering milestone should be a minimal proof-of-concept that proves the core loop works inside Flutter on both an Android emulator and a Linux Ubuntu machine.
