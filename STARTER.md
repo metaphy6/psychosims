@@ -569,7 +569,50 @@ No patient model is ever deleted; they move through a living decentralized lifec
 ------------------------------
 ## 20. Visual Safeguards
 
-* Low-Cost / High-Impact Art Styles: The visuals will leverage moody graphic-novel silhouettes, clean clinical vectors, or dynamic Rorschach inkblots. This bypasses expensive 3D face animation and lip-syncing entirely, while subtle looping environmental filters (e.g., moving rain shadows, pulsing EKG vitals lines) keep the screen feeling alive.
+### The Psychedelic Expressionist / Ink-Wash Theme (The Disco Elysium Style)
+
+The presentation layer should embrace a painterly, psychologically unstable visual language inspired by the raw oil-and-ink wash aesthetic of psychological RPGs. This style should make the player feel that they are not merely reading a clinical screen, but entering a fractured emotional space where perception itself is unstable.
+
+* The Visual Style: Rich, hand-painted digital art with dynamic paint splatters, visible canvas texture, and deliberately asymmetrical, messy linework. The palette should be muted and tense in calm states, then punctuated by shocking splashes of neon crimson or anxious violet when a patient’s emotional state shifts.
+* The Micro-Animation: The portrait can remain static while the surrounding background layers animate via lightweight Flutter fragment shaders. This gives the impression that the paint is slowly crawling, bleeding, and shifting like oil on water, without requiring expensive video assets or heavy runtime overhead.
+* The Psychological Fracture Effect: When a Manipulative card causes a failure state or a patient slips into a secondary pathology, the UI should briefly apply chromatic aberration, a black ink-drip overlay, and faster shader motion to make the breakdown feel visceral and immediate.
+* Why It Fits the Game: This aesthetic reinforces the core fantasy of the project. It tells the player that they are dealing with a fragile human mind, not a sterile clinical interface, and it helps the experience feel emotionally dangerous and artistically distinctive.
+
+Example scene framing:
+
+```text
++-------------------------------------------------------------+
+
+|  Patient: Government Officer (Agitation: 80% | Trust: 20%)  |
+|  +--------------------------+  [ MENTAL MATRIX ]            |
+|  |  (Asymmetric Paint)      |  |                            |
+|  |   \ \  ____              |  |  Cognitive Distortion:     |
+|  |    \  /    \  <-- Jagged,|  |  [ Paranoid Projection ]   |
+|  |    | |  O  |     bleeding|  +----------------------------+
+|  |     \ \___/      textures|                               |
+|  +--------------------------+  "The agency is monitoring the|
+|                                 frequency of your typing."  |
+|                                                             |
+| [ FOCUS WHEEL ]                ========[ ACTION HAND ]======|
+| (●) Workspace  ( ) Childhood   [ Call Bluff ] [ Soft Calm ] |
++-------------------------------------------------------------+
+```
+
+### Production Prompting for the Style
+
+To achieve the intended painterly look, the art pipeline should rely on highly specific prompt language rather than generic AI image terms.
+
+> “A gritty, high-contrast digital oil painting portrait of a stressed 40-year-old male scuba diving instructor, chest-up view. Rough, asymmetric brushstrokes, heavily layered impasto oil paint texture, visible canvas grain, running watercolor drips. Dark, moody color palette dominated by murky sea-green, ocean-shadow grays, and anxious splashes of neon indigo. Expressionism art style, raw and emotional, thick black charcoal ink contours, and a completely abstract background of bleeding paint splatters.”
+
+### Layering the Asset for Motion
+
+To keep the presentation lightweight and efficient, the visual asset should be separated into transparent layers during the content pipeline:
+
+* Layer 1: Foreground patient portrait as a static cutout.
+* Layer 2: Abstract oil-paint background, animated through Flutter fragment shaders.
+* Optional Layer 3: Ink-drip or chromatic-fracture overlay triggered by high-agitation events.
+
+This layered approach preserves a high-impact look while maintaining low runtime cost and full offline playability.
 
 ------------------------------
 ## 21. The Peer-to-Peer Medical Director Framework (Endgame User-Generated Content Engine)
