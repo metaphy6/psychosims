@@ -1,6 +1,6 @@
 # Psychosims
 
-> Project Blueprint: Hybrid Social Simulation & Strategy Platform
+> Project Blueprint: Social Simulation & Strategy Platform
 
 ## 1. Core Concept & Role-Driven Progression Architecture
 
@@ -10,44 +10,42 @@ The product is not organized around a single-track progression path. Instead, it
 
 ## 2. Technical Architecture & Stack
 
-The architecture is intentionally hybrid. The project uses a lightweight server layer for identity, moderation, matchmaking, and control-plane functions, while the bulk of gameplay, content distribution, and peer interaction runs through a decentralized P2P network.
+The architecture is a straightforward server-client model. A cloud server layer owns identity, moderation, matchmaking, the economy, and every piece of authoritative state; the Flutter client runs the game loop and local AI inference; and patient content is delivered from a CDN/object store. Play is local-first at the session level — the heavy AI work happens on-device — but every cross-player interaction (case routing, referrals, hiring, macro-events) is mediated by the server.
 
           ┌────────────────────────────────────────────────────────┐
           │                 FLUTTER FRONTEND APP                   │
           └───────┬───────────────────┬────────────────────┬───────┘
                   │                   │                    │
-          (HTTPS / WebSocket)  (WebRTC Data)       (FFI / C++)
+          (HTTPS / WebSocket)  (HTTPS / CDN)       (FFI / C++)
                   │                   │                    │
                   ▼                   ▼                    ▼
       ┌───────────────────────┐ ┌────────────────┐ ┌────────────────────┐
-      │  Minimal Control Plane│ │  P2P Swarm     │ │  Local Inference   │
-      │ • Identity & Auth     │ │ • Content      │ │ • llama.cpp (GGUF) │
-      │ • Matchmaking         │ │   Distribution │ │ • Session Prompt   │
-      │ • Moderation & Policy │ │ • Peer Presence│ │   Assembly         │
+      │  Server Control Plane │ │  CDN / Object  │ │  Local Inference   │
+      │ • Identity & Auth     │ │  Store         │ │ • llama.cpp (GGUF) │
+      │ • Matchmaking         │ │ • Content      │ │ • Session Prompt   │
+      │ • Moderation & Policy │ │   Delivery     │ │   Assembly         │
       └───────────────────────┘ └────────────────┘ └────────────────────┘
 
 * Frontend UI: Built with Flutter for cross-platform deployment across iOS, Android, Windows, Mac, and Linux.
 * Local AI Execution: Uses llama.cpp via Flutter FFI for locally running small inference models on user hardware.
-* Hybrid P2P Network: Uses WebRTC-based peer delivery for content, presence, and direct player-to-player interaction.
-* Minimal Control Plane: The server layer remains small, inexpensive, and focused on the minimum necessary responsibilities: identity management, moderation, matchmaking metadata, and policy enforcement.
+* Server-Mediated Networking: Patient manifests and assets are delivered from a CDN/object store fronted by the server, and all real-time coordination — presence, case handoff, referrals — runs through the server over HTTPS/WebSocket. The client holds no authority, and there is no user-to-user messaging.
+* Small but Authoritative Control Plane: The server layer stays small in what it *stores* — no transcripts, no assets, no heavy narrative data — but it is the single source of truth for everything that must be trustworthy. Its authoritative responsibilities are: identity and auth; save-state and progression balances; matchmaking and case routing; patient-ownership arbitration (§10); the economy/currency ledger and session-receipt validation (§7); content validation and signing (§3.2); moderation and the revocation list (§3.5, §17); macro-event seeding (§22); and creator-royalty accounting (§21). "Minimal" describes its storage footprint and per-session compute — not its authority — and it must be cost-modelled as a real service (§7), not treated as a free static file host.
 
-### Clear Boundary Between Decentralized and Administrative Control
+### Clear Boundary Between Client and Server Responsibility
 
-The system should be explicit about what is decentralized and what is administratively controlled.
+The system should be explicit about what the client may do locally and what only the server may decide.
 
-* Decentralized Layers: Player presence, content sharing, peer referrals, case handoff, and much of the social graph should operate through the P2P network.
-* Administrative Layers: User account identity, policy enforcement, moderation actions, and restricted control functions remain on the server side.
-* Progressive Distribution: User account information should eventually be spread across the P2P network as the active user base grows, and it should be removed from the central database entirely once a safe threshold is reached and the network can reliably distribute it.
-* Purpose of the Boundary: This keeps the project hybrid rather than purely centralized, while still preserving a minimal and manageable control surface for safety, integrity, and moderation.
+* Client-Side (Local): Session play, local AI inference, UI state, and provisional turn resolution run on the device for a fast, offline-tolerant loop. The client proposes outcomes; it never self-certifies them.
+* Server-Side (Authoritative): User account identity, policy enforcement, moderation actions, the economy ledger, matchmaking, and all cross-player coordination live on the server.
+* Server-Authoritative Identity (Permanent): User account identity, progression balances, economy state, and reputation are server-authoritative for the life of the product. The client caches them for display but is never the source of truth. This is precisely what makes presence (§7), moderation (§3.5), patient-ownership arbitration (§10), and creator royalties (§21) enforceable; a client-trusted economy would break all four at once. The client renders state — never the answer to "who is this player and what do they own."
+* Purpose of the Boundary: This keeps the client responsive and cheap to run while preserving a single, authoritative control surface for safety, integrity, and moderation.
 
-### User-to-User Chatrooms
+### No Free-Form Player Messaging
 
-The platform should support chatrooms as a core social feature, allowing players to communicate directly with one another in public, topic-based, and peer group spaces.
+The platform deliberately ships **no** user-to-user chat, chatrooms, or direct-messaging feature. Free-form text between players carries disproportionate moderation, safety, and legal exposure — grooming, harassment, self-harm disclosure on a psychology-themed product, and unbounded moderation cost — that a small control plane cannot responsibly absorb. Social connection is expressed only through the structured, bounded mechanics the game already models:
 
-* Hybrid Chat Architecture: Use the server for chatroom discovery, presence signaling, and moderation metadata, while actual message exchange should favor P2P delivery where possible to reduce server load and reinforce the decentralized social layer.
-* Public and Private Rooms: Provide public community rooms for general discussion (e.g. case strategy, study fields, roleplay themes) and private rooms for invited peer groups, mentorship, and clinic collaboration.
-* Moderation and Safety: The server control plane should enforce chatroom policies, manage banned users, and provide moderation tools. Messages may be logged lightly for abuse detection while preserving the design goal of decentralized social interaction.
-* Career Integration: Chatrooms should connect directly to progression systems by enabling peer support, referral coordination, group practice planning, and shared study-field discussion. This makes social communication a functional part of the platform, not just a separate add-on.
+* Structured Interactions Only: Peer contact happens through typed, auditable actions — case referrals and handoff (§10), group-practice hiring and coordination (§24), and reputation/endorsement signals (§6) — never open text channels.
+* Deferred, Not Foundational: If a messaging feature is ever revisited, it must arrive with its own dedicated moderation, reporting, and legal-review plan; it is explicitly out of scope for this blueprint and is not assumed anywhere else in it.
 
 ### Implementation Priority: Minimal Cross-Platform Runtime First
 
@@ -57,7 +55,11 @@ Before any large-scale networking, content distribution, or advanced economy sys
 * Minimal Content Object First: The first playable content object should be a compact patient case definition with high-level fields for identity, tone, pressure state, and available interaction patterns.
 * End-to-End Loop: The first build should connect the following path in a single flow: Flutter UI → load a case definition → compose a prompt from simulation state → run local inference → render the resulting dialogue back into the session view.
 * Cross-Platform Validation: The same build path must be tested on both Android emulator and Linux desktop so the team can confirm asset loading, runtime execution, and UI behavior across environments.
-* Success Criteria: If the minimal model and case definition can produce a coherent session result on both targets, the team has proven the foundational architecture. Only after that should the project expand into richer content, deeper social systems, and larger institutional gameplay.
+* Success Criteria (Falsifiable Gates): The PoC does not pass on "it produced text." It must clear measured gates that de-risk the project's core unproven bets before anything is built on them:
+  - Acting quality: the model stays in character and coherent under *worst-case* prompts — full nine-axis manifest, case-history memory, medication state, and a style archetype at once — not just happy-path cases.
+  - Device viability: tokens/sec and peak RAM are measured against a written *minimum device spec*; if a 3B model will not fit that spec, the fallback to a 1–1.5B model is tested here (which makes the acting-quality bar harder, so the two are measured together).
+  - Download acceptance: the ~1.8 GB first-run model download is treated as a real onboarding risk (store cellular caps, mid-download churn) with a chosen delivery/retry strategy, not assumed away.
+  If these gates are red, the architecture is revisited before content, networking, or economy work begins. Only after they are green should the project expand into richer content, deeper social systems, and larger institutional gameplay.
 
 This milestone should be treated as the true first implementation phase, because it validates the project's core promise: that a lightweight local model, a compact case definition, and a Flutter-based game loop can run effectively on real devices and desktop environments.
 
@@ -76,20 +78,20 @@ The server should act as the authoritative content factory for patient cases. It
 
 ### 3.2 Validation & Safety Gate
 
-A generated patient should not be published directly. It should pass through a validation pipeline before it can enter the live content network.
+A generated patient should not be published directly. It should pass through a validation pipeline before it can enter the live content catalog.
 
 * Structural Validation: The server should verify that the manifest is syntactically valid, contains all required fields, and conforms to the current schema version.
-* Gameplay Validation: Each patient should be checked for basic playability, including solvability, difficulty fit, narrative coherence, and the presence of meaningful but fair session dynamics.
+* Gameplay Validation: Each patient should be checked for basic playability, including solvability, difficulty fit, narrative coherence, and the presence of meaningful but fair session dynamics. "Solvability" is not a static lint: proving a case is winnable requires simulating play against the actual model-plus-ruleset. This validation therefore runs the bot-driven simulation harness (§7) against each candidate manifest — real compute budgeted per manifest, not a syntactic checkbox — and rejects cases the bots cannot solve within the intended tier.
 * Toxicity & Safety Screening: The content should be screened for disallowed material, exploitative patterns, or design states that could create broken or abusive outcomes.
 * Versioning & Rollback: Every published manifest should carry a version number and checksum so corrupted, outdated, or invalid files can be revoked or replaced without breaking the wider ecosystem.
 
 ### 3.3 Distribution & Matching Framework
 
-Once validated, patient cases should be distributed through a hybrid flow that balances fairness, discoverability, and network efficiency.
+Once validated, patient cases should be distributed through a server-mediated flow that balances fairness, discoverability, and delivery cost.
 
-* System-Assigned Cases: Standard players should receive randomized patient cases that match their current level, study-field access, and clinic profile. The client should request a suitable case from the signaling server, then fetch the manifest from the P2P swarm.
+* System-Assigned Cases: Standard players should receive randomized patient cases that match their current level, study-field access, and clinic profile. The client requests a suitable case from the matchmaking server, which returns a signed manifest reference the client then fetches from the CDN/object store.
 * Premium Catalog Access: Advanced users should be able to browse, filter, and unlock curated patient files from a catalog layer. This preserves a premium experience without undermining the free-to-play routing system.
-* Peer Delivery: The P2P network should serve as the main delivery mechanism for manifest files and optional attached assets, while the server remains responsible for indexing, authorization, and matchmaking metadata.
+* Content Delivery: Manifests are tiny (<50 KB, §11), so delivery is a CDN/object store fronting the server — matchmaking must never assign a case the client then cannot fetch. Because payloads are small and cacheable, a CDN comfortably absorbs delivery at every scale in the §7 cost model, so no more exotic distribution scheme is needed. The server remains responsible for indexing, authorization, and matchmaking metadata.
 * Routing Intelligence: The distribution system should consider reputation, study-field coverage, clinic pricing, and current operational pressure so that patients are matched to appropriate therapists rather than randomly assigned.
 
 ### 3.4 Open Content Authoring Framework
@@ -103,16 +105,16 @@ The project should not be limited to internally generated content. It should als
 
 ### 3.5 Governance & Moderation Backdoor
 
-Although the system is designed around a decentralized P2P architecture, it should still preserve a controlled administrative backdoor for safety and integrity enforcement.
+The server is the authoritative control point for safety and integrity enforcement, and it exposes a controlled administrative surface for moderation.
 
 The operator or designated moderation team should retain the ability to:
 
 * Ban or suspend accounts involved in cheating, abuse, exploitation, or policy violations.
 * Modify or revoke privileges, reputation state, or access to premium content when necessary.
 * Remove, quarantine, or replace patient manifests that are malicious, corrupted, exploitative, or otherwise unsafe.
-* Freeze or invalidate suspicious content propagation within the P2P swarm.
+* Freeze or invalidate suspicious content and pull it from the delivery layer (CDN/object store) so it can no longer be fetched.
 
-This moderation layer should operate as a secure administrative control plane alongside the decentralized network, not instead of it. Its purpose is to preserve openness and community participation while retaining a final authority for safety, integrity, and anti-cheat enforcement when absolutely necessary.
+This moderation layer is a secure administrative control plane over the server-authoritative state. Its purpose is to preserve openness and community participation while retaining a final authority for safety, integrity, and anti-cheat enforcement when absolutely necessary.
 
 
 ## 4. Role Diversity and Institution Layers
@@ -122,17 +124,18 @@ The game is not centered on a single fixed professional identity. Instead, it un
 * Clinical Practice Role: Players begin by working as individual practitioners, handling cases, managing dialogue, and building a reputation through successful sessions.
 * Medical Director Role: As players gain experience and credibility, they begin overseeing broader case flow, institutional standards, and high-level decisions that shape the clinic experience.
 * Employer Clinic Role: With greater influence, players can expand into managing employer clinics, coordinating staff, and operating larger institutional structures.
-* Peer-Healer Role: Through the social layer of the platform, players may also take on peer-based support and recovery responsibilities that reinforce the broader community network.
+* Peer-Healer Role: Through the social layer of the platform, players may also take on peer-based support and recovery responsibilities that reinforce the broader player community.
 * Corporate Sub-System Role: At higher levels, players can engage with group-practice mechanics, institutional growth, and organizational management as part of the evolving endgame.
 
-* Fictionalized Pharmacology: To fully neutralize legal risks and App Store rejection, the game utilizes an immersive index of made-up, sci-fi/noir sounding medicine names (e.g., Zenithium for acute anxiety, Lucidex for manic detachment).
+* Fictionalized Pharmacology: To neutralize legal risk and App Store rejection, the game prescribes only invented medicines — but, per the naming principle in *App Store & Legal Safety* below, they are named to *sound* like real pharmacology rather than alien sci-fi, so a prescription reads as recognizably "an anxiety drug" or "a mood stabilizer" at a glance (e.g., Anxiolen for acute anxiety, Stabilex for manic detachment). Each name evokes the drug class and feel of its real counterpart without cloning any actual brand.
 * The Treatment Tightrope: Prescribing medicine can temporarily alter case pressure, symptom intensity, and dialogue behavior, forcing the player to adapt their strategy.
 
 
 ### App Store & Legal Safety
 * Position the product clearly as a fictional, interactive simulation—not real therapy or medical treatment.
 * Avoid claims of diagnosis, treatment, or mental health cure; use game-focused language like “simulation,” “scenario,” or “narrative experience.”
-* Use fictional disorders and fictional pharmacology, not real clinical diagnoses or medications.
+* Use fictional disorders and fictional pharmacology, not real clinical diagnoses or medications. This rule is authoritative across the entire content pipeline: no real diagnostic label or manual (e.g., DSM, ICD) may appear in patient manifests, the nine-axis synthesis (§10), study fields, or the in-game clinical encyclopedia (§14). Real frameworks may inform design only; they never appear as game content.
+* Evocative, Not Alien (Naming Principle): "Fictional" is not "unrecognizable." Purely invented sci-fi names read as dull and break immersion; the aim is names that *feel* like real medicine and real conditions, so a player instantly grasps what a case or prescription is analogous to. Fictional names — for disorders, medications, and study fields alike — should echo the linguistic texture of their real counterparts: familiar roots that hint at the target (e.g. *calm*, *somn*, *lucid*, *mood*) plus plausible pharmaceutical or clinical suffixes (`-ine`, `-ol`, `-am`, `-ium`, `-ex`, `-osis`), while staying clearly invented. Hold the line at: evoke the *class, mechanism, and feel* of the real counterpart, but never reproduce or near-clone a specific real trademark or diagnostic label (no near-homophones of actual drug brands, no lightly reskinned DSM/ICD terms). Familiar enough to be legible, distinct enough to remain legally and immersively fictional.
 * Include explicit disclaimers: “This game is a fictional simulation and not a substitute for professional mental health care.”
 * Do not collect or store real health data. Treat player profiles as game state only, and keep PII separate from gameplay data.
 * Keep store metadata and app text focused on entertainment and strategy, not clinical guidance.
@@ -154,7 +157,7 @@ The game experience organically transitions from an introductory simulation into
           [Level 11-30: Institutional Expansion]
           • Players gain access to more complex cases, richer dialogue systems, and broader strategic options.
           • New specializations and institutional roles become available.
-          • The player can begin building a clinic identity, hiring support, or participating in peer-based healing networks.
+          • The player can begin building a clinic identity, hiring support, or participating in peer-based healing groups.
                                    │
                                    ▼
           [Advanced Career Tier / Endgame Progression]
@@ -168,6 +171,8 @@ The game experience organically transitions from an introductory simulation into
 * Subspeciality Points: Earned through higher-level play and specialized achievements. They are used to train advanced, cross-disciplinary fields that expand tactical identity and narrative influence.
 * Experience Points: Increase as the player spends time in the game, completes sessions, achieves meaningful results, and reaches milestones.
 * Reputation Points: Dynamic and responsive. They rise or fall based on outcomes, case handling, institutional behavior, and public trust.
+
+These resources (currency, study points, subspecialty points, XP, reputation, plus endgame prestige and royalties) form a multi-currency economy. Every currency must have modelled sources and sinks, and the whole system is simulated in the balance sandbox (§7) — sources vs. sinks, inflation, and dead-currency checks — before any live tuning ships; multi-currency balance is a first-class design deliverable, not an emergent afterthought. Relatedly, all specific constants, percentages, and formulas in this document (e.g., the attraction formulas in §6, the transfer chance in §10, the chaos roll in §12, the discount penalty in §13, and the employer yields in §24) are illustrative placeholders owned by that single balance spec and tuned in the sandbox — not final values.
 
 ### Field Training Logic
 
@@ -198,7 +203,7 @@ The game experience organically transitions from an introductory simulation into
 
 ## 6. Patient Attraction Vector: The Core Evaluation Framework
 
-To attract increasingly complex, prestigious, or rare patient cases from the network, a player's clinic profile is evaluated dynamically across a compact set of public metrics. These metrics determine the attraction weight for incoming P2P case requests.
+To attract increasingly complex, prestigious, or rare patient cases from the wider case pool, a player's clinic profile is evaluated dynamically across a compact set of public metrics. These metrics determine the attraction weight for incoming case requests routed by the server.
 
           ┌────────────────────────────────────────────────────────┐
           │               CLINIC ATTRACTION ENGINE                 │
@@ -214,7 +219,7 @@ To attract increasingly complex, prestigious, or rare patient cases from the net
 ### 1. Reputation (Practice Health)
 
 * Growth Triggers: Reputation rises or falls based on case outcomes, patient trust, institutional behavior, and public perception.
-* Gameplay Impact: Higher reputation unlocks more prestigious cases and stronger network access. Repeated failures or poor conduct reduce the clinic's reach.
+* Gameplay Impact: Higher reputation unlocks more prestigious cases and stronger professional reach. Repeated failures or poor conduct reduce the clinic's reach.
 
 ### 2. Pricing per Patient (The Financial Position)
 
@@ -239,16 +244,21 @@ To attract increasingly complex, prestigious, or rare patient cases from the net
 * Clinic Attraction % = (Reputation % + Price Accessibility % + Study Field Coverage %) / 3
   - Example: (80 + 60 + 50) / 3 = 63.3%
 
+These formulas are illustrative display math, not the authoritative matchmaking function. Two things are canonicalized elsewhere so the system does not fight itself:
+
+* Canonical Matchmaking (single owner): Case routing is defined once, server-side (§3.3, §12), and weighs reputation, study-field coverage, pricing, and current operational pressure (§23) together. The three-factor mean above is a player-facing summary, not the routing algorithm.
+* Event-Sourced Reputation: Reputation is not a lifetime successful/total ratio — that can neither decay, be floored, nor respond to events, all of which the design elsewhere requires (§7, §12, §13, §17). It is an event-sourced, recency-weighted score updated per outcome, so decay, credential-based floors, and event shocks all have something real to act on. The percentage above is a UI readout of that score.
+
 No hidden therapist well-being stat is used. Instead, the game will rely on visible operational pressure, case load, recovery windows, and clinic capacity as play-facing states.
 
-## 7. Hybrid State Management: BaaS Managed Free-Tier & P2P Swarm
+## 7. State Management: Server-Authoritative Profiles & Content Delivery
 
-To ensure ironclad progress preservation and prevent file tampering without incurring database scaling costs, the architecture deploys a Hybrid Storage Vector. Heavy narrative data remains inside the P2P network, while strict user profile variables are anchored securely to a high-utility cloud platform.
+To ensure ironclad progress preservation and prevent file tampering without incurring database scaling costs, the architecture splits storage by weight. Heavy narrative data (patient manifests and case history) lives in a CDN/object store as server-signed files, while strict user profile variables are anchored securely to a high-utility cloud platform.
 
 ### The Backend-as-a-Service (BaaS) Footprint
 
-* The Free-Tier Infrastructure: The architecture utilizes a managed relational cloud database tier (e.g., Supabase PostgreSQL Free Tier) paired with built-in ecosystem plugins for Apple/Google authentication and row-level security.
-* The Primitive Payload Schema: The server-side cloud table strictly forbids the storage of rich text logs, conversational transcripts, or massive binary scripts. It functions exclusively as a primitive matrix tracking atomic player metrics under 0.5 KB per profile, permitting up to 1,000,000 active players to fit comfortably within the 500 MB database limits:
+* The Infrastructure Baseline: The architecture utilizes a managed relational cloud database tier (e.g., Supabase PostgreSQL) paired with built-in ecosystem plugins for Apple/Google authentication and row-level security. The free tier is a development and prototyping environment, not a capacity plan: the 500 MB / 0.5 KB-per-profile math below counts only profile rows and ignores auth MAU caps, egress and connection limits, project-pausing on inactivity, and every *other* server dataset this design needs (matchmaking state, moderation and revocation lists, royalty accounting, audit and macro-event records). Real infrastructure cost is modelled explicitly at 1k / 10k / 100k / 1M MAU, and paid tiers are assumed from the first real users onward.
+* The Primitive Payload Schema: The server-side cloud table strictly forbids the storage of rich text logs, conversational transcripts, or massive binary scripts. It functions exclusively as a primitive matrix tracking atomic player metrics under 0.5 KB per profile, keeping profile rows themselves tiny (on the order of 1,000,000 profiles within a 500 MB table). This bounds the *profile* footprint only — not total infrastructure cost, which is cost-modelled separately per the note above:
 
 ```json
 {
@@ -264,8 +274,8 @@ To ensure ironclad progress preservation and prevent file tampering without incu
 ### The Synchronization & Anti-Cheat Validation Loop
 
    1. Session Handshake: Upon application boot, the Flutter application pulls the authenticated user's primitive JSON map from the cloud database via secure SQL calls. This data initializes the variables inside the local Dart Game Brain.
-   2. P2P Profile Sync: When broadcasting presence to the WebRTC P2P swarm, the Flutter client signs this cloud-verified data packet using its private cryptographic key. Other network nodes read this signed block to populate the public matchup and referral directories.
-   3. Session Conclusion Verification: When a therapy round finishes, the Flutter app calculates the resulting metrics local-side and pushes a verified execution receipt to the server API. The cloud database updates the primitive numerical stats, ensuring that if a user clears their device cache or switches devices, their economic position, tech tree certifications, and network ranking remain permanently safe.
+   2. Presence Publication: When a player comes online, the Flutter client sends its authenticated, cloud-verified profile to the server, which publishes a server-signed presence record into the public matchup and referral directories (delivered to other clients over WebSocket). Because the server signs these records, other clients can trust what they display without trusting each other. The signing keys this depends on are real infrastructure, not a free primitive: the server provisions and certifies each key, publishes the public half, and can revoke it (feeding the same revocation list as §17). Key recovery on reinstall or device-switch is an explicit flow — a lost account re-provisions against the server-authoritative identity and must never orphan the account. Treat this as a small managed PKI.
+   3. Session Conclusion Verification: When a therapy round finishes, the Flutter client submits a structured session receipt (starting state, the ordered card/medication actions, and the claimed result) to the server API. The client is treated as untrusted: before it writes any stat, the server independently re-derives the outcome from the deterministic rules — or, at minimum, validates the receipt against plausibility bounds (per-tier caps on XP, currency, and reputation deltas, plus statistical anomaly detection). Only server-accepted results update the authoritative profile. This is what actually preserves economy integrity across cache clears and device switches: a client-computed number is a claim, not a fact, because the client is the attacker in every cheating scenario.
 
 
 ### Simulation Sandbox & Rule-Testing Framework
@@ -283,18 +293,18 @@ The project should include a dedicated simulation framework for rapid verificati
 This testing layer should be treated as a core infrastructure requirement because it will greatly shorten iteration time, surface design issues early, and make balance tuning far more practical.
 
 
-### Realistic P2P & Client Simulation Environment
+### Realistic Client / Server Integration Environment
 
-In addition to the fast-paced rule-testing framework, the project should also include a more realistic simulation environment for observing how the Flutter client and the P2P network behave under closer-to-production conditions. This environment is distinct from the rapid balance sandbox and is intended for debugging runtime behavior, networking issues, client-state transitions, and distributed case flow.
+In addition to the fast-paced rule-testing framework, the project should also include a more realistic integration environment for observing how the Flutter client and the server behave under closer-to-production conditions. This environment is distinct from the rapid balance sandbox and is intended for debugging runtime behavior, networking issues, client-state transitions, and server-mediated case flow.
 
-* High-Fidelity Network Sandbox: The team should be able to run multiple local client instances in a controlled test environment that mimics the real P2P topology, including peer discovery, file transfer, case handoff, and signaling behavior.
+* High-Fidelity Network Sandbox: The team should be able to run multiple client instances against a local server stack in a controlled test environment that mimics real client/server behavior, including matchmaking, manifest fetches from the CDN/object store, case handoff, and reconnection.
 * Flutter Runtime Inspection: This environment should allow developers to observe how the Flutter app behaves under realistic conditions, including cold starts, state synchronization, reconnects, manifest loading, and local model invocation.
-* P2P Failure Injection: The sandbox should support deliberate network disturbances such as dropped peers, delayed packet delivery, partial file transfer, duplicate manifests, and temporary disconnects so engineers can study resilience and recovery.
+* Failure Injection: The sandbox should support deliberate network disturbances such as server timeouts, delayed responses, partial or failed manifest fetches, duplicate deliveries, and temporary disconnects so engineers can study resilience and recovery.
 * Client-State Reproduction: Developers should be able to reproduce specific clinic or patient-flow conditions in a controlled way, including patient transfer events, session interruptions, and therapist reassignment scenarios.
-* Separate from Balance Testing: Unlike the accelerated rule sandbox, this environment is not primarily for tuning card balance or progression math. Its purpose is to verify that the distributed client and P2P layer behave in a stable, observable, and debuggable way.
-* Expected Outcome: When this environment is mature, it will let the team investigate real-world network behavior before the game is exposed to broader testing, reducing the risk of subtle issues that only appear under actual peer-to-peer conditions.
+* Separate from Balance Testing: Unlike the accelerated rule sandbox, this environment is not primarily for tuning card balance or progression math. Its purpose is to verify that the client and server layer behave in a stable, observable, and debuggable way.
+* Expected Outcome: When this environment is mature, it will let the team investigate real-world network behavior before the game is exposed to broader testing, reducing the risk of subtle issues that only appear under real client/server conditions.
 
-This realistic sandbox should be treated as a second, parallel test infrastructure layer: one for fast iteration on game rules, and one for faithful investigation of the distributed client and network system.
+This realistic sandbox should be treated as a second, parallel test infrastructure layer: one for fast iteration on game rules, and one for faithful investigation of the client and server system.
 
 
 ## 8. The Simulation Core vs. the Dialogue Layer
@@ -304,6 +314,7 @@ To keep the experience stable, readable, and mechanically fair, the game engine 
 * The Simulation Core: A deterministic game layer handles all rules, state changes, and outcome resolution. It tracks variables such as trustScore, agitationLevel, activeDefense, medication effects, and session progress. This layer decides whether a move succeeds, fails, stabilizes a patient, or triggers a crisis.
 * The Dialogue Layer: The local LLM does not decide gameplay outcomes. It receives a compact, structured prompt from the simulation core and generates conversational text that reflects the current state of the scene. Its job is to voice emotion, pacing, and personality, not to invent new rules or bypass the simulation.
 * Guardrails and Constraints: The prompt passed to the model is limited to information already approved by the simulation core, such as current mood, relationship tension, and available narrative context. This prevents the AI from bypassing the rules, contradicting the state of the game, or drifting into unsupported behavior.
+* Clue Ownership (Gameplay-Critical Text): Because clue discovery drives correct card selection (§12, §14), clues are never left to the model to invent or reveal at will. The simulation core decides which clue tokens are due on a given turn and injects them into the prompt as mandatory content; after generation, a validation pass confirms the required clue text survived and regenerates (or falls back to a templated line) if the model omitted or buried it. Dialogue tone is the model's job; clue emission is state, owned by the core — so a hallucinating or forgetful model can never make a case unsolvable.
 * Why This Matters: This design makes the system feel more grounded. Players can trust that their choices have real consequences, while the AI remains useful for atmosphere, variation, and believable dialogue.
 
 
@@ -314,7 +325,7 @@ Open-ended text/voice typing is replaced by structured, high-stakes tactical inp
 * The Active Therapy Loadout: To combat interface bloat as a player scales their academic specializations, players cannot take all unlocked cards into a session. They face a hard restriction limit of 5 or 6 Active Card Slots per session layout.
 * The Clinical Preparation Phase: Prior to initiation, the player evaluates the initial patient profile intake details and curates an active deck configuration (e.g., matching Somatic Grounding cards to a suspected panic presentation). Equipping incorrect loadouts leaves the player functionally exposed, forcing tactical retreats or reliance on suboptimal techniques.
 * Graphical Controllers: Flutter UI sliders and dials allow players to dynamically alter their conversation focus (e.g., Childhood vs. Workspace) and emotional delivery posture (Warm vs. Objective).
-* Jailbreak Immunity: Because the AI model only receives rigid inputs from a predetermined card setup, it is mathematically impossible for users to trick or break the AI's character.
+* Jailbreak Resistance: Card-only input closes the *direct* prompt-injection channel — players cannot type free text at the model. It does not make injection "impossible," because two indirect channels remain: peer-authored case history (§17) and community-authored manifests (§21) are attacker-controlled strings that reach the prompt. Those are treated as untrusted input: strict schema whitelisting (enums and numbers instead of free text wherever possible), server-side sanitization and length caps at signing time, and template-level isolation so an untrusted string can never be read as instructions. The guarantee is "defended in depth," not "mathematically impossible."
 
 
 ### Private Master Playbook & Adaptive Card Benchmarking
@@ -327,17 +338,18 @@ Even though the game is not designed as a single-ended victory loop, it should s
 * Adaptive Master Algorithm: The game should maintain a master algorithm that continuously recomputes the best card combination for treated patients, mutated patients, and patients whose condition has drifted from the original profile. This algorithm should evaluate current trust, agitation, symptom pressure, prior card history, medication state, and study-field compatibility.
 * Internal Balance Control: The adaptive algorithm should be the canonical mechanism for maintaining consistency across the entire card system. It should prevent the game from drifting into situations where some deck combinations become universally dominant or universally useless.
 * Output Layer: The system should expose a private diagnostic output for the designer, including the recommended deck, expected win probability band, and the current confidence score of the recommendation.
+* Where It Runs (Scope Honesty): This adaptive oracle is an endgame *balancing tool*, not a launch feature, and it is a substantial build in its own right — a solver over evolving patient states plus a telemetry pipeline to feed it. It runs server-side or offline on aggregated, privacy-scrubbed telemetry, and is never shipped to the client, where it would both leak optimal play to dataminers and require the client to hold data the design deliberately keeps server-side. It is sequenced after the core game is proven, not before.
 
 This hidden benchmark layer is a balance tool, not a player-facing mechanic. It ensures that the game remains manageable, internally coherent, and tunable as patient states evolve over time.
 
 
 ## 10. Procedural Manifests & Advanced Psychological Fusion
 
-Patients are unique data objects (.JSON patient manifests) generated server-side and transferred via P2P. To maximize simulation realism, the content engine procedurally weaves an extensive multi-axis framework encompassing nine distinct human tracks:
+Patients are unique data objects (.JSON patient manifests) generated server-side and delivered to clients from the CDN/object store. To maximize simulation realism, the content engine procedurally weaves an extensive multi-axis framework encompassing nine distinct human tracks:
 
 ### The Nine-Track Synthesis Pipeline
 
-   1. Clinical Axis (DSM-5 Core): The foundational diagnosis (e.g., Major Depressive Disorder, Generalized Anxiety).
+   1. Clinical Axis (Fictional Core): The foundational condition drawn from the game's own invented clinical taxonomy (e.g., a fictional anxiety-analog or mood-analog framing). Consistent with §4, real diagnostic systems and their labels are used only as private design inspiration and are never named or reproduced in game content.
    2. Workspace Culture: Professional background, operational jargon, and occupational stressors (e.g., Scuba Instructor, Politician).
    3. Domestic Status: Active living environment, financial pressure points, and interpersonal isolation parameters.
    4. Ethnicity/Cultural Filter: Native backgrounds dictating structural stigmas surrounding clinical intervention.
@@ -352,11 +364,11 @@ Patients are unique data objects (.JSON patient manifests) generated server-side
 
 To preserve integrity and reduce case fragmentation, individual patients should be assigned to one therapist at a time until the case reaches a meaningful end state.
 
-* One-Therapist Ownership: A patient manifest should remain owned by a single active therapist across sessions until the case is closed through successful cure, explicit abandonment, or a hard failure threshold where the case is considered no longer recoverable for that therapist.
-* Social Chronic Patients: Patients in the social/chronic pool should be treated as memory-poor cases. They do not retain meaningful user data, therapist identity, or long-term personal history across clinics. Their state should be based on the current case context rather than on preserved player-specific memory.
+* One-Therapist Ownership: A patient manifest should remain owned by a single active therapist across sessions until the case is closed through successful cure, explicit abandonment, or a hard failure threshold where the case is considered no longer recoverable for that therapist. Single-owner exclusivity is a locking problem (the double-assignment analog of double-spend), so ownership is arbitrated by the server: the server holds the authoritative owner record, and every transfer, reassignment, or referral (§18) is a server-mediated hand-off. The client proposes; the server decides.
+* Social Chronic Patients: Patients in the social/chronic pool should be treated as memory-poor cases. They do not retain meaningful user data, therapist identity, or long-term personal history across clinics. Their state should be based on the current case context rather than on preserved player-specific memory. This is an explicit manifest flag (`memory_class: stateless`), not a convention: stateless patients carry no signed case-history envelope (§17) at all, which is what keeps them consistent with the ledger rules rather than in conflict with them.
 * Doubt Pressure: Each patient should carry a hidden Doubt value that rises gradually over time and can increase when the therapist uses Manipulative cards repeatedly or when session prices rise sharply across consecutive sessions. This should feel emergent and contextual rather than deterministic.
-* Transfer Escape Valve: If Doubt crosses a threshold and a stochastic roll succeeds, the patient may decide to leave the current clinic and be reassigned to a different available therapist of the same progression tier in the network. This should be rare enough to preserve tension, but frequent enough to feel like a real risk.
-* Balance Intent: The chance of transfer should remain low in ordinary play, with a small base probability per session and stronger escalation only after sustained pressure. A good target is a low base chance of roughly 2% to 4% per session, increasing to a more noticeable range only after repeated stressors, with a hard cap that prevents constant churn.
+* Transfer Escape Valve: If Doubt crosses a threshold and a stochastic roll succeeds, the patient may decide to leave the current clinic and be reassigned to a different available therapist of the same progression tier in the wider player pool. This should be rare enough to preserve tension, but frequent enough to feel like a real risk.
+* Balance Intent: The chance of transfer should remain low in ordinary play, with a small base probability per session and stronger escalation only after sustained pressure. A good target is a low base chance of roughly 2% to 4% per session, increasing to a more noticeable range only after repeated stressors, with a hard cap that prevents constant churn (these numbers are placeholders tuned in the balance sandbox, §7).
 * Fair Reassignment: Reassigned patients should be routed to a free, compatible therapist of similar level rather than to a random high-level specialist, ensuring the system remains fair, readable, and enjoyable rather than punishing the player with arbitrary case loss.
 
 This rule set creates a strong ownership model for cases while still allowing occasional, believable patient migration when a therapist's approach becomes too risky or unstable.
@@ -368,7 +380,7 @@ To prevent the application from consuming hundreds of gigabytes of device storag
 
 ### The Fixed Storage Footprint
 
-* The Base Persona Core (.GGUF): The client application bundles or streams a single, unified, ultra-compressed open-source base language model (e.g., 3-Billion parameters). This model acts as a "Universal Actor" trained to understand dramatic pacing, clinical terminology, and roleplay instruction adherence. It occupies a static ~1.8 GB footprint that never grows.
+* The Base Persona Core (.GGUF): The client application bundles or streams a single, unified, ultra-compressed open-source base language model (e.g., 3-Billion parameters). This model acts as a "Universal Actor" trained to understand dramatic pacing, clinical terminology, and roleplay instruction adherence. It occupies a static ~1.8 GB footprint that never grows during play. The exact parameter size is a target, not a settled fact: it is bounded by a published minimum device spec and validated in the §2 PoC, and on memory-constrained mobile devices a 1–1.5B model may be required. The footprint is "fixed" at runtime (it does not grow session to session), but the shipped size and model choice are outcomes of the device-viability gate, not assumptions.
 * The patient manifest (.JSON): Every individual patient in the game—including their workspace culture, trauma backstory, current emotional statistics, and dialog pathways—is stored as a microscopic text file under 50 KB.
 
 
@@ -381,7 +393,7 @@ To prevent the application from consuming hundreds of gigabytes of device storag
 
 ## 12. The Adaptive Free-Tier Router (Dynamic Difficulty Matrix)
 
-To prevent early-game frustration and ensure a balanced player onboarding curve, the server-side random assignment system filters incoming P2P patient manifests through a dynamic player matching matrix.
+To prevent early-game frustration and ensure a balanced player onboarding curve, the server-side random assignment system filters candidate patient manifests through a dynamic player matching matrix.
 
                 [Free User Requests Daily Case File]
                                 │
@@ -400,16 +412,16 @@ To prevent early-game frustration and ensure a balanced player onboarding curve,
 
 ### Standard Algorithmic Filtering
 
-* The Safety Check: The client application pings the signaling server with its encrypted profile vector. The server reads the player's total Number of Study Fields and screens available P2P patient manifests.
+* The Safety Check: The client application sends its encrypted profile vector to the matchmaking server. The server reads the player's total Number of Study Fields and screens available patient manifests.
 * The Blueprint Lock: The router prevents the system from assigning complex patients whose defense mechanisms or pathologies require locked specialization cards, keeping early-game sessions fair and educational.
 
 
 ### The "Misfortune Roll" Exception (The Chaos Mechanic)
 
-* The 5% Probability Gap: Every daily assignment carries a hard-coded 5% "Luck Failure" probability roll. If triggered, the system intentionally bypasses the safety filters and routes an elite, volatile, or highly mistreated patient manifest to a new user's clinic.
+* The Probability Gap: Every daily assignment carries a small "Luck Failure" probability roll (a placeholder ~5%, tuned in the balance sandbox, §7). If triggered, the system intentionally bypasses the safety filters and routes an elite, volatile, or highly mistreated patient manifest to a new user's clinic.
 * The Strategic Exit Choices: When a player faces a crisis case they lack the specialization cards to solve, the game engine rewards tactical decision-making over blind risk:
-1. Direct Rejection: The player declines the case upfront. The patient manifest returns to the P2P swarm pool. The player suffers zero reputation penalties but earns zero points.
-   2. The Referral Reward (The Safety Valve): If the player starts the interview, evaluates the symptoms, and uses the WebRTC P2P interface to transfer the case to a qualified friend, the game engine rewards them with +1 Universal Experience Point for demonstrating professional ethical awareness.
+1. Direct Rejection: The player declines the case upfront. The patient manifest returns to the server case pool. The player suffers zero reputation penalties but earns zero points.
+   2. The Referral Reward (The Safety Valve): If the player starts the interview, evaluates the symptoms, and uses the server-mediated referral flow to transfer the case to a qualified friend, the game engine rewards them with +1 Universal Experience Point for demonstrating professional ethical awareness.
    3. The Ruin Trajectory: If the player attempts to force the session using generic cards, the patient’s agitation will spike rapidly, causing them to walk out, which severely cripples the player's clinic reputation.
 
 
@@ -461,7 +473,7 @@ To challenge experienced players and prevent late-game monotony, the system scal
                      ┌────────────────┴────────────────┐
                      ▼                                 ▼
          [Exit Session: Analyze File]        [Spend Daily Points / Study]
-         • Match clues to DSM manuals.       • Acquire specific target card.
+         • Match clues to field notes.       • Acquire specific target card.
                      │                                 │
                      └────────────────┬────────────────┘
                                       ▼
@@ -473,7 +485,7 @@ To challenge experienced players and prevent late-game monotony, the system scal
 * The Professional-Tier Shift (Advanced Grading Rubric)
 
 * The Automated "Attending Physician" Report: Once a player reaches a sufficiently advanced progression tier, the game unlocks its analytical advanced simulator. These notifications are replaced by an advanced Clinical Assessment Matrix. The local Dart engine tracks card sequence selections to deliver a multi-page analytical report scoring the user on Therapeutic Alliance Maintenance, Diagnostic Path Efficiency, and Pharmacological Safety.
-* The Multi-Session Siege: High-tier patients possess nested, multi-layered defensive frameworks that resist immediate resolution. The player must exit active daily check-ups to analyze collected linguistic clues, comparing text histories against the app's diagnostic encyclopedia before entering subsequent rounds.
+* The Multi-Session Siege: High-tier patients possess nested, multi-layered defensive frameworks that resist immediate resolution. The player must exit active daily check-ups to analyze collected linguistic clues, comparing text histories against the app's fictional clinical encyclopedia — a fully invented reference, not a real diagnostic manual (§4) — before entering subsequent rounds.
 
 
 ## 15. The Four-Tier Functional Card Taxonomy & AI Fatigue Countermeasures
@@ -575,22 +587,22 @@ The patient manifest will be defined later through a structured schema designed 
 ### The Local AI Prompt Generation Layer
 Once the simulation core resolves the turn, it assembles a compact prompt containing only approved narrative context, tone guidance, and dialogue constraints. The local model is responsible for generating dialogue and voice, not for changing rules, outcomes, or hidden state.
 
-## 17. The Living P2P Ledger: Immutable Memory & Trauma Multipliers
+## 17. The Living Case History: Revocable Signed Memory & Trauma Multipliers
 
-The Peer-to-Peer network operates as an active narrative ecosystem where patient data files carry persistent, unyielding psychological scars from their past real-world doctors.
+The shared case ecosystem operates as an active narrative space where patient data files carry persistent, unyielding psychological scars from their past real-world doctors.
 
-### The Immutable Case History Array
+### The Revocable Signed Case History
 
-* The Append-Only Ledger: Every session conclusion appends a cryptographic, signed transaction block to the patient's case history. This block logs the previous doctor’s public username, the cards played, medications prescribed, and the psychological outcome.
+* The Server-Signed History Envelope: Every session conclusion appends a server-signed history entry to the patient's case file. Each entry records a pseudonymous therapist ID (never a real username or other PII), the cards played, medications prescribed, the psychological outcome, and a schema version. Entries are tamper-evident — any edit breaks the server signature — but they are deliberately *not* immutable: the server maintains a revocation list, and clients must drop or ignore any entry that has been revoked, superseded, or fails signature validation. This keeps narrative continuity while leaving moderation (§3.5) and data-erasure obligations enforceable. You cannot moderate or delete what you have designed to be permanently immutable and self-replicating, so the design does not make that mistake.
 * Narrative Continuity: When a patient is transferred to a new device, the local base model parses this ledger. The patient will actively reference past treatment styles (e.g., "My last doctor just tried to drug me into silence, I don't trust you"), inheriting trust deficits and chemical dependencies from their past therapies.
-* Cure Retirement Rule: If a patient is fully cured, their active manifest is removed from the live network and archived as a completed case. The therapist who completed the treatment receives the patient’s fictional name in their personal successful-treatments list, along with a permanent record of the case.
+* Cure Retirement Rule: If a patient is fully cured, their active manifest is removed from the live case pool and archived as a completed case. The therapist who completed the treatment receives the patient’s fictional name in their personal successful-treatments list, along with a permanent record of the case.
 * Patient Identity Layer: Every patient is assigned a generated fictional full name composed of a made-up first name and a non-real surname that feels plausible but is not tied to any actual public figure or family name.
 
 
 ### Patient Archetypes & Lifecycle
 
-* Social Chronic Patients: These are long-running, recurring cases designed for training, reputation recovery, and steady practice. They are never fully removed or cured in the ordinary lifecycle; instead, they remain available as reusable cases for supervised sessions, reputation rebuilding, or low-stakes skill maintenance.
-* Individual Patients: These are one-off cases that remain in the network until they are cured or retired. They typically provide stronger rewards and more meaningful progression impact than social chronic patients of similar levels, because they carry more volatile history and higher emotional stakes.
+* Social Chronic Patients: These are long-running, recurring cases designed for training, reputation recovery, and steady practice. They are never fully removed or cured in the ordinary lifecycle; instead, they remain available as reusable cases for supervised sessions, reputation rebuilding, or low-stakes skill maintenance. They are stateless by schema (`memory_class: stateless`): they carry no signed history envelope and inherit no cross-clinic memory. Only Individual patients (`memory_class: persistent`) accumulate the signed case history described above.
+* Individual Patients: These are one-off cases that remain in the live case pool until they are cured or retired. They typically provide stronger rewards and more meaningful progression impact than social chronic patients of similar levels, because they carry more volatile history and higher emotional stakes.
 * Difficulty Calibration: Social chronic patients use clearly visible difficulty bands that remain balanced to the player’s current level and are intended to be safely approachable. Individual patients can scale more aggressively, with tougher emotional states, deeper memory layers, and more significant reward potential.
 
 
@@ -612,15 +624,16 @@ This richer manifest structure allows the system to fine-tune patient behavior, 
 
 * The Severity Metric: The more a patient is mistreated, misdiagnosed, or forced into a psychological crisis by previous players, the higher their hidden Trauma Severity Index grows inside the ledger.
 * The Risk/Reward Loop: Accepting a severely mistreated patient serves as an organic "Mythic Difficulty" tier. The patient's baseline metrics are incredibly unstable, meaning a single conversational misstep will cause them to walk out permanently.
-* The Progression Payoff: If a player successfully stabilizes, treats, or cures a high-trauma patient, all earned experience points, leaderboard rankings, and in-game currency payouts are multiplied directly by the patient's Trauma Severity Index. This creates a high-stakes economy where elite players hunt for broken models to maximize their professional standing.
+* The Progression Payoff: If a player successfully stabilizes, treats, or cures a high-trauma patient, all earned experience points, leaderboard rankings, and in-game currency payouts are multiplied by the patient's Trauma Severity Index. This creates a high-stakes economy where elite players hunt for broken cases to maximize their professional standing.
+* Anti-Collusion Guards: Because trauma is *created* by players mistreating patients (§15) and patients are directly transferable to friends (§18), an unguarded multiplier is a farming exploit — A abuses a case, refers it to B, B cures it at a multiplied payout, and they split the proceeds. The multiplier is therefore bounded and provenance-aware: a hard cap on the maximum multiplier; no (or steeply reduced) multiplier on cases received via friend/direct referral; diminishing returns along a transfer chain; server-side provenance checks that tie payout to the case's genuine abuse history and reject suspicious A→B→A loops; and payout-outlier anomaly detection (§7, server-authoritative). "Hunt for broken cases" stays as flavour; "manufacture broken cases with an accomplice" does not pay, and deliberately inflicting severity to farm it is penalized rather than rewarded.
 
 
-## 18. The P2P Referral & Mental Hospital Ecosystem
+## 18. The Referral & Mental Hospital Ecosystem
 
-No patient model is ever deleted; they move through a living decentralized lifecycle.
+Patients are never silently lost; they move through an explicit lifecycle: `active → owned → (cured | abandoned | hospitalized) → archived`. Archived states live outside the live case pool — in the completing therapist's record or the in-game asylum registry — so "nothing is deleted" means "every case is accounted for," not "every case stays in the live pool forever."
 
-* P2P Patient Referrals: Players can directly package a patient's custom case manifest (including dialogue history) and transfer it across the WebRTC network to a friend's device if they lack the card deck required to treat them.
-* The Mental Hospital Loop: If a local small model suffers a technical glitch or character break, the player clicks "Commit to Mental Hospital." The app freezes the file, uploads the bug logs to the central server for automated monthly retraining, and places the patient in an in-game asylum registry until the player finishes the academic studies needed to treat them again.
+* Patient Referrals: Players can package a patient's custom case manifest (including dialogue history) and transfer it to a friend through the server's referral flow if they lack the card deck required to treat them. The server records the hand-off and updates the authoritative owner record.
+* The Mental Hospital Loop: If a local model suffers a technical glitch or character break, the player clicks "Commit to Mental Hospital." The app freezes the file, optionally uploads scrubbed bug logs to an offline improvement backlog, and places the patient in an in-game asylum registry until the player finishes the academic studies needed to treat them again. Crucially, this game mechanic does not depend on retraining and redistributing the shipped model: bug logs feed an offline, opt-in improvement queue that may inform a *future* model release, but there is no monthly fine-tune-and-ship-1.8 GB pipeline in the plan (that would contradict §11's fixed-footprint model and requires an MLOps team the project does not yet have). The asylum mechanic works purely on client-side state freeze and re-routing.
 
 
 ## 19. Monetization Blueprint
@@ -637,12 +650,12 @@ The monetization model should support the game’s identity as a long-term clini
 ### Core Revenue Streams
 
 * Premium Case Files: Sell targeted thematic patient packs such as The Corridor of Power Pack or The Forensic Psych Pack. These should provide aesthetic variety, new narrative flavor, and occasionally new challenge profiles without replacing the standard case pool.
-* Specialty Expansion Decks: Allow players to purchase up to 4 additional card decks, each sold as a separate item. These decks should expand tactical options and create new playstyles without forcing the player to pay to participate in core gameplay.
+* Specialty Expansion Decks: Allow players to purchase up to 4 additional card decks, each sold as a separate item. These decks must be validated as *sidegrades* in the balance sandbox (§7) — new playstyles and situational tools, not raw power — so they never raise cure rate or case access beyond the non-paid baseline. Any deck that measurably out-performs free decks is rebalanced before it is sold.
 * Currency-Based Purchases: Any monetized item should be purchasable using in-game currency earned from curing patients, maintaining a soft loop between gameplay success and customization. Prices should be meaningful but not so high that they feel punitive.
 * Avatar Identity Pack: User avatars should be auto-assigned at character creation, but players should be able to purchase rename packs, portrait variants, and identity customization options to personalize their therapist identity.
 * Study Point Purchases: Study points should be purchasable only using in-game currency, not real money. Their cost should be moderate so they feel like earned utility rather than a shortcut to total domination.
-* Subspecialty Point System: Introduce a separate progression resource called Subspecialty Points. Players should be able to earn a small amount through play and optionally purchase a capped amount over time. These points should be used for advanced humanities-driven subspecialty unlocks and should remain distinct from regular study points.
-* Emergency Consultations: Offer limited-use, mid-session consultations that let the player temporarily rent a highly specialized card or tactical support to recover a difficult patient from walking out. These should feel like a clutch tool, not a standard replacement for good play.
+* Subspecialty Point System: Introduce a separate progression resource called Subspecialty Points. Players should be able to earn a small amount through play and optionally purchase a hard-capped amount over time, where the cap is expressed as a fixed percentage of the total subspecialty progression attainable through play — so purchases can accelerate but never replace earned advancement. These points should be used for advanced humanities-driven subspecialty unlocks and should remain distinct from regular study points.
+* Emergency Consultations: Offer limited-use, mid-session consultations that let the player temporarily rent a specialized card or tactical support to recover a difficult patient from walking out. To stay on the non-pay-to-win side of the line, these are purchasable with in-game currency only (never real money) and are rate-limited per case, so they read as a clutch tool earned through play rather than a paid rescue that buys a treatment outcome.
 * Cosmetic Customization: Sell visual office overhauls, clinic themes, UI skins, and environmental styling options that reinforce player identity and long-term engagement.
 
 ### Retention-Oriented Monetization
@@ -657,6 +670,7 @@ The monetization model should support the game’s identity as a long-term clini
 * Soft Cap on Premium Advantage: Paid items should never provide a massive edge in cure rate, case access, or patient attraction beyond a narrowly bounded threshold.
 * Fairness Guardrails: High-impact purchases should be carefully priced so they remain optional and do not invalidate the value of good play, discipline, and study.
 * Optional Recovery Tools: Any premium recovery or rescue mechanic should be framed as emergency assistance, not as a substitute for the core treatment loop.
+* SKU Test (Enforced): Every monetized item is run through the non-pay-to-win test above before it ships. If an item would replace a treatment outcome, core progression, or essential card access, it is either cut or converted to an in-game-currency purchase. Real money buys cosmetics, identity, thematic case packs, and hard-capped convenience — nothing that changes the outcome of a session.
 
 ### Monetization Tone
 
@@ -714,13 +728,13 @@ To keep the presentation lightweight and efficient, the visual asset should be s
 This layered approach preserves a high-impact look while maintaining low runtime cost and full offline playability.
 
 
-## 21. The Peer-to-Peer Medical Director Framework (Endgame User-Generated Content Engine)
+## 21. The Medical Director Framework (Endgame User-Generated Content Engine)
 
-Once a player reaches the highest levels of practice and experience, their career path transitions into institutional oversight. The game interface permanently unlocks the Medical Director Dashboard Panel, transforming veteran players into content creators who supply the decentralized P2P swarm.
+Once a player reaches the highest levels of practice and experience, their career path transitions into institutional oversight. The game interface permanently unlocks the Medical Director Dashboard Panel, transforming veteran players into content creators who supply the shared case pool.
 
 * Procedural Injection Design Tools: Medical Directors use a localized design panel to build custom patient manifest templates. They manually specify advanced track rules, including custom Workspace Cultures, hyper-targeted Somatic Vulnerability Axes, and explicit Core Maladaptive Schemas.
 * The Validation Test Interview: To prevent broken, un-winnable, or toxic files from entering the ecosystem, a newly created template cannot be published immediately. The Medical Director must personally complete a successful test therapy session with their own created manifest using the local LLM engine.
-* Decentralized Swarm Publishing: Once validated, the created patient case manifest is cryptographically signed with the player's unique identity key and pushed to the global P2P matchmaking board. Every time another active player across the WebRTC network downloads, pays a treatment fee, or successfully treats that custom manifest, the original creator earns continuous passive royalties in clinic currency and prestige points.
+* Server Publishing: Once validated, the created patient case manifest is submitted to the server, which validates and signs it (§3.2) and publishes it to the global matchmaking board via the CDN/object store. Every time another active player downloads, pays a treatment fee, or successfully treats that custom manifest, the server's royalty accounting credits the original creator with continuous passive royalties in clinic currency and prestige points.
 
 
 ## 22. Clinical Operations & Environmental Matrix (The Dynamic Clinic Sandbox)
@@ -748,7 +762,7 @@ To deepen the strategic gameplay loops, the game implements a simulated business
 
 ### Macro Environmental & Social Events
 
-* Sociopolitical Shifts: The central signaling server periodically seeds macro events into the P2P swarm (e.g., Economic Recession, Mass Workspace Burnout Strikes). These events warp customer profiles across the swarm—shifting baseline patient attraction probabilities toward specific workspace tracks and spiking the baseline agitationLevel of incoming cases.
+* Sociopolitical Shifts: The server periodically seeds macro events and pushes them to clients (e.g., Economic Recession, Mass Workspace Burnout Strikes). These events warp customer profiles across the player base—shifting baseline patient attraction probabilities toward specific workspace tracks and spiking the baseline agitationLevel of incoming cases.
 * Meteorological Events: Localized climate occurrences (e.g., Heatwaves, Seasonal Affective Winter Shifts) inject temporary global multipliers into patient profiles, changing chemical pill side-effect limits or causing somatic anxiety triggers to flare faster.
 
 
@@ -769,7 +783,7 @@ The game should not rely on a hidden therapist well-being stat. Instead, it shou
                                       │
                      ┌────────────────┴────────────────┐
                      ▼                                 ▼
-         [Option A: Recovery Break]       [Option B: P2P Healer Session]
+         [Option A: Recovery Break]       [Option B: Peer Healer Session]
          • Rest and stabilize clinic.    • Coordinate with peer specialist.
          • Rebuild capacity.            • Exchange tactical support.
 
@@ -777,18 +791,18 @@ The game should not rely on a hidden therapist well-being stat. Instead, it shou
 
 * Pressure Accumulation: Every active session involving difficult cases increases operational pressure and can reduce the clinic's effective throughput.
 * Visible Recovery States: Recovery is represented through clear UI states, cooldowns, and capacity limits rather than a hidden internal health value.
-* Peer Recovery Mechanics: Players may use the P2P network to coordinate peer-healer sessions, share support, or recover from severe case pressure.
+* Peer Recovery Mechanics: Players may use the server's coordination flow to arrange peer-healer sessions, share support, or recover from severe case pressure.
 
-### The Healer-to-Healer WebRTC Economy
+### The Healer-to-Healer Support Economy
 When a clinic is overloaded, a player can choose to recover through a peer-based support interaction rather than forcing the system to continue under stress.
 
-* The Interactive Referral: The player uses the WebRTC network to coordinate a support session with another active peer node.
-* Conduct Protection: If a player intentionally misuses the recovery system or harms another participant, the network can apply penalties to reputation, access, and institutional trust.
+* The Interactive Referral: The player uses the server's coordination flow to arrange a support session with another active player.
+* Conduct Protection: If a player intentionally misuses the recovery system or harms another participant, the server can apply penalties to reputation, access, and institutional trust.
 * The Specialty Reward Core: Successful recovery and support interactions can provide reputation gains, institution affinity, and access to more demanding cases.
 
 ## 24. Institutional Corporate Sub-Systems: The Group Practice Economy
 
-To introduce corporate business gameplay and support clan/guild style configurations over the WebRTC layer, therapists can choose to bypass standalone operations entirely and enter the Hiring & Group Practice Sub-System.
+To introduce corporate business gameplay and support clan/guild style configurations through the server, therapists can choose to bypass standalone operations entirely and enter the Hiring & Group Practice Sub-System.
 
         ┌────────────────────────────────────────────────────────┐
         │             EMPLOYER CLINIC MASTER CONTRACT            │
@@ -825,7 +839,7 @@ While associates can borrow the employer's card library, they cannot treat every
 
 
 ### Employer Yield Multipliers
-For the corporate founder, managing a staff of real-world associates functions as an exponential profit scaling mechanism. For each active associate employee currently working a clinical shift under their corporate contract, the engine applies a stacking +25% Revenue Yield Multiplier to all patient session fees processed across the firm, generating massive passive wealth for elite directors.
+For the corporate founder, managing associates scales profit — but not without bound, or hiring becomes strictly dominant and the solo-clinic fantasy the rest of the design sells collapses. The per-employee yield uses *diminishing* returns (each additional associate adds less than the last) under a hard firm-wide cap, and the employee-side skim (the revenue/XP penalty above) is tuned against the employer yield so that being an associate stays a genuine choice — accelerated study for a revenue cut — rather than a trap that funnels all value upward. Exact rates are placeholders tuned in the balance sandbox (§7); the +25% figure is illustrative, not final.
 
 ### The Accountability & Infrastructure Damage Matrix
 Corporate expansion carries extreme operational risk vectors based on the performance of the hired staff. If an associate employee mismanages a high-stakes patient session—triggering a Psychological Derangement or forcing a patient to walk out—the failure triggers a severe dual-layer penalty:
@@ -844,6 +858,6 @@ Corporate expansion carries extreme operational risk vectors based on the perfor
                                             • Forced to Purchase New Clinic
 
 
-* Hired Staff Penalties: The associate employee who executed the bad treatment suffers an immediate, severe markdown to their public P2P Reputation Metric and a meaningful loss of institutional access, locking them out of advanced practice.
+* Hired Staff Penalties: The associate employee who executed the bad treatment suffers an immediate, severe markdown to their public Reputation Metric and a meaningful loss of institutional access, locking them out of advanced practice.
 * Employer Corporate Damages: The failure instantly triggers Structural Infrastructure Damage to the employer's clinic property asset map. Mismanaged psychiatric crises are simulated as physical and institutional damage to the practice (e.g., vandalism, legal structural hazards, regulatory liability degradation).
 * Facility Bankruptcy & Eviction: If an employer's staff repeatedly fails sessions and allows the clinic's Structural Health Metric to drop below 20%, the facility faces a catastrophic structural collapse. The asset is permanently foreclosed and condemned by the system. The employer is instantly evicted, loses all historical office cosmetic upgrades, and is forced to expend massive capital reserves to buy an entirely new base-tier clinic asset from the real estate ledger to restart operations.
