@@ -91,7 +91,7 @@ Once validated, patient cases should be distributed through a server-mediated fl
 
 * System-Assigned Cases: Standard players should receive randomized patient cases that match their current level, study-field access, and clinic profile. The client requests a suitable case from the matchmaking server, which returns a signed manifest reference the client then fetches from the CDN/object store.
 * Premium Catalog Access: Advanced users should be able to browse, filter, and unlock curated patient files from a catalog layer. This preserves a premium experience without undermining the free-to-play routing system.
-* Content Delivery: Manifests are tiny (<50 KB, §11), so delivery is a CDN/object store fronting the server — matchmaking must never assign a case the client then cannot fetch. Because payloads are small and cacheable, a CDN comfortably absorbs delivery at every scale in the §7 cost model, so no more exotic distribution scheme is needed. The server remains responsible for indexing, authorization, and matchmaking metadata.
+* Content Delivery: Manifests are compact structured JSON files delivered from a CDN/object store fronting the server — matchmaking must never assign a case the client then cannot fetch. A base manifest is small; it grows only as structured session deltas (stat changes, diagnosis records, medication history, outcome entries) accumulate over time, never from dialogue transcripts. Because payloads are structured and cacheable, a CDN comfortably absorbs delivery at every scale in the §7 cost model, so no more exotic distribution scheme is needed. The server remains responsible for indexing, authorization, and matchmaking metadata.
 * Routing Intelligence: The distribution system should consider reputation, study-field coverage, clinic pricing, and current operational pressure so that patients are matched to appropriate therapists rather than randomly assigned.
 
 ### 3.4 Open Content Authoring Framework
@@ -381,14 +381,14 @@ To prevent the application from consuming hundreds of gigabytes of device storag
 ### The Fixed Storage Footprint
 
 * The Base Persona Core (.GGUF): The client application bundles or streams a single, unified, ultra-compressed open-source base language model (e.g., 3-Billion parameters). This model acts as a "Universal Actor" trained to understand dramatic pacing, clinical terminology, and roleplay instruction adherence. It occupies a static ~1.8 GB footprint that never grows during play. The exact parameter size is a target, not a settled fact: it is bounded by a published minimum device spec and validated in the §2 PoC, and on memory-constrained mobile devices a 1–1.5B model may be required. The footprint is "fixed" at runtime (it does not grow session to session), but the shipped size and model choice are outcomes of the device-viability gate, not assumptions.
-* The patient manifest (.JSON): Every individual patient in the game—including their workspace culture, trauma backstory, current emotional statistics, and dialog pathways—is stored as a microscopic text file under 50 KB.
+* The patient manifest (.JSON): Every individual patient in the game — including their workspace culture, trauma backstory, current emotional statistics, and dialog pathways — is stored as a compact structured JSON file. A freshly generated manifest is small; it grows incrementally as structured session deltas (stat changes, misdiagnosis records, medication prescriptions, outcome flags) accumulate across sessions. Dialogue transcripts are never written into the manifest; they exist only ephemerally in the local session prompt and are discarded afterward.
 
 
 ### Immersive UI Representation (The Client File Cabinet)
 
 * The Clinical Archive: Inside the game UI, this architecture is stylized as a literal "Patient File Cabinet."
 * Dynamic Thread Injection: When a player clicks on a specific patient's folder to start a therapy session, the Flutter engine instantly reads that patient's tiny JSON file. It feeds the unique behavioral rules, fictional medicine tolerances, and workspace slang directly into the active memory layer of the single base model.
-* Zero-Overhead Memory Swapping: When the player switches to a different patient, the base model remains loaded in the phone's RAM. Only the 50 KB text script is swapped out, allowing instantaneous session transitions with zero processing lag or storage bloat.
+* Zero-Overhead Memory Swapping: When the player switches to a different patient, the base model remains loaded in the phone's RAM. Only the patient manifest JSON is swapped out. Because manifests carry structured state — not transcripts — they stay compact even for long-running cases, allowing instantaneous session transitions with zero processing lag or storage bloat.
 
 
 ## 12. The Adaptive Free-Tier Router (Dynamic Difficulty Matrix)
@@ -494,7 +494,7 @@ Instead of static "win/lose" options, cards possess context-dependent behavioral
 
 ### Linguistic Vector Mutation & Conversational Curveballs
 
-* Linguistic Archetype Prompt Components: To bypass repetitive syntax loops, the 50 KB player manifest shifts the base model's prompt layout using a style filter (e.g., The Cynic vs. The Intellectual), making identical underlying conditions sound entirely distinct.
+* Linguistic Archetype Prompt Components: To bypass repetitive syntax loops, the patient manifest shifts the base model's prompt layout using a style filter (e.g., The Cynic vs. The Intellectual), making identical underlying conditions sound entirely distinct.
 * The Transference Spike: High-trauma sessions prompt sudden relational shifts where conventional Empathy cards are read programmatically as Manipulative Failures, completely flipping the required tactical strategy.
 
 
@@ -632,7 +632,7 @@ This richer manifest structure allows the system to fine-tune patient behavior, 
 
 Patients are never silently lost; they move through an explicit lifecycle: `active → owned → (cured | abandoned | hospitalized) → archived`. Archived states live outside the live case pool — in the completing therapist's record or the in-game asylum registry — so "nothing is deleted" means "every case is accounted for," not "every case stays in the live pool forever."
 
-* Patient Referrals: Players can package a patient's custom case manifest (including dialogue history) and transfer it to a friend through the server's referral flow if they lack the card deck required to treat them. The server records the hand-off and updates the authoritative owner record.
+* Patient Referrals: Players can transfer a patient to a friend through the server's referral flow if they lack the card deck required to treat them. The referral payload carries only the structured §17 history envelope — cards played, medications prescribed, psychological outcomes, and schema version — plus the current session-delta state (stat changes, misdiagnosis records, accumulated clinical flags). Raw dialogue transcripts never leave the originating device and are never included in a referral. The server records the hand-off and updates the authoritative owner record.
 * The Mental Hospital Loop: If a local model suffers a technical glitch or character break, the player clicks "Commit to Mental Hospital." The app freezes the file, optionally uploads scrubbed bug logs to an offline improvement backlog, and places the patient in an in-game asylum registry until the player finishes the academic studies needed to treat them again. Crucially, this game mechanic does not depend on retraining and redistributing the shipped model: bug logs feed an offline, opt-in improvement queue that may inform a *future* model release, but there is no monthly fine-tune-and-ship-1.8 GB pipeline in the plan (that would contradict §11's fixed-footprint model and requires an MLOps team the project does not yet have). The asylum mechanic works purely on client-side state freeze and re-routing.
 
 
@@ -645,7 +645,7 @@ The monetization model should support the game’s identity as a long-term clini
 * Non-Pay-to-Win Structure: Premium content should never replace core progression, core card access, or essential treatment outcomes. It should enhance expression, convenience, and personalization rather than gate fundamental gameplay.
 * Currency Loop Integrity: In-game currency should remain the main economic driver for optional progression purchases. The player should feel that curing patients, managing a clinic, and surviving difficult cases create value that can be spent meaningfully.
 * Progression Respect: Any paid shortcut should be limited in impact so that it never invalidates the player’s normal growth through study, casework, and clinic management.
-* Cosmetic and Strategic Separation: Cosmetic items should be clearly cosmetic, while strategic convenience items should stay bounded so they do not overpower competitive or narrative progression.
+* Cosmetic and Strategic Separation: Cosmetic items are a post-launch addition and do not ship at first production. The game launches with a common, functional baseline UI. Strategic convenience items should stay bounded so they do not overpower competitive or narrative progression. When cosmetics are introduced in a later release, they must be clearly cosmetic — no gameplay effect.
 
 ### Core Revenue Streams
 
@@ -656,12 +656,12 @@ The monetization model should support the game’s identity as a long-term clini
 * Study Point Purchases: Study points should be purchasable only using in-game currency, not real money. Their cost should be moderate so they feel like earned utility rather than a shortcut to total domination.
 * Subspecialty Point System: Introduce a separate progression resource called Subspecialty Points. Players should be able to earn a small amount through play and optionally purchase a hard-capped amount over time, where the cap is expressed as a fixed percentage of the total subspecialty progression attainable through play — so purchases can accelerate but never replace earned advancement. These points should be used for advanced humanities-driven subspecialty unlocks and should remain distinct from regular study points.
 * Emergency Consultations: Offer limited-use, mid-session consultations that let the player temporarily rent a specialized card or tactical support to recover a difficult patient from walking out. To stay on the non-pay-to-win side of the line, these are purchasable with in-game currency only (never real money) and are rate-limited per case, so they read as a clutch tool earned through play rather than a paid rescue that buys a treatment outcome.
-* Cosmetic Customization: Sell visual office overhauls, clinic themes, UI skins, and environmental styling options that reinforce player identity and long-term engagement.
+* Cosmetic Customization (Post-Launch — deferred): Visual office overhauls, clinic themes, UI skins, and environmental styling options are not shipped at first production. The game launches with a common, functional UI. The frontend and infrastructure are designed from the start to support a cosmetic layer — theming hooks, a skin-slot architecture, and the CDN delivery path — so that introducing paid cosmetics in a later release requires no architectural change. No cosmetic SKU ships until the first production milestone is confirmed stable.
 
 ### Retention-Oriented Monetization
 
 * Daily and Weekly Offers: Offer rotating bundles tied to current case themes, new study fields, or seasonal clinical events. These should create a reason to return without being required for progress.
-* Time-Limited Cosmetic Drops: Introduce exclusive visual themes or office makeovers that appear for a limited window, encouraging return visits and reinforcing the feeling of an evolving clinic.
+* Time-Limited Cosmetic Drops (Post-Launch — deferred): Exclusive visual themes and office makeovers are a post-launch retention feature, deferred alongside the cosmetic monetization track.
 * Premium Practice Modes: Add optional challenge or sandbox access that is unlocked through premium progression or currency-based purchase for players who want deeper replayability and experimentation.
 * Legacy Unlocks: Let players purchase permanent content unlocks that preserve their achievements in a way that feels rewarding rather than transactional.
 
@@ -670,7 +670,7 @@ The monetization model should support the game’s identity as a long-term clini
 * Soft Cap on Premium Advantage: Paid items should never provide a massive edge in cure rate, case access, or patient attraction beyond a narrowly bounded threshold.
 * Fairness Guardrails: High-impact purchases should be carefully priced so they remain optional and do not invalidate the value of good play, discipline, and study.
 * Optional Recovery Tools: Any premium recovery or rescue mechanic should be framed as emergency assistance, not as a substitute for the core treatment loop.
-* SKU Test (Enforced): Every monetized item is run through the non-pay-to-win test above before it ships. If an item would replace a treatment outcome, core progression, or essential card access, it is either cut or converted to an in-game-currency purchase. Real money buys cosmetics, identity, thematic case packs, and hard-capped convenience — nothing that changes the outcome of a session.
+* SKU Test (Enforced): Every monetized item is run through the non-pay-to-win test above before it ships. If an item would replace a treatment outcome, core progression, or essential card access, it is either cut or converted to an in-game-currency purchase. Real money buys identity customization, thematic case packs, and hard-capped convenience — nothing that changes the outcome of a session. Cosmetic SKUs are a post-launch addition and are not tested by this gate until they are ready to ship.
 
 ### Monetization Tone
 
@@ -860,4 +860,4 @@ Corporate expansion carries extreme operational risk vectors based on the perfor
 
 * Hired Staff Penalties: The associate employee who executed the bad treatment suffers an immediate, severe markdown to their public Reputation Metric and a meaningful loss of institutional access, locking them out of advanced practice.
 * Employer Corporate Damages: The failure instantly triggers Structural Infrastructure Damage to the employer's clinic property asset map. Mismanaged psychiatric crises are simulated as physical and institutional damage to the practice (e.g., vandalism, legal structural hazards, regulatory liability degradation).
-* Facility Bankruptcy & Eviction: If an employer's staff repeatedly fails sessions and allows the clinic's Structural Health Metric to drop below 20%, the facility faces a catastrophic structural collapse. The asset is permanently foreclosed and condemned by the system. The employer is instantly evicted, loses all historical office cosmetic upgrades, and is forced to expend massive capital reserves to buy an entirely new base-tier clinic asset from the real estate ledger to restart operations.
+* Facility Bankruptcy & Eviction: If an employer's staff repeatedly fails sessions and allows the clinic's Structural Health Metric to drop below 20%, the facility faces a catastrophic structural collapse. The asset is permanently foreclosed and condemned by the system. The employer is instantly evicted, loses all in-game office upgrades accumulated during operation, and is forced to expend massive capital reserves to buy an entirely new base-tier clinic asset from the real estate ledger to restart operations. (Paid cosmetics are a post-launch feature; when they arrive, purchased cosmetics return to inventory on foreclosure rather than being destroyed — see NC-3 in the readiness assessment.)
