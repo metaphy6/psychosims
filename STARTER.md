@@ -55,10 +55,12 @@ Before any large-scale networking, content distribution, or advanced economy sys
 * Minimal Content Object First: The first playable content object should be a compact patient case definition with high-level fields for identity, tone, pressure state, and available interaction patterns.
 * End-to-End Loop: The first build should connect the following path in a single flow: Flutter UI → load a case definition → compose a prompt from simulation state → run local inference → render the resulting dialogue back into the session view.
 * Cross-Platform Validation: The same build path must be confirmed on both Android (emulator) and Linux desktop for asset loading, runtime execution, and UI behavior. The x86 Android emulator is the development baseline and will be used throughout early work until a human developer decides the project has reached a state of readiness for physical device testing — that transition is a deliberate human gate, not an automated trigger. The emulator's role is limited to build validation and packaging: it confirms the app compiles, loads, and runs. It does not substitute for physical hardware on performance measurements.
+* Day-One Inputs (authored before the gates can be measured): Two artifacts are prerequisites of the PoC itself and must be written first, because the gates below are defined against them. (a) A written *minimum device spec* — the concrete floor hardware (RAM, SoC class, OS version) the device-viability gate measures against; that gate is meaningless until this exists. (b) A *base-model license shortlist* — the candidate open-source models with their redistribution terms compared (e.g., Llama community license vs Apache-2.0 vs Gemma terms vs MIT), because the licence constrains commercial embedding and must be settled at model selection, not discovered afterward. Neither is a large document, but both gate everything measured below them.
 * Success Criteria (Falsifiable Gates): The PoC does not pass on "it produced text." It must clear measured gates that de-risk the project's core unproven bets before anything is built on them:
   - Acting quality: the model stays in character and coherent under *worst-case* prompts — full nine-axis manifest, case-history memory, medication state, and a style archetype at once — not just happy-path cases.
   - Device viability: tokens/sec and peak RAM must be measured on at least one physical minimum-spec Android device — not the emulator, whose x86 architecture, absent thermal throttling, and different memory pressure make it invalid evidence for mobile performance. Until the human developer opens physical device testing, this gate is explicitly pending and the PoC is not considered passed on device viability. If a 3B model will not fit the minimum spec, the fallback to a 1–1.5B model is tested here (which makes the acting-quality bar harder, so the two are measured together).
   - Download acceptance: the ~1.8 GB first-run model download is treated as a real onboarding risk (store cellular caps, mid-download churn) with a chosen delivery/retry strategy, not assumed away.
+  - **Prompt token budget (PoC exit artifact):** The worst-case prompt — all nine axes populated, medication state, style archetype, history digest, mandatory clue tokens, and current-turn conversation context — must be measured against the chosen model's usable context window (typically 50–70% of the advertised maximum for 1–3B models). The budget must fit with headroom for generation output. This measurement is recorded as a required PoC exit artifact before content, networking, or economy work begins. If the worst-case prompt does not fit, the tiered prompt structure in §16 is the resolution path.
   If these gates are red, the architecture is revisited before content, networking, or economy work begins. Only after they are green should the project expand into richer content, deeper social systems, and larger institutional gameplay.
 
 This milestone should be treated as the true first implementation phase, because it validates the project's core promise: that a lightweight local model, a compact case definition, and a Flutter-based game loop can run effectively on real devices and desktop environments.
@@ -104,6 +106,7 @@ The project should not be limited to internally generated content. It should als
 * Study Field Contributions: Authors should be able to define new study fields, revise existing field structure, adjust progression requirements, and tune how those fields influence gameplay and case matching.
 * Draft-to-Publish Workflow: Authors should be able to create drafts, preview them, validate them, version them, and publish them through a controlled pipeline.
 * Controlled Expansion: This framework makes the project suitable both as a polished game experience and as a modular content platform for collaborative expansion over time.
+* Moderation Staffing & SLA (UGC-phase entry gate): Human review cost scales directly with creator count. Before the authoring ecosystem opens to external contributors, a moderation staffing model and review SLA must be defined — how many reviewers, target turnaround per submission, and the escalation path for borderline content — so the validation and signing pipeline (§3.2, §3.5) is backed by real capacity rather than an unbounded, unstaffed queue.
 
 ### 3.5 Governance & Moderation Backdoor
 
@@ -141,6 +144,7 @@ The game is not centered on a single fixed professional identity. Instead, it un
 * Include explicit disclaimers: “This game is a fictional simulation and not a substitute for professional mental health care.”
 * Do not collect or store real health data. Treat player profiles as game state only, and keep PII separate from gameplay data.
 * Keep store metadata and app text focused on entertainment and strategy, not clinical guidance.
+* Age-Rating & Content Strategy (scheduled, not yet written): The manipulate-a-patient-into-derangement loop (§15) will be read harshly by store reviewers and press. A content-rating strategy targeting a mature band (16+/17+) is drafted during the first content phase and finalized before store submission. It must include explicit tone guidelines for Manipulative cards — coercive insight framed as a clinical gamble with consequences, never gratuitous cruelty — so the core mechanic stays defensible to reviewers and press.
 
 
 ## 5. Career Evolution, Study Systems, and Social Progression
@@ -260,6 +264,8 @@ To ensure ironclad progress preservation and prevent file tampering without incu
 ### The Backend-as-a-Service (BaaS) Footprint
 
 * The Infrastructure Baseline: The architecture utilizes a managed relational cloud database tier (e.g., Supabase PostgreSQL) paired with built-in ecosystem plugins for Apple/Google authentication and row-level security. The free tier is a development and prototyping environment, not a capacity plan: the 500 MB / 0.5 KB-per-profile math below counts only profile rows and ignores auth MAU caps, egress and connection limits, project-pausing on inactivity, and every *other* server dataset this design needs (matchmaking state, moderation and revocation lists, royalty accounting, audit and macro-event records). Real infrastructure cost is modelled explicitly at 1k / 10k / 100k / 1M MAU, and paid tiers are assumed from the first real users onward.
+* Cost Model (named entry gate): The MAU cost model above is not background reading — it is an explicit entry gate to the first server-authoritative online phase. That phase does not ship until the model at 10k MAU holds against the full enumerated dataset list, and the multi-currency balance spec (§5) exists before any economy tuning ships. Both are commissioned deliverables that do not yet exist; they are prerequisites, not afterthoughts.
+* Platform Auth & Distribution (open decision, first online phase): Auth is named for mobile (Apple/Google), but the desktop channels (Linux/Windows — direct download vs a store such as Steam) and their corresponding OAuth/identity flows are an explicit deliverable of the first online phase, not assumed. All five claimed platforms (§2) must have a named distribution channel and sign-in path before that phase is considered complete.
 * The Primitive Payload Schema: The server-side cloud table strictly forbids the storage of rich text logs, conversational transcripts, or massive binary scripts. It functions exclusively as a primitive matrix tracking atomic player metrics under 0.5 KB per profile, keeping profile rows themselves tiny (on the order of 1,000,000 profiles within a 500 MB table). This bounds the *profile* footprint only — not total infrastructure cost, which is cost-modelled separately per the note above:
 
 ```json
@@ -600,7 +606,22 @@ The client app handles deterministic outcome resolution using localized game log
 The patient manifest will be defined later through a structured schema designed for gameplay clarity and content iteration. At this stage, the important requirement is that the manifest supports high-level case identity, pressure states, narrative context, and compatibility rules without locking the project into a premature technical format.
 
 ### The Local AI Prompt Generation Layer
+
 Once the simulation core resolves the turn, it assembles a compact prompt containing only approved narrative context, tone guidance, and dialogue constraints. The local model is responsible for generating dialogue and voice, not for changing rules, outcomes, or hidden state.
+
+The prompt assembler is a first-class, testable component. It accepts a `tokenBudget` parameter and enforces a strict tiered structure, truncating lower tiers first when the budget is constrained. The budget is never exceeded; the model never receives a prompt whose length has not been verified before inference.
+
+**Prompt tier structure:**
+
+| Tier | Contents | Budget policy |
+|---|---|---|
+| **Tier 1 — Fixed, always included** | System instructions + roleplay frame; current manifest state (core axes, active flags); medication state + style archetype; mandatory clue tokens for this turn | Never truncated. If Tier 1 alone exceeds the budget, the manifest schema must be redesigned. |
+| **Tier 2 — Capped, summarised** | Case history digest (a structured sim-core-generated summary of prior sessions, not raw delta entries); sliding window of the last N turns of conversation context | Hard token cap enforced. The history digest is a compiled output of the sim core — never a raw dump of delta records. Older turns are dropped from the window before the digest is shortened. |
+| **Tier 3 — Generation headroom** | Reserved for model output | Fixed reserve; never consumed by input. |
+
+**History digest rule:** The sim core compiles a short structured summary from the case history deltas before each session prompt is assembled. This summary captures the clinically relevant state (prior treatment style, trust trajectory, medication history, key outcomes) in a fixed token envelope. Raw delta records are never injected into the prompt directly, regardless of how many sessions a patient has accumulated.
+
+**Prompt assembler contract:** The assembler is a pure function — `assemblePrompt(SimState, PatientManifest, ConversationWindow, tokenBudget) → String` — with no side effects. It is unit-tested independently of the model, so token budget compliance is verified without running inference.
 
 ## 17. The Living Case History: Revocable Signed Memory & Trauma Multipliers
 
