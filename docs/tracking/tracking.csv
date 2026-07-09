@@ -5,3 +5,5 @@ ts_utc,run_id,agent,scope,action,status,summary,refs,commit_sha
 2026-07-04T10:52:30Z,run-20260704105230-157358,copilot,general,commit,completed,docs(starter): make fictional names evoke real counterparts,STARTER.md,pending
 2026-07-04T11:11:54Z,run-20260704111154-185684,copilot,general,commit,completed,docs(starter): replace P2P architecture with server-client model,STARTER.md,pending
 2026-07-07T12:28:05Z,run-20260707122805-50170,copilot,general,commit,completed,docs(reports): add STARTER.md readiness assessment for roadmapping go/no-go,docs/reports/2026-07-07-starter-readiness-assessment.md,pending
+2026-07-09T13:51:05Z,run-20260709135105-51488,human,docs,commit,completed,docs(starter): split blueprint into Technical (§1-6) and Game Mechanics (§7-24) parts with continuous renumbering,,pending
+2026-07-09T14:08:28Z,run-20260709140828-71203,human,docs,commit,completed,"docs(reports): add Part II game-mechanics readiness assessment (GM-1..GM-11, conditional go)",,pending
