@@ -309,6 +309,19 @@ In addition to the fast-paced rule-testing framework, the project should also in
 This realistic sandbox should be treated as a second, parallel test infrastructure layer: one for fast iteration on game rules, and one for faithful investigation of the client and server system.
 
 
+### Offline Receipt Protocol (Phase 2 Deliverable)
+
+Play is local-first and offline-tolerant at the session level (§2), but only server-accepted results update the authoritative profile. This creates a gap that must be specified before the first online phase ships: what happens to receipts generated while the player is offline?
+
+The following semantics are required as an explicit Phase 2 deliverable — they must be designed and implemented before the server-authoritative online phase is considered complete:
+
+* **Receipt queue:** Completed session receipts generated while offline are held in a local durable queue on the device. They are submitted to the server in order when connectivity is restored.
+* **Idempotency keys:** Every receipt carries a client-generated idempotency key (a UUID stable across retries). The server deduplicates on this key so a receipt re-submitted after a network failure is never applied twice.
+* **Ownership lease TTL:** While a patient is owned by a player, the server grants an ownership lease with a defined expiry. The client may continue sessions against that patient offline for the lease duration. At expiry, the server may reassign the patient if no renewal heartbeat has been received. Lease TTL is a balance parameter (placeholder: 48–72 hours; tuned in the sandbox, §7).
+* **Offline cure / transfer race:** If a cure receipt arrives at the server after the ownership lease has expired and the patient has been reassigned or transferred, the cure is credited to the submitting player's record but the patient state is governed by the server's authoritative timeline. The player receives the cure reward; the patient's live pool status reflects the server's current state.
+* **Ownership arbitration during offline windows:** The server is the single source of truth for ownership (§10). A client may not grant itself ownership of a new patient while offline; it may only continue existing leased sessions. New case assignments require a server round-trip.
+
+
 ## 8. The Simulation Core vs. the Dialogue Layer
 
 To keep the experience stable, readable, and mechanically fair, the game engine is split into two clearly defined layers.
@@ -649,16 +662,23 @@ The monetization model should support the game’s identity as a long-term clini
 * Progression Respect: Any paid shortcut should be limited in impact so that it never invalidates the player’s normal growth through study, casework, and clinic management.
 * Cosmetic and Strategic Separation: Cosmetic items are a post-launch addition and do not ship at first production. The game launches with a common, functional baseline UI. Strategic convenience items should stay bounded so they do not overpower competitive or narrative progression. When cosmetics are introduced in a later release, they must be clearly cosmetic — no gameplay effect.
 
-### Core Revenue Streams
+### Core Revenue Streams (Real-Money SKUs)
+
+These items generate actual revenue — they are purchasable with real money. They are the business's income sources and the inputs the §7 cost model needs to project sustainability.
 
 * Premium Case Files: Sell targeted thematic patient packs such as The Corridor of Power Pack or The Forensic Psych Pack. These should provide aesthetic variety, new narrative flavor, and occasionally new challenge profiles without replacing the standard case pool.
 * Specialty Expansion Decks: Allow players to purchase up to 4 additional card decks, each sold as a separate item. These decks must be validated as *sidegrades* in the balance sandbox (§7) — new playstyles and situational tools, not raw power — so they never raise cure rate or case access beyond the non-paid baseline. Any deck that measurably out-performs free decks is rebalanced before it is sold.
-* Currency-Based Purchases: Any monetized item should be purchasable using in-game currency earned from curing patients, maintaining a soft loop between gameplay success and customization. Prices should be meaningful but not so high that they feel punitive.
 * Avatar Identity Pack: User avatars should be auto-assigned at character creation, but players should be able to purchase rename packs, portrait variants, and identity customization options to personalize their therapist identity.
-* Study Point Purchases: Study points should be purchasable only using in-game currency, not real money. Their cost should be moderate so they feel like earned utility rather than a shortcut to total domination.
 * Subspecialty Point System: Introduce a separate progression resource called Subspecialty Points. Players should be able to earn a small amount through play and optionally purchase a hard-capped amount over time, where the cap is expressed as a fixed percentage of the total subspecialty progression attainable through play — so purchases can accelerate but never replace earned advancement. These points should be used for advanced humanities-driven subspecialty unlocks and should remain distinct from regular study points.
-* Emergency Consultations: Offer limited-use, mid-session consultations that let the player temporarily rent a specialized card or tactical support to recover a difficult patient from walking out. To stay on the non-pay-to-win side of the line, these are purchasable with in-game currency only (never real money) and are rate-limited per case, so they read as a clutch tool earned through play rather than a paid rescue that buys a treatment outcome.
 * Cosmetic Customization (Post-Launch — deferred): Visual office overhauls, clinic themes, UI skins, and environmental styling options are not shipped at first production. The game launches with a common, functional UI. The frontend and infrastructure are designed from the start to support a cosmetic layer — theming hooks, a skin-slot architecture, and the CDN delivery path — so that introducing paid cosmetics in a later release requires no architectural change. No cosmetic SKU ships until the first production milestone is confirmed stable.
+
+### In-Game Currency Sinks (No Real Money)
+
+These items are purchasable only with in-game currency earned through play. They produce zero real-money revenue by design. They are listed separately because conflating them with revenue SKUs obscures the actual income mix and skews the §7 cost model. Their purpose is to give earned currency meaningful destinations, control inflation, and provide optional convenience without pay-to-win risk.
+
+* Currency-Based Purchases: Any monetized item should be purchasable using in-game currency earned from curing patients, maintaining a soft loop between gameplay success and customization. Prices should be meaningful but not so high that they feel punitive.
+* Study Point Purchases: Study points should be purchasable only using in-game currency, not real money. Their cost should be moderate so they feel like earned utility rather than a shortcut to total domination.
+* Emergency Consultations: Offer limited-use, mid-session consultations that let the player temporarily rent a specialized card or tactical support to recover a difficult patient from walking out. These are purchasable with in-game currency only (never real money) and are rate-limited per case, so they read as a clutch tool earned through play rather than a paid rescue that buys a treatment outcome.
 
 ### Retention-Oriented Monetization
 
