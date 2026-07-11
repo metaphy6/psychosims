@@ -24,7 +24,7 @@ Counts are per major phase.
 
 | Phase | Items | Done | Status |
 |---|---|---|---|
-| 0 — Foundations & Conceptual Corrections | 40 | 11 | 🟡 in progress |
+| 0 — Foundations & Conceptual Corrections | 54 | 11 | 🟡 in progress |
 | 1 — Minimal Cross-Platform Runtime (PoC) | 20 | 0 | ⚪ planned |
 | 2 — Deterministic Game Core (offline) | 26 | 0 | ⚪ planned |
 | 3 — Server Control Plane & Authoritative State | 19 | 0 | ⚪ planned |
@@ -32,7 +32,7 @@ Counts are per major phase.
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 18 | 0 | ⚪ planned |
-| **Total** | **175** | **11** | |
+| **Total** | **189** | **11** | |
 
 ---
 
@@ -151,45 +151,61 @@ the roadmap safe, fast, and reliable to execute.
 **Why this is first.** Principles 1, 2, and 3 are all foundational. Building a
 config system, a module boundary, a CI gate, or a cost model *after* features
 exist means retrofitting them into scattered code — the exact failure this plan
-is designed to avoid. Sub-phases 0.5–0.7 are **cross-cutting foundations
+is designed to avoid. Sub-phases 0.5–0.8 are **cross-cutting foundations
 established alongside** 0.1–0.4 (not strictly after them): every later phase
-inherits the CI gate, the security posture, and the logging/versioning
-conventions from day one rather than bolting them on.
+inherits the CI gate, the security posture, the logging/versioning conventions,
+and the determinism/serialization contract from day one rather than bolting them
+on.
 
-**Validation.** `make verify` (test suite + `make doctor`) exits 0 cold; the
-repo builds an empty `app/` skeleton (blank Flutter screen) and a minimal
-server health-check stub; the config authority loads + validates a sample config
-and rejects a malformed one; CI runs build/lint/format/test on every push; the
-secret-scan gate catches a planted secret; the six Phase 0.3 correction
+**Validation.** `make verify` (project + framework test suites + `make doctor`)
+exits 0 cold; the repo builds an empty `app/` skeleton (blank Flutter screen), a
+native/FFI stub, and a minimal server health-check stub on the pinned toolchains;
+the config authority loads + validates a sample config and rejects a malformed
+one; the ~1.8 GB base model is fetched out-of-band and checksum-verified rather
+than committed; the deterministic `core/` produces an identical outcome for a
+fixed state + action + seed; the same log event renders identically across the
+Dart, native, and server stacks; CI runs build/lint/format/test on every push;
+the secret-scan gate catches a planted secret; the six Phase 0.3 correction
 artifacts (C-1…C-6) are committed, with authoritative specs also produced for
 C-7…C-10.
 
-### 0.1 — Repository, workspace structure & toolchain (separation of concerns)
+### 0.1 — Repository, workspace structure, toolchain & reproducible dev environment (separation of concerns)
 
 **What.** Stand up the monorepo skeleton with the module boundaries defined in
 [`ARCHITECTURE.md`](../code/ARCHITECTURE.md) — `app/` (Flutter client),
-`server/`, `packages/`, `content/`, `config/`, `tools/`, `docs/` — and settle
-the server runtime/toolchain question the config design left open.
+`server/`, `packages/`, `content/`, `config/`, `tools/`, `docs/` — settle the
+server runtime/toolchain question the config design left open, and pin a
+**reproducible dev environment** (client, native/FFI, and server toolchains)
+plus the policy for the large model binary that never belongs in git.
 
 **Why.** A clean boundary from day one is cheaper than any later refactor and
 makes every subsequent phase drop into an obvious home (Principle 2). The server
 runtime must be decided here because it determines whether the shared schema in
-`packages/` is one package or two — a choice that ripples into Phase 0.2 (config)
-and Phase 3 (server).
+`packages/` is one package or two — a choice that ripples into Phase 0.2 (config),
+Phase 0.8 (serialization), and Phase 3 (server). The native/FFI toolchain and the
+~1.8 GB model-delivery policy must be settled now because Phase 1.1 and the
+Phase 0.7 C++ logging shim both assume they already exist — discovering "where
+does the native code live and how do we ship the model?" mid-PoC is a retrofit.
 
-**How.** Establishes the physical shape all later code fills and pins the
-languages/versions the CI gate (0.5) enforces; nothing lands outside a declared
-module.
+**How.** Establishes the physical shape all later code fills, pins the
+languages/versions the CI gate (0.5) enforces, and makes "it compiles on Linux"
+reproducible on any machine and in CI instead of "works on mine"; nothing lands
+outside a declared module.
 
-**Validation.** Empty skeleton compiles on Linux; `app/` runs a blank Flutter
-screen; the server stub answers a health check; the folder layout, build matrix,
-and pinned toolchain versions match `ARCHITECTURE.md`.
+**Validation.** Empty skeleton compiles on Linux from a clean one-command
+bootstrap; `app/` runs a blank Flutter screen; the native/FFI stub and the
+server stub build + answer a health check; the ~1.8 GB model is fetched
+out-of-band (not committed) and checksum-verified; the folder layout, build
+matrix, and pinned toolchain versions match `ARCHITECTURE.md`.
 
 - [ ] Create the monorepo skeleton (`app/`, `server/`, `packages/`, `content/`, `config/`, `tools/`) with a top-level `README` in each, matching `ARCHITECTURE.md`.
 - [ ] Decide + record (ADR) the **server runtime/language** so `packages/` sharing (one schema vs two) and the toolchain are unambiguous; stand up a minimal server health-check stub rather than leaving the shape deferred.
 - [ ] Define the Flutter client layout (`app/lib/core/` pure, `app/lib/features/`, `app/lib/shared/`) and codify the "core has no I/O, no model calls" boundary.
+- [ ] **Declare the native/FFI module home** — the llama.cpp C/C++ binding layer and its build inputs — so Phase 1.1's inference path and Phase 0.7's C++ logging shim land in a declared module, not ad-hoc under `app/`.
 - [ ] Declare the **cross-platform build matrix** (the five target platforms) and which are validated when — Linux desktop + x86 Android emulator in Phase 1; the rest deferred.
-- [ ] Add the language toolchains with **pinned versions** and a `make`-level build/lint/format gate wired into `make doctor`.
+- [ ] Add the language toolchains with **pinned versions** — Flutter/Dart, the chosen server runtime, **and the native C/C++ toolchain (clang/NDK) for llama.cpp** — plus a `make`-level build/lint/format gate wired into `make doctor`.
+- [ ] Establish a **reproducible dev-environment bootstrap** (a pinned SDK/version manifest + a one-command setup such as a devcontainer or bootstrap script) so "compiles on Linux" holds identically on any dev machine and in CI, not just locally.
+- [ ] Define the **large-binary policy**: the ~1.8 GB GGUF model and build artifacts are **never committed** — declare `.gitignore` + `.gitattributes` (LFS or, preferably, out-of-band fetch-on-first-run) and a checksum-verified fetch step that Phase 1 consumes (integrity closed in 0.6).
 - [ ] Document the structure, the "where does new code go?" rule, and add a `CODEOWNERS` map for the module boundaries.
 
 ### 0.2 — Centralized configuration authority
@@ -215,10 +231,11 @@ balance constants resolve only through config; loader/validator unit tests pass
 
 - [ ] Design + implement the typed config schema + loader (see [`DESIGN-centralized-configuration.md`](../design/DESIGN-centralized-configuration.md)), grouped `network` / `model` / `promptBudget` / `balance` / `featureFlags` / `secretsRefs`.
 - [ ] Add startup validation with actionable errors; fail fast; reject unknown keys and out-of-range values.
-- [ ] Implement environment overlays (dev / staging / prod) as validated layers over one base schema.
+- [ ] Implement environment overlays (dev / staging / prod **plus a `test`/CI overlay**) as validated layers over one base schema, so tests and CI run against deterministic, validated config rather than ad-hoc values.
 - [ ] Provide DI access and add a **lint/CI rule that fails the build on any raw environment read** outside `config/` (closes the DESIGN doc's open enforcement item).
 - [ ] Bind **all balance constants** to the config `balance` group sourced from the C-4 balance spec — no constant duplicated in a feature (Principle 1 + §9).
-- [ ] Add config **schema versioning** + secret-by-reference handling (`.env.example`, names only); unit-test the loader/validator.
+- [ ] **Define how validated config crosses module boundaries** — injected into the native/FFI layer (model params), the `server/` runtime, and the `tools/` sandboxes as validated values, so no consumer (native, server, or bot) reads raw env or holds its own copy.
+- [ ] Add config **schema versioning** + secret-by-reference handling (`.env.example`, names only); **guarantee secrets are never logged** and emit the effective *non-secret* config at startup for reproducibility; unit-test the loader/validator.
 
 ### 0.3 — Conceptual correction pass (close the entry gates)
 
@@ -284,11 +301,12 @@ Phase 1.3 has nowhere to live. Reliability and integrity start here.
 CI across the initial build matrix; secret-scan + lint run both pre-commit and
 in CI; the gate stays under its time budget.
 
-- [ ] Stand up CI running build + lint + format + `make verify` on every push/PR across the initial build matrix (Linux + Android emulator).
+- [ ] Stand up **CI (GitHub Actions)** running build + lint + format + `make verify` on every push/PR across the initial build matrix (Linux + Android emulator), with **required status checks + branch protection** so a red build cannot merge.
+- [ ] **Extend `make verify` / `make test`** beyond the xops framework suite to run the project test suites (Dart `core/`, native/FFI, server) so "verify" means the *product* is green, not just the agent framework.
 - [ ] Wire pre-commit/local hooks mirroring CI (format, lint, secret-scan) so failures surface before push, never after.
-- [ ] Establish the **test harness + conventions** (unit runner, fixtures, headless mode) that Phase 1.3 (assembler) and Phase 2/3 load-bearing tests build against.
+- [ ] Establish the **test harness + conventions for every stack** — unit runner + fixtures + headless mode (Dart), a **native/FFI test path**, and an **integration harness** — that Phase 1.3 (assembler), the FFI boundary (1.1/1.4), and Phase 2/3 load-bearing tests build against.
+- [ ] Add a **build/dependency caching strategy** (pub, native compile artifacts, cached model fetch) plus a CI-time/build-time budget and a **fail-on-flaky** policy so the gate stays fast and trustworthy.
 - [ ] Add coverage reporting for load-bearing modules (`core/`, economy, prompt assembler, receipt validation) — reported to inform, not a blanket gate (Principle 4 + [DECISION 0011](../project/DECISION_LOG.md)).
-- [ ] Set a CI-time/build-time budget and a fail-on-flaky policy so the gate stays fast and trustworthy.
 
 ### 0.6 — Security, secrets & supply-chain integrity
 
@@ -312,8 +330,11 @@ exist and are referenced from the architecture doc.
 
 - [ ] Add `SECURITY.md` + a lightweight threat-model stub anchored on the server-authoritative trust boundary and the "no transcripts durable" invariant.
 - [ ] Implement secret handling end-to-end: `.env.example`, CI + pre-commit secret-scanning, and the enforced "names not values" rule.
-- [ ] Add dependency **lockfiles + a pinned-version policy**; fail CI on unreviewed drift.
+- [ ] Add dependency **lockfiles + a pinned-version policy** and **generate an SBOM**; fail CI on unreviewed drift.
 - [ ] Add dependency **vulnerability + license-compliance** scanning (ties to C-2 model redistribution terms + third-party deps).
+- [ ] **Verify the base-model artifact's integrity** — the ~1.8 GB GGUF fetch (0.1) checks a pinned checksum/signature before load, closing the supply-chain gap for the largest untracked asset.
+- [ ] **Establish the signing-key custody plan** for every signature the design relies on — mobile/desktop app signing ([ADR-0002](../design/ADR-0002-desktop-distribution-and-auth.md)) and server-signed presence/receipts/manifests (Phases 3/4) — locations, rotation, and access only; no keys in-repo.
+- [ ] **Turn "no transcripts durable" into an enforced gate** (a test/lint that fails if a raw dialogue transcript can reach a durable store or server log) and write a short **data-classification & privacy baseline** the later PII work extends.
 - [ ] Document the responsible-disclosure path + the moderation-backdoor access-control principles that Phase 7.3 implements.
 
 ### 0.7 — Observability, versioning & performance baselines
@@ -352,8 +373,44 @@ contract is defined (schema + rules only, no collection yet).
 - [ ] Provide a **shared logger per stack with identical output**: a Dart logger in `app/lib/shared/`, a thin C++ logging shim across the llama.cpp FFI boundary, and the server logger — all emitting the same rendered line and the same structured payload (human-readable in dev, JSON in staging/prod, selected via the config authority in 0.2), never raw transcripts server-side (§17); add a lint/CI check that fails direct `print` / `std::cout` / `stdout` writes bypassing the logger.
 - [ ] Establish the **versioning registry/conventions** for `ruleset_version` (Phase 3.3) and the manifest schema version (Phase 4.1) as a single source of truth from day one.
 - [ ] Define the **error-classification** convention (user / system / external; offline as a first-class state, not an error) that all features adopt, carried on the shared log schema.
+- [ ] Define **correlation/session-id propagation across the trust boundary** so one session's client, native/FFI, and server log lines — and its eventual receipt — share a single id end-to-end, making the receipt flow debuggable without ever persisting a transcript.
+- [ ] Define the **metrics contract** (counters / timers / gauges) as a concern distinct from logs — the minimal signal set the C-3 cost model and the Phase 6.6 balance oracle consume — schema only, no collection yet.
 - [ ] Establish **performance-budget baselines** + a place to record them (app cold-start, inference latency target, binary-size incl. the ~1.8 GB model delivery) feeding the Phase 1.6 device-viability gate.
-- [ ] Define the **privacy-scrubbed telemetry contract** stub the Phase 6.6 balance oracle consumes — schema + scrubbing rules only, no collection yet.
+- [ ] Define the **privacy-scrubbed telemetry + crash/error-reporting contract** the Phase 6.6 balance oracle consumes — schema, scrubbing rules, opt-in posture ([DECISION 0006](../project/DECISION_LOG.md)), and server-log **retention/redaction** so raw transcripts are never persisted (§17); no collection yet.
+
+### 0.8 — Determinism, serialization & shared-schema foundations
+
+**What.** Establish the integrity foundations the trustworthy systems stand on:
+a **determinism contract** for the pure `core/` (seeded RNG + injected clock),
+a **canonical, stable serialization** for the `packages/` schemas (manifest,
+receipt, structured deltas), the **shared-schema strategy** across the client and
+the (0.1-decided) server runtime, and the golden-fixture discipline that keeps
+all three from drifting.
+
+**Why.** The entire design rests on determinism and stable contracts:
+§4 requires a deterministic core (fixed state + action → fixed outcome), §3
+validates receipts against a pinned `ruleset_version`, and §2.2 runs
+mechanical-solvability bots that only work if replay is exact. If randomness,
+wall-clock time, or non-canonical serialization leak in, receipts stop being
+replayable, signatures/checksums (0.6, Phases 4/5) stop being reproducible, and
+the client/server contract silently forks across the trust boundary. These are
+foundations, not features — retrofitting determinism after the core exists is a
+rewrite (Principles 2, 4; integrity + reliability).
+
+**How.** Gives the sim core a single seam for all nondeterminism, gives every
+signed/validated payload one byte-stable encoding, and binds the schemas to the
+`ruleset_version` registry (0.7) so a contract-breaking change fails a test
+instead of reaching production.
+
+**Validation.** A fixed (state, action, seed) yields a byte-identical outcome and
+serialized delta across two runs and two machines; the manifest/receipt schemas
+round-trip through canonical encoding with stable ordering; a deliberate ruleset
+or schema change flips a golden/snapshot fixture red.
+
+- [ ] Establish the **determinism contract for `core/`**: one seeded PRNG and an injected clock (no wall-clock, no ambient randomness in pure rules) so a fixed state + action + seed always yields the identical outcome — the precondition for Phase 2 determinism, Phase 4 solvability bots, and receipt replay.
+- [ ] Define **canonical, stable serialization** for the `packages/` schemas (manifest, receipt, structured deltas) — deterministic field ordering + encoding — so checksums/signatures (0.6, Phases 4/5) and cross-version diffs are reproducible.
+- [ ] Settle the **shared-schema strategy** implied by the 0.1 server-runtime decision: one schema package vs two aligned ones, and the **language-neutral contract** (e.g. JSON Schema) if the server is not Dart, so the receipt/manifest contract cannot drift across the trust boundary.
+- [ ] Bind the schemas to the **`ruleset_version` registry** (0.7) and add **golden/snapshot fixtures** so a ruleset or schema change that alters a serialized outcome is caught by a failing test, not discovered in production.
 
 ---
 
