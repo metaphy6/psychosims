@@ -1,4 +1,4 @@
-Create a well-structured technical roadmap for realizing the psychosims project as a scalable, maintainable, and development-friendly system. The roadmap must be organized into clear phases and sub-phases, with each phase briefly explained in terms of what it includes and why it is important to implement.
+Create a well-structured technical roadmap for realizing the psychosims project as a scalable, maintainable, and development-friendly system by using bluprint STARTER.md located at the root of this repo. The roadmap must be organized into clear phases and sub-phases, with each phase briefly explained in terms of what it includes and why it is important to implement.
 
 The roadmap must reflect the following principles:
 
@@ -31,5 +31,7 @@ The roadmap must reflect the following principles:
   - a brief explanation of what it covers,
   - a clear explanation of why it matters,
   - and how it contributes to the overall project realization.
+- Any CoPilot model like low level GPT models or Haiku should be easily understand and implement the roadmap; all objectives must be crystal-clear
+- Roadmap phases and the subs should be created one day they may be updated or changed entirely in mind
 
 The output should be professional, structured, and suitable for technical planning and product development. It should read like a practical engineering roadmap rather than a generic project summary.

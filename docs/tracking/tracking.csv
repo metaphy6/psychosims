@@ -7,3 +7,6 @@ ts_utc,run_id,agent,scope,action,status,summary,refs,commit_sha
 2026-07-07T12:28:05Z,run-20260707122805-50170,copilot,general,commit,completed,docs(reports): add STARTER.md readiness assessment for roadmapping go/no-go,docs/reports/2026-07-07-starter-readiness-assessment.md,pending
 2026-07-09T13:51:05Z,run-20260709135105-51488,human,docs,commit,completed,docs(starter): split blueprint into Technical (§1-6) and Game Mechanics (§7-24) parts with continuous renumbering,,pending
 2026-07-09T14:08:28Z,run-20260709140828-71203,human,docs,commit,completed,"docs(reports): add Part II game-mechanics readiness assessment (GM-1..GM-11, conditional go)",,pending
+2026-07-11T11:29:10Z,run-20260711112910-18678,copilot,docs,commit,completed,docs(reports): assess P2P revert vs server cost (verdict: no),docs/reports/2026-07-11-p2p-server-cost-assessment.md,pending
+2026-07-11T11:48:51Z,run-20260711114851-27350,copilot,docs,commit,completed,"docs(starter): apply GM-1..GM-11, NC-2, L5 mechanics-assessment fixes",STARTER.md;docs/reports/2026-07-09-mechanics-readiness-assessment.md,pending
+2026-07-11T12:25:12Z,run-20260711122512-41008,copilot,docs,commit,completed,"docs(starter): add difficulty-scaled XP, social-chronic routing, hiring progression + oversight dashboard; rename art style",STARTER.md,pending
