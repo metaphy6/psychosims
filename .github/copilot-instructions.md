@@ -18,6 +18,7 @@ discovery hints, slash-command pointers, and custom-agent conventions.
 | Vendor entry points | [`CLAUDE.md`](../CLAUDE.md), [`GEMINI.md`](../GEMINI.md), [`CONVENTIONS.md`](../CONVENTIONS.md) |
 | Copilot custom agents | [`.github/agents/`](agents/) |
 | Copilot slash-command prompts | [`.github/prompts/`](prompts/) |
+| Always-on instruction files | [`.github/instructions/`](instructions/) |
 | Skill library (load on demand) | [`.agents/skills/README.md`](../.agents/skills/README.md) |
 | Project roadmap | [`docs/planning/ROADMAP.md`](../docs/planning/ROADMAP.md) |
 | Tracking log + schema | [`docs/tracking/tracking.csv`](../docs/tracking/tracking.csv), [`docs/tracking/tracking.schema.md`](../docs/tracking/tracking.schema.md) |
