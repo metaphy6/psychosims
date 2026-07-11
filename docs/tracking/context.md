@@ -9,11 +9,10 @@
 
 ## Project identity
 
-<!-- Fill in after scaffolding -->
-- **Name**: (your project name)
-- **One-liner**: (what does this project do in ≤ 15 words)
-- **Primary language**: (python / node / go / rust / …)
-- **Repo URL**: (https://github.com/…)
+- **Name**: Psychosims
+- **One-liner**: Fictional psychology-practice sim; on-device AI voices patients, a deterministic core owns outcomes, a small server owns trust.
+- **Primary language**: Dart / Flutter (client); server runtime finalized in Phase 3.
+- **Blueprint**: [`STARTER.md`](../../STARTER.md) (§1–§24).
 
 ## Key paths
 
@@ -27,19 +26,21 @@
 
 ## Active context (update as the project evolves)
 
-<!-- What is the team / agent working on right now?
-     One short paragraph is enough. Agents read this to orient fast. -->
-
-_Not yet set. Fill in after first sprint._
+The blueprint is audited and roadmapped. Next up is **Phase 0 — Foundations &
+Conceptual Corrections** in [`ROADMAP.md`](../planning/ROADMAP.md): stand up the
+monorepo structure, the centralized `config/` authority, and close the deferred
+entry-gate decisions (device spec, model license, cost model, balance spec)
+before any feature code.
 
 ## Project-specific conventions
 
-<!-- Any rules that apply *only* to this project and are NOT already in AGENTS.md.
-     E.g.: "All public APIs must have OpenAPI annotations."
-           "Use pydantic v2 models everywhere — no plain dicts."
-           "Commit messages must reference a JIRA ticket: PROJ-123." -->
-
-_None yet._
+- **Centralized configuration only** — no module reads raw env vars or hard-codes
+  constants; everything flows through `config/` (Principle 1;
+  [DESIGN-centralized-configuration](../design/DESIGN-centralized-configuration.md)).
+- **Separation of concerns** — code lands in exactly one declared module per
+  [`ARCHITECTURE.md`](../code/ARCHITECTURE.md); pure rules live in `core/`.
+- **All balance constants are owned by the balance spec** (§9), loaded via config.
+- **No dialogue transcripts persisted anywhere** — structured state/deltas only.
 
 ## Out-of-scope / do not touch
 

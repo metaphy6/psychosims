@@ -11,6 +11,7 @@ humans on **the project's design and history**.
 | [`code/`](code/) | Module-level documentation (architecture, modules, APIs). | Devs joining the codebase. |
 | [`project/`](project/) | The project's charter, decision log, glossary. | New contributors. |
 | [`design/`](design/) | Design docs (DESIGN.md) and ADRs. | Reviewers + future-you. |
+| [`specs/`](specs/) | Commissioned reference specifications (device spec, cost model, balance spec, lifecycle, token budget, …). | Agents + humans. |
 | [`planning/`](planning/) | The **ROADMAP** — single source of truth for sequenced work. | Agents + humans. |
 | [`tracking/`](tracking/) | How the `docs/tracking/tracking.csv` workflow is used. | Agents. |
 | [`guides/`](guides/) | Cross-cutting how-tos: agent operating model, model profiles, MCP usage. | Agents + ops. |

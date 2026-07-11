@@ -1,4 +1,4 @@
-Create a well-structured technical roadmap for realizing the psychosims project as a scalable, maintainable, and development-friendly system by using bluprint STARTER.md located at the root of this repo. The roadmap must be organized into clear phases and sub-phases, with each phase briefly explained in terms of what it includes and why it is important to implement.
+Create a well-structured technical roadmap for realizing the psychosims project as a scalable, maintainable, and development-friendly system by using bluprint STARTER.md located at the root of this repo. The roadmap must be organized into clear phases and sub-phases, with each phase briefly explained in terms of what it includes and why it is important to implement. ./docs folder include templates to replace with actual ones; do this meanwhile.
 
 The roadmap must reflect the following principles:
 
