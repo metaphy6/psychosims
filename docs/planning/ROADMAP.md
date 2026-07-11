@@ -24,7 +24,7 @@ Counts are per major phase.
 
 | Phase | Items | Done | Status |
 |---|---|---|---|
-| 0 — Foundations & Conceptual Corrections | 54 | 11 | 🟡 in progress |
+| 0 — Foundations & Conceptual Corrections | 72 | 11 | 🟡 in progress |
 | 1 — Minimal Cross-Platform Runtime (PoC) | 20 | 0 | ⚪ planned |
 | 2 — Deterministic Game Core (offline) | 26 | 0 | ⚪ planned |
 | 3 — Server Control Plane & Authoritative State | 19 | 0 | ⚪ planned |
@@ -32,7 +32,7 @@ Counts are per major phase.
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 18 | 0 | ⚪ planned |
-| **Total** | **189** | **11** | |
+| **Total** | **207** | **11** | |
 
 ---
 
@@ -151,11 +151,13 @@ the roadmap safe, fast, and reliable to execute.
 **Why this is first.** Principles 1, 2, and 3 are all foundational. Building a
 config system, a module boundary, a CI gate, or a cost model *after* features
 exist means retrofitting them into scattered code — the exact failure this plan
-is designed to avoid. Sub-phases 0.5–0.8 are **cross-cutting foundations
+is designed to avoid. Sub-phases 0.5–0.11 are **cross-cutting foundations
 established alongside** 0.1–0.4 (not strictly after them): every later phase
 inherits the CI gate, the security posture, the logging/versioning conventions,
-and the determinism/serialization contract from day one rather than bolting them
-on.
+the determinism/serialization contract, the client application + persistence
+architecture, the offline-first transport conventions, and the
+accessibility/localization baseline from day one rather than bolting them on —
+each is cheap as a convention and ruinously expensive as a retrofit.
 
 **Validation.** `make verify` (project + framework test suites + `make doctor`)
 exits 0 cold; the repo builds an empty `app/` skeleton (blank Flutter screen), a
@@ -167,7 +169,11 @@ fixed state + action + seed; the same log event renders identically across the
 Dart, native, and server stacks; CI runs build/lint/format/test on every push;
 the secret-scan gate catches a planted secret; the six Phase 0.3 correction
 artifacts (C-1…C-6) are committed, with authoritative specs also produced for
-C-7…C-10.
+C-7…C-10; the client's state-management, dependency-injection, local-persistence
+and concurrency conventions are declared and exercised by a trivial slice; a
+remote call degrades to offline-first and replays without data loss or double
+application; and every user-facing string is externalized behind an
+accessibility- and locale-aware presentation layer with no hard-coded copy.
 
 ### 0.1 — Repository, workspace structure, toolchain & reproducible dev environment (separation of concerns)
 
@@ -201,6 +207,7 @@ matrix, and pinned toolchain versions match `ARCHITECTURE.md`.
 - [ ] Create the monorepo skeleton (`app/`, `server/`, `packages/`, `content/`, `config/`, `tools/`) with a top-level `README` in each, matching `ARCHITECTURE.md`.
 - [ ] Decide + record (ADR) the **server runtime/language** so `packages/` sharing (one schema vs two) and the toolchain are unambiguous; stand up a minimal server health-check stub rather than leaving the shape deferred.
 - [ ] Define the Flutter client layout (`app/lib/core/` pure, `app/lib/features/`, `app/lib/shared/`) and codify the "core has no I/O, no model calls" boundary.
+- [ ] **Settle the physical home of the pure deterministic core** so the `app/` client and the headless `tools/` bots + sandbox import **one** implementation — resolve `app/lib/core/` vs a shared `packages/` package now (and update [`ARCHITECTURE.md`](../code/ARCHITECTURE.md) if it moves), because Phase 2.8 solvability bots and Phase 4.3 validation both run the core outside the app and a duplicated core would silently drift from the shipped rules.
 - [ ] **Declare the native/FFI module home** — the llama.cpp C/C++ binding layer and its build inputs — so Phase 1.1's inference path and Phase 0.7's C++ logging shim land in a declared module, not ad-hoc under `app/`.
 - [ ] Declare the **cross-platform build matrix** (the five target platforms) and which are validated when — Linux desktop + x86 Android emulator in Phase 1; the rest deferred.
 - [ ] Add the language toolchains with **pinned versions** — Flutter/Dart, the chosen server runtime, **and the native C/C++ toolchain (clang/NDK) for llama.cpp** — plus a `make`-level build/lint/format gate wired into `make doctor`.
@@ -306,6 +313,8 @@ in CI; the gate stays under its time budget.
 - [ ] Wire pre-commit/local hooks mirroring CI (format, lint, secret-scan) so failures surface before push, never after.
 - [ ] Establish the **test harness + conventions for every stack** — unit runner + fixtures + headless mode (Dart), a **native/FFI test path**, and an **integration harness** — that Phase 1.3 (assembler), the FFI boundary (1.1/1.4), and Phase 2/3 load-bearing tests build against.
 - [ ] Add a **build/dependency caching strategy** (pub, native compile artifacts, cached model fetch) plus a CI-time/build-time budget and a **fail-on-flaky** policy so the gate stays fast and trustworthy.
+- [ ] Add **contract tests across the client/server trust boundary** — the shared receipt/manifest schema (0.8) round-trips byte-identically on both sides — so the Phase 3 boundary cannot silently fork; a schema change breaks the contract test, not production.
+- [ ] Adopt **property-based / fuzz testing for the deterministic core and the canonical serializer** (seeded generators exploring the state×action space) so determinism and round-trip integrity are proven across the input space, not just hand-picked examples (Principle 4 — load-bearing logic).
 - [ ] Add coverage reporting for load-bearing modules (`core/`, economy, prompt assembler, receipt validation) — reported to inform, not a blanket gate (Principle 4 + [DECISION 0011](../project/DECISION_LOG.md)).
 
 ### 0.6 — Security, secrets & supply-chain integrity
@@ -334,6 +343,7 @@ exist and are referenced from the architecture doc.
 - [ ] Add dependency **vulnerability + license-compliance** scanning (ties to C-2 model redistribution terms + third-party deps).
 - [ ] **Verify the base-model artifact's integrity** — the ~1.8 GB GGUF fetch (0.1) checks a pinned checksum/signature before load, closing the supply-chain gap for the largest untracked asset.
 - [ ] **Establish the signing-key custody plan** for every signature the design relies on — mobile/desktop app signing ([ADR-0002](../design/ADR-0002-desktop-distribution-and-auth.md)) and server-signed presence/receipts/manifests (Phases 3/4) — locations, rotation, and access only; no keys in-repo.
+- [ ] **Establish the client-side data-at-rest posture**: the durable offline receipt queue (Phase 3.4), the cached primitive profile (3.2), auth tokens, and any device-held signing keys live in platform secure storage (Keychain / Keystore / OS credential store), never plaintext on disk — the client half of the key-custody plan above.
 - [ ] **Turn "no transcripts durable" into an enforced gate** (a test/lint that fails if a raw dialogue transcript can reach a durable store or server log) and write a short **data-classification & privacy baseline** the later PII work extends.
 - [ ] Document the responsible-disclosure path + the moderation-backdoor access-control principles that Phase 7.3 implements.
 
@@ -411,6 +421,90 @@ or schema change flips a golden/snapshot fixture red.
 - [ ] Define **canonical, stable serialization** for the `packages/` schemas (manifest, receipt, structured deltas) — deterministic field ordering + encoding — so checksums/signatures (0.6, Phases 4/5) and cross-version diffs are reproducible.
 - [ ] Settle the **shared-schema strategy** implied by the 0.1 server-runtime decision: one schema package vs two aligned ones, and the **language-neutral contract** (e.g. JSON Schema) if the server is not Dart, so the receipt/manifest contract cannot drift across the trust boundary.
 - [ ] Bind the schemas to the **`ruleset_version` registry** (0.7) and add **golden/snapshot fixtures** so a ruleset or schema change that alters a serialized outcome is caught by a failing test, not discovered in production.
+- [ ] Define the **wire-schema compatibility contract** — additive-only evolution and explicit unknown-field handling — so a newer client against an older server (and vice versa) degrades safely across the trust boundary; the 0.7 registry records *which* versions exist, this rule governs how they interoperate.
+
+### 0.9 — Client application, state & persistence architecture
+
+**What.** Settle the Flutter client's load-bearing architecture decisions before
+any feature is written: the state-management approach, the dependency-injection
+mechanism config and services flow through, the navigation/routing convention,
+the local-persistence/offline-first storage seam, the on-device concurrency
+model, and the internal shape every `features/` module repeats.
+
+**Why.** These are the choices every screen and service silently assumes. Picking
+them per-feature is how a codebase forks into three state patterns and four
+storage layers. DI is also the concrete mechanism Principle 1 depends on — the
+[config authority](#02--centralized-configuration-authority) is only injectable
+if there is one declared way to inject it. The concurrency model is a hard
+**performance** foundation: llama.cpp inference over FFI (Phase 1.1) must run off
+the UI isolate or every turn stalls the frame loop.
+
+**How.** Gives every later feature one obvious skeleton to drop into (Principle 2),
+one seam for durable local state, and one rule for keeping heavy work off the UI
+thread — so features add behaviour, not architecture.
+
+**Validation.** A trivial vertical slice wires UI → injected service → persisted
+state and back; a heavy task runs off the UI isolate without dropping frames;
+local state survives a simulated app upgrade via the migration path.
+
+- [ ] Decide + record (ADR) the **state-management + dependency-injection approach**, and make the [config authority](#02--centralized-configuration-authority) + shared services injectable through it (no globals, no ad-hoc singletons).
+- [ ] Establish the **navigation/routing convention** (typed routes + deep-link readiness for the C-5 desktop OAuth callback) so `session/` / `clinic/` / `progression/` flows compose predictably.
+- [ ] Define the **local-persistence & offline-first storage abstraction** — one seam for durable local state (the Phase 3.4 receipt queue, cached primitive profile, settings) with an explicit **local cache schema-migration** policy so state survives app upgrades and never scatters into per-feature stores.
+- [ ] Declare the **on-device concurrency model**: inference (llama.cpp/FFI), serialization, and fetch run off the UI isolate so the frame loop never stalls — a performance rule Phase 1.1 builds against.
+- [ ] Codify the **feature-module skeleton** (the internal shape of `app/lib/features/<domain>/`: state, services, UI, tests) so every later feature lands in an identical, reviewable structure.
+
+### 0.10 — Networking & offline-first transport conventions
+
+**What.** Establish the client's transport conventions — one typed API-client
+seam bound to the shared schema, a resilience policy for every remote call,
+offline as a first-class state, and one verified large-asset fetch path — so no
+feature ever hand-rolls HTTP.
+
+**Why.** The design is explicitly local-first and offline-tolerant
+([ARCHITECTURE.md](../code/ARCHITECTURE.md) §4): reconnects, timeouts, and
+partial fetches are normal, not exceptional. Deciding retry/backoff, token
+refresh, and offline queue-and-replay once — before Phase 3 (server) and Phase
+3.4 (offline receipts) — prevents each caller inventing its own **reliability**
+story. It also gives Phase 1 (the ~1.8 GB model) and Phase 4.4 (signed
+manifests) one retryable, signature-verifying fetch path instead of two.
+
+**How.** Turns "the network is unreliable" from a per-feature hazard into a
+single, tested transport contract every server/CDN call rides on.
+
+**Validation.** A remote call transparently degrades to offline-first and
+replays on reconnect without data loss or double application; a large-asset
+fetch resumes after an interruption and verifies its signature/checksum before use.
+
+- [ ] Establish the **typed API-client seam** bound to the shared `packages/` schema (0.8) — no ad-hoc HTTP in features — with auth-token injection + refresh routed through secure storage (0.6/0.9).
+- [ ] Define the **resilience policy for every remote call**: timeouts, bounded exponential backoff + jitter, idempotent-retry rules, and a circuit-breaker / degrade-to-offline path that feeds the Phase 3.4 offline receipt protocol.
+- [ ] Make **offline a first-class transport state** (detection + queue-and-replay), consistent with the 0.7 error-classification convention, so the client degrades to local-first play without data loss and reconciles on reconnect.
+- [ ] Establish the **verified large-asset fetch convention** (resumable/chunked fetch + signature/checksum verify before load) shared by the Phase 1 model download and the Phase 4.4 signed-manifest delivery.
+
+### 0.11 — Accessibility & internationalization foundations
+
+**What.** Externalize all user-facing text and set the accessibility baseline
+from the first screen, so a text-heavy game on five platforms is localizable and
+accessible by construction rather than by a painful late retrofit.
+
+**Why.** String externalization, locale-aware formatting, and a11y (semantics,
+scalable text, contrast, input alternatives) are the canonical "cheap now,
+ruinous later" foundations. The economy display (§9), the ink-wash presentation
+layer (Phase 7.1), and store-submission requirements (Phase 7.5) all assume this
+was done from day one. Doing it now also protects the §4 core purity: the
+deterministic core must emit stable **tokens/keys**, never localized prose.
+
+**How.** Gives every feature one place to resolve copy and one accessibility
+contract, and keeps localization/presentation strictly out of `core/`.
+
+**Validation.** No hard-coded user-facing string exists (a lint/gate catches
+one); the initial build matrix passes a basic a11y check (semantic labels,
+scalable text, contrast); the core emits keys that the presentation layer
+resolves to localized, accessible strings.
+
+- [ ] Externalize **all user-facing strings** behind a localization layer wired through the config-selected locale (0.2) — no hard-coded UI/dialogue-chrome copy — and add a gate that fails on a planted hard-coded string.
+- [ ] Establish **locale-aware formatting** (numbers, the §9 economy currencies, dates, pluralization) and **RTL-readiness** as a shared convention in `app/lib/shared/`.
+- [ ] Set the **accessibility baseline** — semantic labels, scalable text, sufficient contrast, and input alternatives — validated on the initial build matrix so Phase 7.1's presentation layer is built a11y-aware, not corrected after.
+- [ ] Keep localization/a11y **out of the deterministic core**: `core/` emits stable tokens/keys, the presentation layer resolves them to localized, accessible strings — preserving §4 core purity and the 0.8 determinism contract.
 
 ---
 
