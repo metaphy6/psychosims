@@ -24,15 +24,15 @@ Counts are per major phase.
 
 | Phase | Items | Done | Status |
 |---|---|---|---|
-| 0 — Foundations & Conceptual Corrections | 72 | 11 | 🟡 in progress |
-| 1 — Minimal Cross-Platform Runtime (PoC) | 20 | 0 | ⚪ planned |
+| 0 — Foundations & Conceptual Corrections | 93 | 11 | 🟡 in progress |
+| 1 — Minimal Cross-Platform Runtime (PoC) | 21 | 0 | ⚪ planned |
 | 2 — Deterministic Game Core (offline) | 26 | 0 | ⚪ planned |
-| 3 — Server Control Plane & Authoritative State | 19 | 0 | ⚪ planned |
+| 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
-| 7 — Presentation, Monetization & Launch | 18 | 0 | ⚪ planned |
-| **Total** | **207** | **11** | |
+| 7 — Presentation, Monetization & Launch | 19 | 0 | ⚪ planned |
+| **Total** | **233** | **11** | |
 
 ---
 
@@ -151,13 +151,17 @@ the roadmap safe, fast, and reliable to execute.
 **Why this is first.** Principles 1, 2, and 3 are all foundational. Building a
 config system, a module boundary, a CI gate, or a cost model *after* features
 exist means retrofitting them into scattered code — the exact failure this plan
-is designed to avoid. Sub-phases 0.5–0.11 are **cross-cutting foundations
+is designed to avoid. Sub-phases 0.5–0.12 are **cross-cutting foundations
 established alongside** 0.1–0.4 (not strictly after them): every later phase
-inherits the CI gate, the security posture, the logging/versioning conventions,
-the determinism/serialization contract, the client application + persistence
-architecture, the offline-first transport conventions, and the
-accessibility/localization baseline from day one rather than bolting them on —
-each is cheap as a convention and ruinously expensive as a retrofit.
+inherits the CI gate, the security + server-integrity posture (abuse throttling,
+an append-only audit trail, and a backup/disaster-recovery plan for the
+authoritative store), the logging/versioning/identity conventions, the
+determinism/serialization contract (including deterministic fixed-point money and
+a single authoritative-time seam), the client application + persistence
+architecture, the offline-first transport conventions, the
+accessibility/localization baseline, and the content-integrity + prompt-injection
+defenses from day one rather than bolting them on — each is cheap as a convention
+and ruinously expensive as a retrofit.
 
 **Validation.** `make verify` (project + framework test suites + `make doctor`)
 exits 0 cold; the repo builds an empty `app/` skeleton (blank Flutter screen), a
@@ -172,8 +176,17 @@ artifacts (C-1…C-6) are committed, with authoritative specs also produced for
 C-7…C-10; the client's state-management, dependency-injection, local-persistence
 and concurrency conventions are declared and exercised by a trivial slice; a
 remote call degrades to offline-first and replays without data loss or double
-application; and every user-facing string is externalized behind an
-accessibility- and locale-aware presentation layer with no hard-coded copy.
+application; every user-facing string is externalized behind an
+accessibility- and locale-aware presentation layer with no hard-coded copy;
+economy math resolves through a deterministic fixed-point money type (no
+platform-dependent floating point in `core/`) and every time-dependent rule reads
+one injected, server-reconcilable clock; the audit-trail schema, the
+abuse-prevention baseline, and the backup/DR posture are documented as
+conventions (executed in Phases 3.1–3.3 once the store and server exist); the
+performance-budget targets and the memory-pressure rule are declared (measured at
+the Phase 1.6 device-viability gate); and a planted real diagnostic label
+(DSM/ICD) or a hostile untrusted string routed at the prompt is rejected by the
+content-integrity and injection-defense gates.
 
 ### 0.1 — Repository, workspace structure, toolchain & reproducible dev environment (separation of concerns)
 
@@ -212,6 +225,9 @@ matrix, and pinned toolchain versions match `ARCHITECTURE.md`.
 - [ ] Declare the **cross-platform build matrix** (the five target platforms) and which are validated when — Linux desktop + x86 Android emulator in Phase 1; the rest deferred.
 - [ ] Add the language toolchains with **pinned versions** — Flutter/Dart, the chosen server runtime, **and the native C/C++ toolchain (clang/NDK) for llama.cpp** — plus a `make`-level build/lint/format gate wired into `make doctor`.
 - [ ] Establish a **reproducible dev-environment bootstrap** (a pinned SDK/version manifest + a one-command setup such as a devcontainer or bootstrap script) so "compiles on Linux" holds identically on any dev machine and in CI, not just locally.
+- [ ] Provide a **single monorepo task orchestrator** (one `make`/workspace entry point that builds, tests, lints, and formats every module the same way locally and in CI) so no module invents its own commands and the 0.5 gate wraps one interface, not five.
+- [ ] **Pin and record build inputs** as a convention from day one (deterministic toolchain + dependency hashes, a lockfile-backed build manifest), so the reproducible/verifiable signed-release build and provenance audit can be *implemented* at Phase 7.6 without a retrofit — the build-side complement to the signing-key custody plan (0.6) and [ADR-0002](../design/ADR-0002-desktop-distribution-and-auth.md).
+- [ ] **Declare where generated code lands** (schema/serialization codegen from `packages/`, FFI bindings) — a committed-vs-generated boundary + a "generated is never hand-edited" rule — so the 0.8 shared-schema contract has an unambiguous, reviewable output home.
 - [ ] Define the **large-binary policy**: the ~1.8 GB GGUF model and build artifacts are **never committed** — declare `.gitignore` + `.gitattributes` (LFS or, preferably, out-of-band fetch-on-first-run) and a checksum-verified fetch step that Phase 1 consumes (integrity closed in 0.6).
 - [ ] Document the structure, the "where does new code go?" rule, and add a `CODEOWNERS` map for the module boundaries.
 
@@ -243,6 +259,8 @@ balance constants resolve only through config; loader/validator unit tests pass
 - [ ] Bind **all balance constants** to the config `balance` group sourced from the C-4 balance spec — no constant duplicated in a feature (Principle 1 + §9).
 - [ ] **Define how validated config crosses module boundaries** — injected into the native/FFI layer (model params), the `server/` runtime, and the `tools/` sandboxes as validated values, so no consumer (native, server, or bot) reads raw env or holds its own copy.
 - [ ] Add config **schema versioning** + secret-by-reference handling (`.env.example`, names only); **guarantee secrets are never logged** and emit the effective *non-secret* config at startup for reproducibility; unit-test the loader/validator.
+- [ ] Establish the **feature-flag & kill-switch discipline** behind the same DI interface — flags resolve through the config authority (never ad-hoc booleans), support progressive rollout, and give server-authoritative systems (receipt validation, matchmaking, the economy) and the `ruleset_version` sunset a documented off-switch — so a bad release degrades safely instead of requiring an emergency app-store push.
+- [ ] Define **config precedence + typed numeric bounds** explicitly (base → environment overlay → secret refs → runtime flags), so every value has a documented resolution order and out-of-range balance/model/network numbers fail validation at startup rather than surfacing as gameplay or cost bugs later.
 
 ### 0.3 — Conceptual correction pass (close the entry gates)
 
@@ -308,34 +326,46 @@ Phase 1.3 has nowhere to live. Reliability and integrity start here.
 CI across the initial build matrix; secret-scan + lint run both pre-commit and
 in CI; the gate stays under its time budget.
 
-- [ ] Stand up **CI (GitHub Actions)** running build + lint + format + `make verify` on every push/PR across the initial build matrix (Linux + Android emulator), with **required status checks + branch protection** so a red build cannot merge.
+- [ ] Stand up **CI** running build + lint + format + `make verify` on every push/PR across the initial build matrix (Linux + Android emulator), with **required status checks + branch protection** so a red build cannot merge. Record the chosen CI provider (e.g. GitHub Actions) in a short ADR rather than hard-coding a vendor assumption.
 - [ ] **Extend `make verify` / `make test`** beyond the xops framework suite to run the project test suites (Dart `core/`, native/FFI, server) so "verify" means the *product* is green, not just the agent framework.
 - [ ] Wire pre-commit/local hooks mirroring CI (format, lint, secret-scan) so failures surface before push, never after.
 - [ ] Establish the **test harness + conventions for every stack** — unit runner + fixtures + headless mode (Dart), a **native/FFI test path**, and an **integration harness** — that Phase 1.3 (assembler), the FFI boundary (1.1/1.4), and Phase 2/3 load-bearing tests build against.
+- [ ] Establish **test-data / fixture management + deterministic CI seeds** — a shared home for golden fixtures and sample manifests/receipts, a fixed RNG seed convention in CI (ties to the 0.8 determinism contract), and a rule that fixtures move with the code they pin — so tests are reproducible run-to-run and machine-to-machine.
 - [ ] Add a **build/dependency caching strategy** (pub, native compile artifacts, cached model fetch) plus a CI-time/build-time budget and a **fail-on-flaky** policy so the gate stays fast and trustworthy.
+- [ ] Wire the **content-integrity gate (0.12) into CI** — the no-real-clinical-label lint and the untrusted-input schema checks run on every push, so a banned DSM/ICD term or a free-text field that could reach the prompt fails the build, not review.
 - [ ] Add **contract tests across the client/server trust boundary** — the shared receipt/manifest schema (0.8) round-trips byte-identically on both sides — so the Phase 3 boundary cannot silently fork; a schema change breaks the contract test, not production.
 - [ ] Adopt **property-based / fuzz testing for the deterministic core and the canonical serializer** (seeded generators exploring the state×action space) so determinism and round-trip integrity are proven across the input space, not just hand-picked examples (Principle 4 — load-bearing logic).
 - [ ] Add coverage reporting for load-bearing modules (`core/`, economy, prompt assembler, receipt validation) — reported to inform, not a blanket gate (Principle 4 + [DECISION 0011](../project/DECISION_LOG.md)).
 
 ### 0.6 — Security, secrets & supply-chain integrity
 
-**What.** Establish the baseline security posture for a server-authoritative
-system: secret handling, dependency integrity, license compliance, and a written
-trust-boundary threat model.
+**What.** Establish the baseline security **and server-integrity** posture for a
+server-authoritative system: secret handling, dependency integrity, license
+compliance, a written trust-boundary threat model, and the operational integrity
+foundations the "ironclad progress preservation" promise (§3) rests on — abuse
+throttling, an append-only audit trail for authoritative actions, a
+backup/disaster-recovery plan, and a data-lifecycle/erasure model that keeps
+moderation (§2.5, §17) and PII separation (§8) enforceable.
 
 **Why.** The whole design rests on "a client-computed number is a claim, not a
 fact" ([`ARCHITECTURE.md`](../code/ARCHITECTURE.md) §4–§5). Secrets, vulnerable
 dependencies, or incompatible licenses (especially around the C-2 base model)
-are integrity risks that are far cheaper to fence off now than to retrofit. This
-grounds Phase 3 (auth/PKI/receipts), Phase 5 (anti-collusion), and Phase 7.3
-(moderation backdoor).
+are integrity risks that are far cheaper to fence off now than to retrofit. The
+authoritative store is the single source of truth for progression and the
+economy, so losing it, corrupting it, or being unable to audit *who changed what*
+is an existential failure — a backup/restore drill, an audit trail, and abuse
+throttling are foundations, not Phase-3 afterthoughts. This grounds Phase 3
+(auth/PKI/receipts), Phase 5 (anti-collusion), Phase 6 (creator royalties), and
+Phase 7.3 (moderation backdoor).
 
 **How.** Turns the trust boundary from prose into enforced gates and gives every
 later security-sensitive phase a documented threat model to extend.
 
 **Validation.** A committed secret is caught by the gate; a vulnerable or
 license-incompatible dependency fails CI; `SECURITY.md` + a threat-model stub
-exist and are referenced from the architecture doc.
+exist and are referenced from the architecture doc; the audit-trail, abuse-limit,
+backup/restore, and data-erasure conventions are documented (schemas + drills
+defined, wired for real in the owning server phases).
 
 - [ ] Add `SECURITY.md` + a lightweight threat-model stub anchored on the server-authoritative trust boundary and the "no transcripts durable" invariant.
 - [ ] Implement secret handling end-to-end: `.env.example`, CI + pre-commit secret-scanning, and the enforced "names not values" rule.
@@ -344,7 +374,11 @@ exist and are referenced from the architecture doc.
 - [ ] **Verify the base-model artifact's integrity** — the ~1.8 GB GGUF fetch (0.1) checks a pinned checksum/signature before load, closing the supply-chain gap for the largest untracked asset.
 - [ ] **Establish the signing-key custody plan** for every signature the design relies on — mobile/desktop app signing ([ADR-0002](../design/ADR-0002-desktop-distribution-and-auth.md)) and server-signed presence/receipts/manifests (Phases 3/4) — locations, rotation, and access only; no keys in-repo.
 - [ ] **Establish the client-side data-at-rest posture**: the durable offline receipt queue (Phase 3.4), the cached primitive profile (3.2), auth tokens, and any device-held signing keys live in platform secure storage (Keychain / Keystore / OS credential store), never plaintext on disk — the client half of the key-custody plan above.
+- [ ] **Design the server-side abuse-prevention baseline** (policy + shapes only): the authenticated-request rule, per-account/per-endpoint rate-limit + throttle conventions, and request-quota shapes every anti-farming and anomaly-detection system (§3, §17, §21) will plug into — so the enforcement built in Phase 3.1 rides a documented convention rather than being re-invented per feature.
+- [ ] **Define the append-only audit-trail schema + convention** for authoritative actions (moderation, ownership transfers, receipt acceptance/rejection, royalty payouts) — tamper-evident, correlation-id–stamped (0.7), transcript-free — so the trail *implemented* in Phase 3.3 makes integrity incidents forensically reconstructable and gives the Phase 7.3 moderation backdoor an accountable record.
+- [ ] **Define the backup / disaster-recovery posture** for the authoritative profile + ledger store — backup cadence and point-in-time-recovery target — plus the server data-migration + transactional-integrity conventions the Phase 3 ownership arbitration (the double-spend analog) depends on; the documented restore drill that *proves* "ironclad progress preservation" (§3) runs in Phase 3.2 once the store exists.
 - [ ] **Turn "no transcripts durable" into an enforced gate** (a test/lint that fails if a raw dialogue transcript can reach a durable store or server log) and write a short **data-classification & privacy baseline** the later PII work extends.
+- [ ] **Define the data-lifecycle & erasure model** — pseudonymous IDs only in the ledger (§17), and a right-to-erasure / revocation data path that feeds the §17 revocation list, honours §8 PII separation, and covers the C-6 mature-rating age-gate/consent data — so deletion and moderation obligations are designed in, not bolted on.
 - [ ] Document the responsible-disclosure path + the moderation-backdoor access-control principles that Phase 7.3 implements.
 
 ### 0.7 — Observability, versioning & performance baselines
@@ -384,8 +418,9 @@ contract is defined (schema + rules only, no collection yet).
 - [ ] Establish the **versioning registry/conventions** for `ruleset_version` (Phase 3.3) and the manifest schema version (Phase 4.1) as a single source of truth from day one.
 - [ ] Define the **error-classification** convention (user / system / external; offline as a first-class state, not an error) that all features adopt, carried on the shared log schema.
 - [ ] Define **correlation/session-id propagation across the trust boundary** so one session's client, native/FFI, and server log lines — and its eventual receipt — share a single id end-to-end, making the receipt flow debuggable without ever persisting a transcript.
+- [ ] Establish the **identifier & idempotency-key strategy** as a single convention: how entity ids, the client-generated receipt idempotency keys (§3, Phase 3.4), and the pseudonymous therapist ids (§17) are generated (collision-resistant, non-PII, non-enumerable), so dedupe, provenance, and privacy all rely on one documented id scheme rather than ad-hoc formats per feature.
 - [ ] Define the **metrics contract** (counters / timers / gauges) as a concern distinct from logs — the minimal signal set the C-3 cost model and the Phase 6.6 balance oracle consume — schema only, no collection yet.
-- [ ] Establish **performance-budget baselines** + a place to record them (app cold-start, inference latency target, binary-size incl. the ~1.8 GB model delivery) feeding the Phase 1.6 device-viability gate.
+- [ ] Define the **per-stack performance-budget targets** + the file they live in — app cold-start, inference tokens/sec + latency target, peak-RAM ceiling anchored to the [DEVICE-SPEC](../specs/DEVICE-SPEC.md) floor, UI frame budget, and binary size incl. the ~1.8 GB model delivery — so every later feature has a numeric budget to regress against, not a vibe; the actual baselines are *measured* against these targets at the Phase 1.6 device-viability gate.
 - [ ] Define the **privacy-scrubbed telemetry + crash/error-reporting contract** the Phase 6.6 balance oracle consumes — schema, scrubbing rules, opt-in posture ([DECISION 0006](../project/DECISION_LOG.md)), and server-log **retention/redaction** so raw transcripts are never persisted (§17); no collection yet.
 
 ### 0.8 — Determinism, serialization & shared-schema foundations
@@ -418,6 +453,8 @@ round-trip through canonical encoding with stable ordering; a deliberate ruleset
 or schema change flips a golden/snapshot fixture red.
 
 - [ ] Establish the **determinism contract for `core/`**: one seeded PRNG and an injected clock (no wall-clock, no ambient randomness in pure rules) so a fixed state + action + seed always yields the identical outcome — the precondition for Phase 2 determinism, Phase 4 solvability bots, and receipt replay.
+- [ ] **Ban platform-dependent floating point from `core/` and the economy**: define a deterministic **fixed-point / integer money + ratio representation** for every currency, multiplier, and percentage (§9, §14, §17, §19, §24), so the same receipt replays byte-identically across x86/ARM and client/server, and rounding can never mint or destroy currency — a cross-platform determinism *and* economy-integrity foundation.
+- [ ] **Define the authoritative-time seam**: the injected clock reconciles to *server* time for every time-dependent rule — ownership lease TTL (§3, Phase 3.4), cooldowns and recovery windows (§23), daily-reset cycles, tax weeks and audits (§22), and macro-event timing (§22) — while the device clock is treated as untrusted and only a monotonic source is used for local durations, so a player cannot gain advantage by changing their clock and offline replay stays consistent.
 - [ ] Define **canonical, stable serialization** for the `packages/` schemas (manifest, receipt, structured deltas) — deterministic field ordering + encoding — so checksums/signatures (0.6, Phases 4/5) and cross-version diffs are reproducible.
 - [ ] Settle the **shared-schema strategy** implied by the 0.1 server-runtime decision: one schema package vs two aligned ones, and the **language-neutral contract** (e.g. JSON Schema) if the server is not Dart, so the receipt/manifest contract cannot drift across the trust boundary.
 - [ ] Bind the schemas to the **`ruleset_version` registry** (0.7) and add **golden/snapshot fixtures** so a ruleset or schema change that alters a serialized outcome is caught by a failing test, not discovered in production.
@@ -451,6 +488,8 @@ local state survives a simulated app upgrade via the migration path.
 - [ ] Establish the **navigation/routing convention** (typed routes + deep-link readiness for the C-5 desktop OAuth callback) so `session/` / `clinic/` / `progression/` flows compose predictably.
 - [ ] Define the **local-persistence & offline-first storage abstraction** — one seam for durable local state (the Phase 3.4 receipt queue, cached primitive profile, settings) with an explicit **local cache schema-migration** policy so state survives app upgrades and never scatters into per-feature stores.
 - [ ] Declare the **on-device concurrency model**: inference (llama.cpp/FFI), serialization, and fetch run off the UI isolate so the frame loop never stalls — a performance rule Phase 1.1 builds against.
+- [ ] Define the **app-lifecycle & crash-recovery convention**: state is durably checkpointed so a backgrounded, OS-killed, or crashed app relaunches into a consistent state with no lost or double-applied session progress — the client-side reliability complement to the 0.10 offline queue and the 0.6 backup posture.
+- [ ] Declare the **memory-pressure & asset-lifecycle rule** (convention + budget): the ~1.8 GB model stays resident while only compact manifests swap (§5 zero-overhead swap) and heavy presentation assets (the Phase 7.1 ink-wash layers) load/evict against a budget — so features are written to it from the start; that the app actually degrades gracefully under OS memory pressure on minimum-spec devices ([DEVICE-SPEC](../specs/DEVICE-SPEC.md)) is *verified* at the Phase 1.6 device-viability gate.
 - [ ] Codify the **feature-module skeleton** (the internal shape of `app/lib/features/<domain>/`: state, services, UI, tests) so every later feature lands in an identical, reviewable structure.
 
 ### 0.10 — Networking & offline-first transport conventions
@@ -475,10 +514,10 @@ single, tested transport contract every server/CDN call rides on.
 replays on reconnect without data loss or double application; a large-asset
 fetch resumes after an interruption and verifies its signature/checksum before use.
 
-- [ ] Establish the **typed API-client seam** bound to the shared `packages/` schema (0.8) — no ad-hoc HTTP in features — with auth-token injection + refresh routed through secure storage (0.6/0.9).
-- [ ] Define the **resilience policy for every remote call**: timeouts, bounded exponential backoff + jitter, idempotent-retry rules, and a circuit-breaker / degrade-to-offline path that feeds the Phase 3.4 offline receipt protocol.
+- [ ] Establish the **typed API-client seam** bound to the shared `packages/` schema (0.8) — no ad-hoc HTTP in features — with auth-token injection + refresh routed through secure storage (0.6/0.9), and every mutating request carrying its idempotency key (0.7) so the server-side dedupe (Phase 3.4) has a client contract to rely on.
+- [ ] Define the **resilience policy for every remote call**: timeouts, bounded exponential backoff + jitter, idempotent-retry rules, honouring server rate-limit / `429` / `Retry-After` signals (the client half of the 0.6 abuse-prevention baseline), and a circuit-breaker / degrade-to-offline path that feeds the Phase 3.4 offline receipt protocol.
 - [ ] Make **offline a first-class transport state** (detection + queue-and-replay), consistent with the 0.7 error-classification convention, so the client degrades to local-first play without data loss and reconciles on reconnect.
-- [ ] Establish the **verified large-asset fetch convention** (resumable/chunked fetch + signature/checksum verify before load) shared by the Phase 1 model download and the Phase 4.4 signed-manifest delivery.
+- [ ] Establish the **verified, bandwidth-aware large-asset fetch convention** (resumable/chunked fetch + signature/checksum verify before load, plus a metered-/cellular-connection posture) shared by the Phase 1 model download and the Phase 4.4 signed-manifest delivery — directly serving the §1 download-acceptance gate so the ~1.8 GB first-run fetch is deferrable and never silently burns a data cap.
 
 ### 0.11 — Accessibility & internationalization foundations
 
@@ -504,7 +543,46 @@ resolves to localized, accessible strings.
 - [ ] Externalize **all user-facing strings** behind a localization layer wired through the config-selected locale (0.2) — no hard-coded UI/dialogue-chrome copy — and add a gate that fails on a planted hard-coded string.
 - [ ] Establish **locale-aware formatting** (numbers, the §9 economy currencies, dates, pluralization) and **RTL-readiness** as a shared convention in `app/lib/shared/`.
 - [ ] Set the **accessibility baseline** — semantic labels, scalable text, sufficient contrast, and input alternatives — validated on the initial build matrix so Phase 7.1's presentation layer is built a11y-aware, not corrected after.
+- [ ] Define the **input & motion accessibility contract** for the card-driven interface (§11) and the ink-wash motion (§20): keyboard/switch/pointer alternatives to the focus wheel and sliders, honour OS reduce-motion / high-contrast settings (the chromatic-fracture and shader motion must be dampenable), and keep hit-targets and dynamic-type reflow within platform guidelines — so the game's most distinctive UI stays reachable.
 - [ ] Keep localization/a11y **out of the deterministic core**: `core/` emits stable tokens/keys, the presentation layer resolves them to localized, accessible strings — preserving §4 core purity and the 0.8 determinism contract.
+
+### 0.12 — Content integrity, fictional-taxonomy discipline & untrusted-input safety
+
+**What.** Establish the content-safety foundations every case-bearing system
+inherits: an enforced ban on real diagnostic labels in game content, the
+"evocative-not-alien" fictional-naming convention, and the untrusted-input /
+prompt-injection defense contract for the strings that reach the local model.
+
+**Why.** Two blueprint-named hazards have no home in the plan otherwise, and both
+are ruinous as retrofits. First, §8 makes it *authoritative* that no real
+diagnostic label or manual (DSM/ICD) may appear anywhere in content — manifests,
+the nine-axis synthesis (§12), study fields, or the in-game encyclopedia (§15);
+this is legal-safety and store-review survival, not a style preference, so it must
+be a gate from the first authored string. Second, §11 is explicit that card-only
+input closes the *direct* injection channel but **not** two indirect ones: peer-
+authored case history (§17) and community-authored manifests (§21) are attacker-
+controlled strings that reach the prompt. Deciding schema whitelisting, enums-over-
+free-text, sanitization at signing, and template isolation *before* the content
+pipeline (Phase 4), the living history (Phase 5), and the UGC portal (Phase 6)
+exist is the only way the guarantee is "defended in depth" rather than patched
+after an exploit. (Principles 2, 3; integrity + security + legal safety.)
+
+**How.** Gives the `content/` pipeline, the receipt/history schemas, and the prompt
+assembler one shared set of content rules and one untrusted-string handling
+contract, so every downstream content system enforces the same invariants instead
+of re-deriving them.
+
+**Validation.** A planted real diagnostic label (e.g. a DSM/ICD term) in a
+manifest, study field, or encyclopedia entry fails the content lint; a fictional
+name that near-clones a real drug brand or diagnosis is flagged; a hostile string
+in a case-history or manifest field is schema-rejected or neutralised so it can
+never be read by the model as instructions; the disclaimer-string hooks exist for
+Phase 7.5 to finalise.
+
+- [ ] Implement the **no-real-clinical-label content-integrity gate** (§8): a lint/check over `content/` manifests, the nine-axis synthesis fields (§12), study-field definitions, and the fictional encyclopedia (§15) that fails the build on any real DSM/ICD term or real drug brand — authoritative across the whole content pipeline, wired into CI (0.5).
+- [ ] Establish the **fictional-taxonomy naming convention + registry** (§8 "evocative, not alien"): documented rules and a checkable registry for disorder, medication, and study-field names — familiar roots + plausible clinical/pharma suffixes, never a near-homophone of a real trademark or a reskinned real label — so names stay legible yet legally fictional.
+- [ ] Define the **untrusted-input / prompt-injection defense contract** (§11): treat peer-authored case history (§17) and community-authored manifests (§21) as untrusted — strict schema whitelisting (enums + numbers over free text wherever possible), server-side sanitization + length caps applied at signing time (§2.2), and template-level isolation so an untrusted string can never be interpreted as instructions by the local model.
+- [ ] Add the **disclaimer & fictional-framing string hooks** (§8): reserved, externalized (0.11) presentation slots for the "fictional simulation, not real care" disclaimer and entertainment-focused framing, wired from day one so Phase 7.5 finalises copy rather than retrofitting placement.
 
 ---
 
@@ -626,6 +704,7 @@ viability is explicitly marked pending until the human opens physical-device tes
 - [ ] Record **prompt token budget** (C-7) vs the chosen model's usable context.
 - [ ] Define the **download-acceptance** delivery/retry strategy for the ~1.8 GB first-run model.
 - [ ] Record the **device-viability** method + the 1–1.5B fallback plan (physical-device measurement gated on human sign-off).
+- [ ] Measure the **0.7 performance-budget baselines** against their targets — cold-start, tokens/sec + latency, peak RAM vs the DEVICE-SPEC ceiling, frame budget, binary size — and confirm the app **survives OS memory pressure** on a minimum-spec device (the 0.9 rule); record results in `docs/reports/` (physical-device parts stay pending until human sign-off).
 
 ---
 
@@ -806,6 +885,7 @@ cross-player system.
 - [ ] Implement mobile auth (Apple/Google) via the BaaS ecosystem.
 - [ ] Implement the desktop auth + distribution channels decided in C-5.
 - [ ] Enforce row-level security on profile data.
+- [ ] Implement the **server-side abuse-prevention enforcement** from the 0.6 baseline — authenticated requests only, per-account/per-endpoint rate limiting + throttling, and request quotas — the shared seam anti-farming/anomaly detection (§3, §17, §21) builds on.
 
 ### 3.2 — Profile store & session handshake
 
@@ -821,6 +901,7 @@ handshake that initializes the local game brain (§3).
 - [ ] Implement the primitive profile schema (atomic metrics only; no transcripts/logs).
 - [ ] Implement the session handshake that hydrates the local game brain.
 - [ ] Confirm profile writes happen only via server-accepted results.
+- [ ] Stand up **backup + point-in-time recovery** for the profile/ledger store per the 0.6 posture, and run a **documented restore drill** that proves "ironclad progress preservation" (§3) against the live store.
 
 ### 3.3 — Session receipt validation
 
@@ -839,6 +920,7 @@ high-value outputs are computed server-side.
 - [ ] Implement per-tier plausibility bounds + anomaly detection.
 - [ ] Compute high-value outputs (trauma payouts, ownership transfers, cure retirement) server-side.
 - [ ] Implement `ruleset_version` sunset schedule (reject unknown/sunset versions).
+- [ ] Implement the **append-only audit trail** (0.6 schema) recording receipt acceptance/rejection and every high-value authoritative action — tamper-evident, correlation-id–stamped, transcript-free.
 
 ### 3.4 — Offline receipt protocol
 
@@ -1328,6 +1410,7 @@ platforms, a `CHANGELOG.md`, and a launch checklist.
 checklist passes.
 
 - [ ] Implement per-platform build/sign/distribute pipelines.
+- [ ] Implement the **reproducible/verifiable signed-release build** on the 0.1 pinned build inputs — deterministic build, recorded toolchain + dependency hashes, provenance audit — across the five platforms.
 - [ ] Add `CHANGELOG.md` + document the release process.
 - [ ] Run the launch checklist against a release candidate.
 
