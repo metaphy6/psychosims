@@ -27,13 +27,24 @@ Config _baseDefaults() {
     ),
     model: ModelConfig(
       tierAPrimaryUrl:
-          'https://models.psychosims.example/qwen2.5-1.5b-q4_k_m.gguf',
+          'https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf',
       tierAFallbackUrl:
-          'https://models.psychosims.example/phi-3.5-mini-q4_k_m.gguf',
-      tierBUrl: 'https://models.psychosims.example/smollm2-1.7b-q4_k_m.gguf',
+          'https://huggingface.co/bartowski/Phi-3.5-mini-instruct-GGUF/resolve/main/Phi-3.5-mini-instruct-Q4_K_M.gguf',
+      tierBUrl:
+          'https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/main/smollm2-1.7b-instruct-q4_k_m.gguf',
       quantization: 'Q4_K_M',
       nCtx: 2048,
       nBatch: 512,
+      // Approximate file sizes; measured and pinned at build time.
+      modelFileSizeBytes: 1073741824,
+      // Checksums are populated after first verified download; empty values
+      // disable verify-before-load until the release manifest pins them.
+      modelChecksums: const {},
+      maxFetchRetries: 3,
+      minFreeDiskBytes: 3221225472,
+      tierAFloorBytes: 8589934592,
+      tierBFloorBytes: 4294967296,
+      tierAAvailableHeadroomBytes: 1073741824,
     ),
     inference: const InferenceConfig(
       threadCount: 4,
@@ -97,6 +108,13 @@ Config _environmentOverlay(String environment) {
           quantization: 'Q4_K_M',
           nCtx: 512,
           nBatch: 128,
+          modelFileSizeBytes: 0,
+          modelChecksums: const {},
+          maxFetchRetries: 2,
+          minFreeDiskBytes: 1073741824,
+          tierAFloorBytes: 8589934592,
+          tierBFloorBytes: 4294967296,
+          tierAAvailableHeadroomBytes: 1073741824,
         ),
         inference: const InferenceConfig(
           threadCount: 1,
@@ -156,6 +174,13 @@ Config _environmentOverlay(String environment) {
           quantization: 'Q4_K_M',
           nCtx: 2048,
           nBatch: 512,
+          modelFileSizeBytes: 0,
+          modelChecksums: const {},
+          maxFetchRetries: 3,
+          minFreeDiskBytes: 3221225472,
+          tierAFloorBytes: 8589934592,
+          tierBFloorBytes: 4294967296,
+          tierAAvailableHeadroomBytes: 1073741824,
         ),
         inference: const InferenceConfig(
           threadCount: 4,
@@ -215,6 +240,13 @@ Config _environmentOverlay(String environment) {
           quantization: '',
           nCtx: 0,
           nBatch: 0,
+          modelFileSizeBytes: 0,
+          modelChecksums: const {},
+          maxFetchRetries: 0,
+          minFreeDiskBytes: 0,
+          tierAFloorBytes: 0,
+          tierBFloorBytes: 0,
+          tierAAvailableHeadroomBytes: 0,
         ),
         inference: const InferenceConfig(
           threadCount: 0,
@@ -287,6 +319,33 @@ Config _merge(Config base, Config overlay) {
       quantization: _pick(base.model.quantization, overlay.model.quantization),
       nCtx: _pick(base.model.nCtx, overlay.model.nCtx),
       nBatch: _pick(base.model.nBatch, overlay.model.nBatch),
+      modelFileSizeBytes: _pick(
+        base.model.modelFileSizeBytes,
+        overlay.model.modelFileSizeBytes,
+      ),
+      modelChecksums: overlay.model.modelChecksums.isEmpty
+          ? base.model.modelChecksums
+          : overlay.model.modelChecksums,
+      maxFetchRetries: _pick(
+        base.model.maxFetchRetries,
+        overlay.model.maxFetchRetries,
+      ),
+      minFreeDiskBytes: _pick(
+        base.model.minFreeDiskBytes,
+        overlay.model.minFreeDiskBytes,
+      ),
+      tierAFloorBytes: _pick(
+        base.model.tierAFloorBytes,
+        overlay.model.tierAFloorBytes,
+      ),
+      tierBFloorBytes: _pick(
+        base.model.tierBFloorBytes,
+        overlay.model.tierBFloorBytes,
+      ),
+      tierAAvailableHeadroomBytes: _pick(
+        base.model.tierAAvailableHeadroomBytes,
+        overlay.model.tierAAvailableHeadroomBytes,
+      ),
     ),
     inference: InferenceConfig(
       threadCount:

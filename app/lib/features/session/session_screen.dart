@@ -27,7 +27,9 @@ class SessionScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const CircularProgressIndicator(),
+                    _LoadingIndicator(
+                      reducedMotion: MediaQuery.disableAnimationsOf(context),
+                    ),
                     const SizedBox(height: 16),
                     Text(l10n.manifestPresentation('session.loading')),
                   ],
@@ -95,6 +97,24 @@ class _SessionBody extends StatelessWidget {
   }
 }
 
+class _LoadingIndicator extends StatelessWidget {
+  const _LoadingIndicator({required this.reducedMotion});
+
+  final bool reducedMotion;
+
+  @override
+  Widget build(BuildContext context) {
+    if (reducedMotion) {
+      return Icon(
+        Icons.hourglass_empty,
+        size: 36,
+        color: Theme.of(context).colorScheme.primary,
+      );
+    }
+    return const CircularProgressIndicator();
+  }
+}
+
 class _TurnBubble extends StatelessWidget {
   const _TurnBubble({required this.turn});
 
@@ -108,6 +128,7 @@ class _TurnBubble extends StatelessWidget {
         : theme.colorScheme.secondaryContainer;
     final alignment =
         turn.isPlayer ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    final reducedMotion = MediaQuery.disableAnimationsOf(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -122,6 +143,7 @@ class _TurnBubble extends StatelessWidget {
             ),
             child: Semantics(
               label: turn.isPlayer ? 'Player action' : 'Patient response',
+              liveRegion: turn.isStreaming && !reducedMotion,
               child: Text(
                 turn.text.isEmpty && turn.isStreaming ? '…' : turn.text,
                 style: theme.textTheme.bodyLarge,

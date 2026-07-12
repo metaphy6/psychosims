@@ -23,6 +23,24 @@ void validateConfig(Config cfg) {
   if (cfg.model.nBatch > cfg.model.nCtx) {
     errors.add('model.nBatch must not exceed model.nCtx');
   }
+  if (cfg.model.modelFileSizeBytes < 0) {
+    errors.add('model.modelFileSizeBytes must be non-negative');
+  }
+  if (cfg.model.maxFetchRetries < 0) {
+    errors.add('model.maxFetchRetries must be non-negative');
+  }
+  if (cfg.model.minFreeDiskBytes < 0) {
+    errors.add('model.minFreeDiskBytes must be non-negative');
+  }
+  if (cfg.model.tierAFloorBytes < cfg.model.tierBFloorBytes) {
+    errors.add('model.tierAFloorBytes must be >= model.tierBFloorBytes');
+  }
+  if (cfg.model.tierBFloorBytes <= 0) {
+    errors.add('model.tierBFloorBytes must be positive');
+  }
+  if (cfg.model.tierAAvailableHeadroomBytes < 0) {
+    errors.add('model.tierAAvailableHeadroomBytes must be non-negative');
+  }
 
   if (cfg.inference.threadCount <= 0) {
     errors.add('inference.threadCount must be positive');

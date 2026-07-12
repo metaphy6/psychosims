@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -46,6 +47,7 @@ class SessionController extends GetxController {
     required this.logger,
     required this.responsePlanner,
     required this.clock,
+    this.modelPath,
   });
 
   final Config config;
@@ -53,6 +55,10 @@ class SessionController extends GetxController {
   final PsyLog logger;
   final ResponsePlanner responsePlanner;
   final core.Clock clock;
+
+  /// Optional resolved local model path. When null or missing, the controller
+  /// falls back to the PoC stub path so first-run development/CI still works.
+  final String? modelPath;
 
   final status = SessionStatus.loading.obs;
   final errorMessage = ''.obs;
@@ -68,11 +74,26 @@ class SessionController extends GetxController {
 
   bool get hasManifest => manifest.value != null;
 
+  late final String _correlationId;
+  late final PsyLog _sessionLogger;
+
   @override
   void onInit() {
     super.onInit();
+    _correlationId = _generateCorrelationId();
+    _sessionLogger = PsyLog(
+      minLevel: logger.minLevel,
+      jsonMode: logger.jsonMode,
+      correlationId: _correlationId,
+    );
     _resolver = core.TurnResolver(clock);
     loadCase();
+  }
+
+  String _generateCorrelationId() {
+    final ts = clock.nowMillis();
+    final rand = (clock.monotonicMillis() ^ ts) & 0xFFFFFF;
+    return 'psy-${ts.toRadixString(36)}-${rand.toRadixString(36)}';
   }
 
   @override
@@ -106,16 +127,19 @@ class SessionController extends GetxController {
       _deltaLog.clear();
       displayTurns.clear();
       inference.resetKvCache();
-      // PoC stub: the inference backend is not linked yet, so loading any
-      // path succeeds and exercises the FFI lifecycle.
-      inference.loadModel('/tmp/psychosims_poc_model.gguf');
+      final resolvedModelPath = _resolveModelPath();
+      inference.loadModel(
+        resolvedModelPath,
+        paramsJson: '{"correlation_id":"$_correlationId"}',
+      );
 
       status.value = SessionStatus.ready;
-      logger.success('session', 'case_loaded', kv: {'case_id': loaded.id});
+      _sessionLogger
+          .success('session', 'case_loaded', kv: {'case_id': loaded.id});
     } on Exception catch (e, st) {
       status.value = SessionStatus.error;
       errorMessage.value = e.toString();
-      logger.error('session', 'case_load_failed',
+      _sessionLogger.error('session', 'case_load_failed',
           errorKind: ErrorKind.system, message: '$e\n$st');
     }
   }
@@ -211,6 +235,7 @@ class SessionController extends GetxController {
             displayTurns[streamIndex] =
                 displayTurns[streamIndex].copyWith(text: buffer.toString());
           },
+          correlationId: _correlationId,
         );
         return buffer.toString();
       }
@@ -237,7 +262,7 @@ class SessionController extends GetxController {
       ));
       _trimConversationWindow(loaded.maxHistoryTurns);
 
-      logger.success('session', 'turn_complete', kv: {
+      _sessionLogger.success('session', 'turn_complete', kv: {
         'turn': _currentState.turn,
         'used_fallback': planned.usedFallback,
       });
@@ -255,7 +280,7 @@ class SessionController extends GetxController {
         ..addAll(previousDisplay);
       status.value = SessionStatus.error;
       errorMessage.value = _mapErrorMessage(e);
-      logger.error('session', 'turn_failed',
+      _sessionLogger.error('session', 'turn_failed',
           errorKind: ErrorKind.system, message: '$e\n$st');
     } finally {
       isActionLocked.value = false;
@@ -269,6 +294,21 @@ class SessionController extends GetxController {
     while (_conversationWindow.length > maxTurns) {
       _conversationWindow.removeAt(0);
     }
+  }
+
+  String _resolveModelPath() {
+    const stubPath = '/tmp/psychosims_poc_model.gguf';
+    final requested = modelPath;
+    if (requested != null &&
+        requested.isNotEmpty &&
+        File(requested).existsSync()) {
+      return requested;
+    }
+    if (requested != null && requested.isNotEmpty) {
+      _sessionLogger.warn('session', 'resolved_model_missing',
+          kv: {'requested': requested, 'fallback': stubPath});
+    }
+    return stubPath;
   }
 
   String _fallbackDialogue(InteractionPattern action) {
@@ -286,7 +326,7 @@ class SessionController extends GetxController {
   void cancelTurn() {
     inference.cancel();
     _cancelToken.cancel();
-    logger.warn('session', 'turn_cancelled_by_user');
+    _sessionLogger.warn('session', 'turn_cancelled_by_user');
   }
 }
 

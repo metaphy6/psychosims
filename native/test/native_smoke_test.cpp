@@ -8,9 +8,12 @@ int main() {
     const char* version = psy_version();
     assert(std::strcmp(version, "psychosims-native-0.1.0") == 0);
 
-    PsyContext* ctx = psy_context_create();
-    assert(ctx != nullptr);
-    psy_context_destroy(ctx);
+    // Loading with an empty path must fail gracefully.
+    PsyContext* ctx = psy_context_load("", "{}");
+    assert(ctx == nullptr);
+
+    // Destroy must tolerate a null pointer.
+    psy_context_destroy(nullptr);
 
     std::cout << "native smoke test passed" << std::endl;
     return 0;

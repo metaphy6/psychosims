@@ -27,6 +27,9 @@ void main() {
               quantization: 'Q4_K_M',
               nCtx: 512,
               nBatch: 1024,
+              tierAFloorBytes: 8589934592,
+              tierBFloorBytes: 4294967296,
+              tierAAvailableHeadroomBytes: 1073741824,
             ),
             inference: const InferenceConfig(
               threadCount: 1,

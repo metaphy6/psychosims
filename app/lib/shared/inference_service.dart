@@ -198,15 +198,23 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
 
   /// Generates tokens from [params], streaming each complete token to [onToken].
   ///
+  /// [correlationId] is forwarded to the native layer so every log line for
+  /// this turn shares the same session identifier.
+  ///
   /// Returns once generation completes, is cancelled, or errors.
   Future<void> generate(
     GenerationParams params,
-    void Function(String token, bool isCompleteCodepoint) onToken,
-  ) async {
+    void Function(String token, bool isCompleteCodepoint) onToken, {
+    String? correlationId,
+  }) async {
     if (_ctx == null) {
       throw InferenceException('Cannot generate: no model loaded');
     }
-    final paramsPtr = jsonEncode(params.toJson()).toNativeUtf8();
+    final jsonParams = params.toJson();
+    if (correlationId != null && correlationId.isNotEmpty) {
+      jsonParams['correlation_id'] = correlationId;
+    }
+    final paramsPtr = jsonEncode(jsonParams).toNativeUtf8();
     late final NativeCallable<PsyTokenCallbackFunction> callback;
     final buffer = StringBuffer();
 

@@ -47,6 +47,31 @@ class ModelConfig {
   final int nCtx;
   final int nBatch;
 
+  /// Expected final model file size, in bytes. Zero means unknown.
+  final int modelFileSizeBytes;
+
+  /// SHA-256 checksums keyed by tier URL. Empty placeholders are allowed
+  /// until a manifest pins the real hashes.
+  final Map<String, String> modelChecksums;
+
+  /// Maximum retry attempts for a failed or corrupt model download.
+  final int maxFetchRetries;
+
+  /// Minimum free disk space required when the model size is unknown.
+  final int minFreeDiskBytes;
+
+  /// RAM floor for the Tier A primary model, in bytes.
+  /// Devices below this total RAM are routed to Tier B.
+  final int tierAFloorBytes;
+
+  /// RAM floor for the Tier B fallback model, in bytes.
+  /// Devices below this floor are considered unsupported.
+  final int tierBFloorBytes;
+
+  /// Minimum available RAM headroom required to keep Tier A primary.
+  /// Devices with less available RAM are routed to the Tier A fallback.
+  final int tierAAvailableHeadroomBytes;
+
   const ModelConfig({
     required this.tierAPrimaryUrl,
     required this.tierAFallbackUrl,
@@ -54,6 +79,13 @@ class ModelConfig {
     required this.quantization,
     required this.nCtx,
     required this.nBatch,
+    this.modelFileSizeBytes = 0,
+    this.modelChecksums = const {},
+    this.maxFetchRetries = 3,
+    this.minFreeDiskBytes = 3221225472, // 3 GiB
+    this.tierAFloorBytes = 8589934592, // 8 GiB
+    this.tierBFloorBytes = 4294967296, // 4 GiB
+    this.tierAAvailableHeadroomBytes = 1073741824, // 1 GiB
   });
 }
 

@@ -58,7 +58,9 @@ dist/
 *.dylib
 *.exe
 native/build/
-native/third_party/
+native/third_party/*
+!native/third_party/llama.cpp
+native/third_party/llama.cpp/build/
 CMakeCache.txt
 CMakeFiles/
 cmake-build-*/

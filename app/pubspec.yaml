@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  convert: ^3.1.1
+  crypto: ^3.0.3
   ffi: ^2.1.0
   get: ^4.6.6
   path: ^1.8.0
@@ -20,7 +22,6 @@ dependencies:
     path: ../packages/psycore
 
 dev_dependencies:
-  crypto: ^3.0.3
   ffigen: ^10.0.0
   flutter_lints: ^3.0.0
   flutter_test:
@@ -30,3 +31,6 @@ flutter:
   uses-material-design: true
   assets:
     - ../content/manifests/poc_sample.json
+    - assets/licenses/QWEN2.5_LICENSE
+    - assets/licenses/PHI3.5_LICENSE
+    - assets/licenses/SMOLLM2_LICENSE
