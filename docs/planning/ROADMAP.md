@@ -25,14 +25,14 @@ Counts are per major phase.
 | Phase | Items | Done | Status |
 |---|---|---|---|
 | 0 — Foundations & Conceptual Corrections | 92 | 11 | 🟡 in progress |
-| 1 — Minimal Cross-Platform Runtime (PoC) | 22 | 0 | ⚪ planned |
+| 1 — Minimal Cross-Platform Runtime (PoC) | 41 | 0 | ⚪ planned |
 | 2 — Deterministic Game Core (offline) | 26 | 0 | ⚪ planned |
 | 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 19 | 0 | ⚪ planned |
-| **Total** | **233** | **11** | |
+| **Total** | **252** | **11** | |
 
 ---
 
@@ -592,9 +592,13 @@ Phase 7.5 to finalise.
 
 ## Phase 1 — Minimal Cross-Platform Runtime (PoC)
 
-**Goal.** Prove the core promise: a small local model + a compact patient
+**Goal.** Prove the core promise — a small local model + a compact patient
 manifest + a Flutter game loop runs on **both** an Android emulator and a Linux
-desktop, and clears the blueprint's falsifiable exit gates.
+desktop — and clear the blueprint's falsifiable exit gates. This is also the
+**first end-to-end exercise of the Phase 0 foundations** (config authority,
+determinism seam, cross-stack logging, client/concurrency architecture, verified
+large-asset fetch, content-integrity gate): the PoC must prove the *conventions*
+hold under a real workload, not merely that inference emits text.
 
 **Scope id.** `phase-1`
 
@@ -602,62 +606,109 @@ desktop, and clears the blueprint's falsifiable exit gates.
 It de-risks the project's three existential bets (model can act, device can run
 it, users accept the download) before any content, networking, or economy spend.
 
-**Validation.** The end-to-end loop runs on Android emulator + Linux desktop;
+> 🔒 **Security posture for the PoC (deferred hardening).** Per
+> [DECISION 0017](../project/DECISION_LOG.md), no security *implementation* work
+> (secret management, signing-key custody, backup/DR) starts until the PoC is
+> running — those land in their owning Phase 2/3 slices. Phase 1 exercises only
+> the **model-integrity verification** already defined in 0.1/0.10 (checksum /
+> signature checked *before* load) and the **"no durable raw transcript"** rule
+> (0.6). Where a bullet below touches a signature or durable local state, it
+> *uses* the convention without standing up the full custody or backup
+> machinery; each such point is noted for its later hardening phase.
+
+**Validation.** The end-to-end loop runs on Android emulator + Linux desktop and
 the four PoC exit artifacts (acting quality, device viability, download
-acceptance, prompt token budget) are measured and recorded.
+acceptance, prompt token budget) are measured and recorded; additionally, the
+loop runs inference **off the UI isolate** without frame stalls, emits a single
+**correlation-id–stamped** log line spanning the Dart client and the C++ FFI
+layer, resolves every model/prompt parameter through the **config authority**,
+produces a **byte-identical outcome** for a fixed state + action + seed, and
+persists **no raw transcript**.
 
 ### 1.1 — Flutter app + llama.cpp FFI integration
 
-**What.** Load the GGUF base model through llama.cpp via Flutter FFI and run a
-single inference call from the app.
+**What.** Stand up the on-device inference path: fetch and verify the GGUF base
+model, load it through llama.cpp via Flutter FFI behind a narrow `shared/`
+inference service, and run streaming, cancellable inference **off the UI isolate**.
 
 **Why.** Local inference is the load-bearing technical unknown; everything else
-assumes it works.
+assumes it works — and *how* it runs (off-isolate, resident, cancellable,
+logged) determines whether the game loop is usable, not just whether a token
+appears.
 
-**How.** Establishes the on-device inference path the whole session loop rides on.
+**How.** Establishes the inference seam the whole session loop rides on, and is
+the first consumer of the 0.1 native module, the 0.7 C++ logging shim, the 0.9
+concurrency rule, and the 0.10 verified-fetch convention.
 
-**Validation.** App runs one inference and renders raw output on Linux + Android emulator.
+**Validation.** The app fetches + verifies the model, runs one streaming
+inference off the UI isolate, and renders raw output on Linux + Android emulator;
+a cancelled/backgrounded generation leaves no orphaned native call.
 
-- [ ] Integrate llama.cpp via Flutter FFI; load a GGUF model behind a `shared/` inference service.
-- [ ] **Verify the base model's integrity before load** — check the ~1.8 GB GGUF against its pinned checksum/signature (per the 0.1 fetch policy + the 0.10 verify-before-load convention) before handing it to the inference service, closing the supply-chain gap for the largest untracked asset.
-- [ ] Confirm build + model load on Linux desktop and the x86 Android emulator.
-- [ ] Expose model params (size, context window) through the central config authority.
+- [ ] Integrate llama.cpp via Flutter FFI behind a **narrow, typed `shared/` inference service** (load / tokenize / generate / cancel / unload) so no other module touches raw FFI; the binding lives in the 0.1-declared native module, not ad-hoc under `app/`.
+- [ ] Implement the **first-run verified model fetch** on the 0.10 resumable-fetch convention — chunked/resumable download of the ~1.8 GB GGUF, **checksum/signature verified before load** (0.1 fetch policy + 0.6 verify-before-load), and a re-fetch-on-corruption path — closing the supply-chain gap for the largest untracked asset. *(Signing-key custody itself is deferred to 0.6/Phase 3; here we verify against the pinned checksum.)*
+- [ ] Run **all inference off the UI isolate** (0.9) with a **streaming token callback** and a **cancellation path** (session abandoned / app backgrounded mid-generation) so the frame loop never stalls and no native call is orphaned.
+- [ ] Add the **C++ logging shim across the FFI boundary** (0.7) so native load/inference events emit the same structured, correlation-id–stamped line as Dart — no raw `std::cout` / `stdout` bypass.
+- [ ] Expose model params — size, context window, thread count, **seed + sampling temperature** — through the **central config authority** (0.2); no hard-coded model constants, and the fixed seed makes PoC measurements reproducible (0.8).
+- [ ] Keep the model **resident** per the 0.9 memory-pressure rule (loaded once, reused across turns, explicit unload on shutdown) and classify inference failures on the 0.7 error taxonomy (load failure / OOM / cancellation / generation error).
+- [ ] Confirm build + verified model load + one inference on **Linux desktop and the x86 Android emulator** from the 0.1 one-command bootstrap.
 
 ### 1.2 — Minimal patient manifest schema + loader
 
-**What.** Define a compact first-pass manifest (identity, tone, pressure state,
-available interaction patterns) and load it from a bundled JSON file.
+**What.** Define a compact first-pass manifest (identity, style archetype,
+initial pressure/sim state, available interaction patterns), load and
+integrity-check it from a bundled asset, and establish the versioning,
+initial-state, content-safety, and untrusted-input disciplines the production
+schema (Phase 4.1) will extend.
 
 **Why.** The manifest is the content atom; the loop needs one concrete case to
-run against.
+run against — and getting the *contract* right now (versioned, checksummed,
+initial-state-typed, content-safe, injection-aware) is what lets Phase 4.1 extend
+it **additively** instead of reshaping it, and what lets the Phase 4.4 signed-
+manifest trust seam slot in without a redesign.
 
-**How.** Gives the prompt assembler and sim core their input contract.
+**How.** Gives the prompt assembler (1.3) and the sim core (1.4) their typed
+input contract, on the 0.8 serialization rules, the 0.12 content-integrity +
+injection contract, and the 0.2 config authority.
 
-**Validation.** A sample manifest parses into typed models; malformed manifests fail loudly.
+**Validation.** A sample manifest parses into typed models and **round-trips
+byte-identically** through canonical serialization; a malformed, unknown-version,
+or **checksum-mismatched** manifest fails loudly; the sample passes the
+content-integrity lint and draws only from the fictional-taxonomy registry.
 
-- [ ] Define the minimal manifest schema in `packages/` (shared by app + tools).
-- [ ] Implement the loader + typed models in `shared/`.
-- [ ] Ship one hand-authored sample case for the PoC.
+- [ ] Define the minimal manifest schema in `packages/` (identity, style archetype, initial pressure/sim state, available interaction patterns) shared by app + tools, using the **canonical serialization + additive-only evolution** contract (0.8) with **`schema_version` + `content_checksum` fields from day one** and **field-level length/size caps**, so the untrusted-input *shape* (0.12) exists before Phase 4/6 accept external manifests.
+- [ ] Define the **initial-state contract**: the manifest's pressure/sim-state fields are exactly the typed inputs the deterministic core (1.4) consumes, and the interaction-pattern enum foreshadows the Phase 2.1 card taxonomy — so Phase 2/4 extend the contract rather than reshaping it.
+- [ ] Implement the loader + typed models in `shared/`; **malformed, unknown-`schema_version`, or checksum-mismatched manifests fail fast** with an actionable error on the 0.7 error taxonomy, never loading partially.
+- [ ] **Verify the `content_checksum` on load** (integrity) and reject on mismatch — the local, unsigned precursor to the Phase 4.4 signed-manifest verify path, so the trust seam exists before the network does. *(Cryptographic signing + key custody are deferred to Phase 3/4; here we verify against the embedded checksum only.)*
+- [ ] Resolve the **bundled-sample location + any tunable caps through the config authority** (0.2) — the PoC case ships as a small committed asset (0.1 large-binary policy: JSON is fine to commit; only the model is fetched), its path and limits never hard-coded.
+- [ ] Seed the **`memory_class` field** (stateless vs persistent) now — the PoC case is **stateless** (no history envelope) — so the discipline exists before Phase 4.1 / 5.2 depend on it.
+- [ ] Keep the schema **whitelisted (enums + bounded numbers over free text)** and insert any model-facing prose through a **template-isolation seam** (0.12): the PoC manifest is trusted/bundled, but the injection-defense *shape* is established now, not retrofitted at Phase 6.
+- [ ] Split **core-facing tokens from player-facing copy**: `core/` consumes stable tokens/keys only (0.11 core-purity + 0.8 determinism); player-facing manifest text (case title, display name) carries localization keys the presentation layer resolves, never raw localized prose.
+- [ ] Author one hand-authored sample case drawn from the **fictional-taxonomy registry** (0.12) that **passes the content-integrity gate** (no real DSM/ICD label or drug brand) — the first real content the CI lint checks.
+- [ ] **Unit-test the loader + schema** (tests move with code): canonical round-trip is byte-identical, a malformed / unknown-version / checksum-mismatch manifest is rejected, and a **golden fixture** (0.5 / 0.8) pins the sample so a schema change flips it red.
 
 ### 1.3 — Prompt assembler (pure, token-budgeted, tiered)
 
 **What.** Implement the §6 prompt assembler as a pure function
 `assemblePrompt(SimState, Manifest, ConversationWindow, tokenBudget) → String`
-with the tiered structure (Tier 1 never truncated, Tier 2 capped, Tier 3 reserved).
+with the C-7 tiered structure (Tier 1 never truncated, Tier 2 capped, Tier 3 reserved).
 
 **Why.** The token budget is a PoC exit gate (C-7); the assembler must be
-verifiable without running the model.
+verifiable without running the model, and it is the enforcement point for both
+the budget and the prompt-injection isolation contract.
 
 **How.** Guarantees the model never receives an over-budget prompt and that clue
 tokens survive — the spine of the sim-core/dialogue contract.
 
-**Validation.** Unit tests prove tier truncation order and that the budget is
-never exceeded (load-bearing logic per Principle 4).
+**Validation.** Golden-fixture unit tests prove tier truncation order, that the
+budget is never exceeded for the worst-case manifest, and that clue tokens
+survive (load-bearing logic per Principle 4).
 
-- [ ] Implement the tiered assembler as a pure function in `core/`.
-- [ ] Enforce `tokenBudget` with tier-ordered truncation; reserve generation headroom.
-- [ ] Implement the history-digest compiler (structured summary, never raw deltas).
-- [ ] Unit-test budget compliance and clue-token survival independent of the model.
+- [ ] Implement the tiered assembler as a **pure, deterministic** function in `core/` (0.8 — no wall-clock, no ambient randomness), matching the C-7 signature.
+- [ ] Source the **model's real tokenizer** through the `shared/` inference service so token counting matches llama.cpp exactly — a budget enforced against an approximate counter is not enforced.
+- [ ] Enforce `tokenBudget` with the C-7 tier-ordered truncation (T2 conversation window → T2 digest; **never** T1 or T3) and reserve generation headroom; the budget value resolves through the **config authority** (0.2), not a literal.
+- [ ] Implement the **history-digest compiler** — a fixed-token structured summary (prior style, trust trajectory, medication history, key outcomes), never raw deltas — deterministic for a fixed input.
+- [ ] Establish **template-level isolation** so manifest/history strings are inserted as data and can never be read as instructions (0.12) — the assembler is the injection-contract enforcement point.
+- [ ] Unit-test with **golden fixtures** (0.5 / 0.8): budget compliance for the worst-case full manifest, T1 integrity, clue-token survival, and truncation order — all independent of the model.
 
 ### 1.4 — Simulation core vs dialogue layer split
 
@@ -665,51 +716,70 @@ never exceeded (load-bearing logic per Principle 4).
 context, emits mandatory clue tokens) and hands only approved content to the model.
 
 **Why.** §4: the model voices dialogue, it never decides outcomes. This split is
-what makes the game fair and testable.
+what makes the game fair, testable, and — via structured deltas — the shape the
+Phase 3.3 receipt later validates.
 
-**How.** Cements the authority boundary the entire design depends on.
+**How.** Cements the authority boundary the entire design depends on, and is the
+first real exercise of the 0.8 determinism contract.
 
-**Validation.** Given a fixed state + action, the core produces a deterministic
-outcome and prompt context; the model output changes nothing mechanical.
+**Validation.** Given a fixed state + action + seed, the core produces a
+byte-identical outcome and prompt context across two runs; the model output
+changes nothing mechanical.
 
-- [ ] Implement the deterministic turn resolver in `core/` (no I/O, no model calls).
-- [ ] Route mandatory clue tokens into the prompt; validate survival post-generation with a templated fallback.
-- [ ] Keep all model interaction behind the `shared/` inference service.
+- [ ] Implement the deterministic turn resolver in `core/` (no I/O, no model calls) on the **0.8 seeded-RNG + injected-clock seam** — fixed state + action + seed → identical outcome.
+- [ ] Emit outcomes as **structured deltas** (never transcripts) so the shape foreshadows the Phase 3.3 receipt, and enforce the 0.6 **"no raw transcript reaches a durable store"** rule even in the local-only PoC.
+- [ ] Route mandatory clue tokens into the prompt and **validate their survival post-generation with a templated fallback** (§4) so a model omission degrades to deterministic text rather than a silent mechanical loss.
+- [ ] Keep **all** model interaction behind the `shared/` inference service; `core/` never imports the FFI layer (Principle 2 + the 0.2/0.9 boundary).
+- [ ] Unit-test the split: a fixed state + action yields a byte-identical outcome and prompt context, and no model output alters anything mechanical.
 
 ### 1.5 — End-to-end session loop
 
 **What.** Wire the full path: Flutter UI → load case → compose prompt from sim
-state → local inference → render dialogue back into the session view.
+state → local inference → render dialogue back into the session view — the first
+playable vertical slice.
 
-**Why.** §1's explicit PoC definition; a single connected flow is the milestone.
+**Why.** §1's explicit PoC definition; a single connected flow is the milestone,
+and it is where the 0.9 client architecture (GetX DI, off-isolate concurrency,
+crash recovery) and the 0.11 a11y/i18n baseline first prove out.
 
-**How.** Produces the first playable vertical slice the exit gates measure.
+**How.** Produces the vertical slice the exit gates measure, on the shipped
+conventions rather than throwaway wiring.
 
-**Validation.** A player can open a case and exchange several turns on Linux +
-Android emulator.
+**Validation.** A player opens a case and exchanges several turns on Linux +
+Android emulator; the UI streams tokens without frame stalls, and a
+backgrounded/killed session relaunches into a consistent state.
 
-- [ ] Build the minimal session UI (case view, action input, dialogue render).
-- [ ] Connect UI → sim core → prompt assembler → inference → render in one loop.
-- [ ] Confirm the same build path works on Linux desktop and Android emulator.
+- [ ] Build the minimal session UI (case view, action input, **streaming** dialogue render) with **no hard-coded strings** (0.11 externalization) and the **a11y baseline** (semantic labels, scalable text, contrast).
+- [ ] Wire UI → sim core → prompt assembler → inference → render through **GetX dependency injection** (0.9 / [DECISION 0016](../project/DECISION_LOG.md)) — the config authority and inference service are injected, never global singletons.
+- [ ] Keep inference **off the UI isolate** and **stream tokens** into the view so perceived latency stays low and the frame loop never stalls (0.9).
+- [ ] Propagate a **single correlation/session id** across the Dart client and the C++ FFI layer for the whole turn (0.7) so the loop is debuggable without persisting any transcript.
+- [ ] Implement **app-lifecycle / crash-recovery** (0.9): a backgrounded, OS-killed, or crashed session relaunches into a consistent state with no lost or double-applied turn, exercising the durable local-state seam (no server yet).
+- [ ] Confirm the loop is **fully local/offline** (no server dependency in Phase 1) and that the same build path runs on Linux desktop and the x86 Android emulator.
 
 ### 1.6 — PoC exit-gate measurement
 
-**What.** Measure and record the four falsifiable gates before declaring the PoC
-passed.
+**What.** Instrument, measure, and record the four falsifiable gates — acting
+quality, prompt token budget, download acceptance, device viability — and state
+the go/revisit decision before any Phase 2 spend.
 
-**Why.** §1 is explicit: "it produced text" is not a pass. Red gates mean the
-architecture is revisited before further spend.
+**Why.** §1 is explicit: "it produced text" is not a pass. A gate that is not
+instrumented cannot be measured, and a red gate means the architecture (or the
+model tier) is revisited *before* further spend.
 
-**How.** Converts the PoC from a demo into a de-risking decision point.
+**How.** Converts the PoC from a demo into a recorded, reproducible de-risking
+decision point.
 
-**Validation.** All four artifacts are recorded in `docs/reports/`; device
-viability is explicitly marked pending until the human opens physical-device testing.
+**Validation.** All four artifacts are recorded in `docs/reports/` under a PoC
+exit-report template with the decision stated; device viability is explicitly
+marked **pending** until the human opens physical-device testing.
 
-- [ ] Measure **acting quality** under a worst-case full-manifest prompt.
-- [ ] Record **prompt token budget** (C-7) vs the chosen model's usable context.
-- [ ] Define the **download-acceptance** delivery/retry strategy for the ~1.8 GB first-run model.
-- [ ] Record the **device-viability** method + the 1–1.5B fallback plan (physical-device measurement gated on human sign-off).
-- [ ] Measure the **0.7 performance-budget baselines** against their targets — cold-start, tokens/sec + latency, peak RAM vs the DEVICE-SPEC ceiling, frame budget, binary size — and confirm the app **survives OS memory pressure** on a minimum-spec device (the 0.9 rule); record results in `docs/reports/` (physical-device parts stay pending until human sign-off).
+- [ ] Wire **local measurement instrumentation** on the 0.7 metrics contract (timers/gauges: tokens/sec, inference latency, peak RAM, cold-start, frame budget) into the FFI layer and the loop — you cannot measure a gate you did not instrument.
+- [ ] Measure **acting quality** under a worst-case full-manifest prompt against a **written rubric** (in-character, honours clue tokens, respects style archetype, no rule-breaking), recorded with the fixed seed (0.8) so the sample is reproducible.
+- [ ] Record the **prompt token budget** (C-7): chosen model's advertised max, measured usable factor, and worst-case token count vs `input_budget` with reserve — feeding back to the manifest schema (Phase 4.1) if T1 overflows.
+- [ ] Implement + measure the **download-acceptance** path: the 0.10 resumable, deferrable, metered-connection-aware first-run fetch of the ~1.8 GB model, with its retry strategy and a recorded acceptance method.
+- [ ] Record the **device-viability** method + the Tier B (1–1.5B) fallback plan against the [DEVICE-SPEC](../specs/DEVICE-SPEC.md) floor — peak RAM within budget and tokens/sec above the playability threshold — **physical-device measurement gated on human sign-off** (kept explicitly *pending* until then).
+- [ ] Record the **0.7 performance-budget baselines** vs their targets (cold-start, tokens/sec + latency, peak RAM vs the DEVICE-SPEC ceiling, frame budget, binary size incl. model delivery) and confirm the app **survives OS memory pressure** on a minimum-spec device (the 0.9 rule).
+- [ ] Record all artifacts in `docs/reports/` under a **PoC exit-report template** and state the **decision gate explicitly**: any red gate revisits the architecture (or drops to Tier B) before Phase 2 spend — "it produced text" is not a pass (§1).
 
 ---
 

@@ -21,3 +21,5 @@ ts_utc,run_id,agent,scope,action,status,summary,refs,commit_sha
 2026-07-12T13:17:31Z,run-20260712131731-60375,copilot,phase-0,commit,completed,docs(roadmap): move base-model integrity verify-before-load from 0.6 to Phase 1.1,docs/planning/ROADMAP.md,pending
 2026-07-12T13:31:41Z,run-20260712133141-97626,copilot,phase-0.3,commit,completed,docs(specs): record provisional Tier A/B base-model selection (C-2) + DECISION 0015,docs/specs/MODEL-LICENSE-SHORTLIST.md;docs/project/DECISION_LOG.md,pending
 2026-07-12T13:39:57Z,run-20260712133957-107041,copilot,phase-0,commit,completed,docs(roadmap): choose GetX for state/DI; defer Phase 0.6 security to post-PoC,docs/planning/ROADMAP.md;docs/project/DECISION_LOG.md,pending
+2026-07-12T13:48:56Z,run-20260712134856-120436,copilot,phase-1,commit,completed,docs(roadmap): revise and enrich Phase 1 PoC against Phase 0 foundations,docs/planning/ROADMAP.md,pending
+2026-07-12T13:54:49Z,run-20260712135449-129058,copilot,phase-1.2,commit,completed,docs(roadmap): enrich Phase 1.2 manifest schema/loader contract,docs/planning/ROADMAP.md,pending
