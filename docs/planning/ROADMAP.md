@@ -25,14 +25,14 @@ Counts are per major phase.
 | Phase | Items | Done | Status |
 |---|---|---|---|
 | 0 — Foundations & Conceptual Corrections | 92 | 11 | 🟡 in progress |
-| 1 — Minimal Cross-Platform Runtime (PoC) | 60 | 0 | ⚪ planned |
+| 1 — Minimal Cross-Platform Runtime (PoC) | 74 | 0 | ⚪ planned |
 | 2 — Deterministic Game Core (offline) | 26 | 0 | ⚪ planned |
 | 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 19 | 0 | ⚪ planned |
-| **Total** | **271** | **11** | |
+| **Total** | **285** | **11** | |
 
 ---
 
@@ -626,51 +626,85 @@ confirmed there against the acting-quality gate — not assumed now.
 > standing up the full custody, secure-storage, backup, or opt-in-collection
 > machinery; each such point is tagged **⏭ hardened later** with its owning phase.
 
-**Validation.** The end-to-end loop runs on Android emulator + Linux desktop and
-the four PoC exit artifacts (acting quality, device viability, download
-acceptance, prompt token budget) are measured and recorded for **both the Tier A
-primary and the comparator**; additionally, the loop runs inference **off the UI
-isolate** without frame stalls or sustained-throughput collapse, emits a single
-**correlation-id–stamped** log line spanning the Dart client and the C++ FFI
-layer, resolves every model/prompt parameter through the **config authority**,
-produces a **byte-identical outcome** for a fixed state + action + seed (core *and*
-greedy-decode inference), applies each turn **transactionally** (a cancelled turn
-leaves no partial state), and persists **no raw transcript**.
+> 🧩 **Build order & dependencies (read before picking up a sub-phase).** The
+> sub-phases are numbered by topic, not by strict build order. The prompt
+> assembler (1.3) consumes three things it does not own: the model's real
+> tokenizer + chat template (1.1), the typed manifest (1.2), and the `SimState` +
+> mandatory clue tokens the deterministic core (1.4) produces. Implement the 1.2
+> schema and the 1.4 turn-resolver + clue-token contract *before or alongside*
+> 1.3, and stand up the 1.1 inference service's tokenizer path early — otherwise
+> 1.3 is tested against a stand-in and reworked. 1.5 wires the pieces; 1.6 only
+> measures what the first five built.
+
+> 🎯 **Determinism scope (a corrected assumption).** There are **two different
+> guarantees, not one**. The pure `core/` is **byte-identical across
+> architectures** (fixed-point + seeded RNG + injected clock, 0.8) — this is the
+> receipt-replay contract. Model **inference is *not* byte-identical across
+> architectures**: llama.cpp's floating-point matmul diverges between the x86
+> emulator and an arm64 device, and even across thread counts and batch splits.
+> So greedy / temperature-0 decode is only reproducible on the **same build +
+> same architecture + pinned thread count + batch size**; that scoped guarantee
+> is what the 1.6 token-budget and acting-quality samples rely on, and the
+> cross-architecture divergence is *expected*, not a defect to chase.
+
+**Validation.** The end-to-end loop runs on the x86 Android emulator + Linux
+desktop and the four PoC exit artifacts (acting quality, device viability,
+download acceptance, prompt token budget) are measured and recorded for **both
+the Tier A primary and the comparator**; the loop accepts **only structured
+(card/choice) actions — no free-text prompt box** (§4), runs inference **off the
+UI isolate** without frame stalls or sustained-throughput collapse, emits a
+single **correlation-id–stamped** log line spanning the Dart client and the C++
+FFI layer, resolves every model/prompt parameter through the **config
+authority**, produces a **byte-identical `core/` outcome** for a fixed state +
+action + seed *across architectures* and a **greedy-decode inference reproducible
+on the same build + pinned thread count** (see the Determinism-scope note),
+applies each turn **transactionally** (a cancelled turn leaves no partial state
+and no orphaned native call), and persists **no raw transcript**.
 
 ### 1.1 — Flutter app + llama.cpp FFI integration
 
-**What.** Stand up the on-device inference path: fetch and verify the GGUF model,
-load it through llama.cpp via Flutter FFI behind a narrow `shared/` inference
-service, and run streaming, cancellable inference **off the UI isolate** with an
-explicit KV-cache lifecycle and a runtime Tier A/B model choice.
+**What.** Stand up the on-device inference path: preflight and fetch/verify the
+GGUF model, load it through llama.cpp via Flutter FFI behind a narrow `shared/`
+inference service (load / tokenize / chat-template / generate / cancel / unload),
+and run streaming, cancellable inference **off the UI isolate** with an explicit
+KV-cache lifecycle, a single-flight generation guard, and a runtime Tier A/B
+model choice — packaged so the native library not only *links* in CI but *loads*
+on Linux and the Android emulator.
 
 **Why.** Local inference is the load-bearing technical unknown; everything else
 assumes it works — and *how* it runs (off-isolate, resident, cancellable,
-mmap-loaded, KV-cache-aware, logged) determines whether the game loop is *usable*
-and whether it clears the 1.6 device-viability budget, not just whether a token
-appears.
+mmap-loaded, KV-cache-aware, leak-free, logged) determines whether the game loop
+is *usable* and whether it clears the 1.6 device-viability budget, not just
+whether a token appears.
 
 **How.** Establishes the inference seam the whole session loop rides on, and is
 the first consumer of the 0.1 native module + pinned build inputs, the 0.7 C++
 logging shim, the 0.9 concurrency + memory-pressure rules, and the 0.10
 verified-fetch convention.
 
-**Validation.** The app fetches + verifies the model, selects the correct tier for
-the device, runs one streaming inference off the UI isolate after a warm-up pass,
+**Validation.** The app preflights disk, fetches + verifies the model (promoting
+it atomically only on a passing checksum), selects the correct tier for the
+device, runs one streaming inference off the UI isolate after a warm-up pass,
 and renders raw output on Linux + Android emulator; a cancelled/backgrounded
-generation leaves no orphaned native call and no partial KV state; greedy-decode
-mode reproduces byte-identical output for a fixed seed.
+generation leaves no orphaned native call and no partial KV state; a second
+concurrent request is serialized, never raced; repeated
+load→generate→cancel→unload cycles leak no native memory under a sanitizer;
+greedy-decode reproduces byte-identical output for a fixed seed **on the same
+build + pinned thread count**.
 
-- [ ] Integrate llama.cpp via Flutter FFI behind a **narrow, typed `shared/` inference service** (load / tokenize / detokenize / generate / cancel / unload) so no other module touches raw FFI; the binding lives in the 0.1-declared native module, not ad-hoc under `app/`. Embeddings/fine-tuning surfaces are explicitly out of scope (§18).
-- [ ] **Pin the llama.cpp version/commit + GGUF quantization** as recorded build inputs (0.1) so inference behaviour is reproducible across machines and CI; the native shared library **builds, links, and bundles** for Linux desktop and the x86 Android emulator from the 0.1 one-command bootstrap.
-- [ ] Implement the **first-run verified model fetch** on the 0.10 resumable-fetch convention — chunked/resumable download of the bundled GGUF, **checksum/signature verified before load** (0.1 fetch policy + 0.6 verify-before-load), and a re-fetch-on-corruption path — closing the supply-chain gap for the largest untracked asset. *(⏭ hardened later: signing-key custody + the model file at rest in platform secure storage move to 0.6/Phase 3; here we verify against the pinned checksum and store under a config-resolved path.)*
+- [ ] Integrate llama.cpp via Flutter FFI behind a **narrow, typed `shared/` inference service** (load / tokenize / detokenize / **apply chat template** / generate / cancel / unload / **model-metadata query**) so no other module touches raw FFI; the binding lives in the 0.1-declared native module, not ad-hoc under `app/`. Embeddings/fine-tuning surfaces are explicitly out of scope (§18).
+- [ ] **Pin the llama.cpp commit + the exact GGUF quantization (e.g. `Q4_K_M`) and its rationale** as recorded build inputs (0.1) so inference behaviour is reproducible across machines and CI; the native shared library **builds, links, and bundles** for Linux desktop and the x86 Android emulator — **and declares the `arm64-v8a` device target** (built, not perf-validated on the emulator) so the physical-device gate (1.6) is a rebuild, not a fresh integration.
+- [ ] **Make the native library actually *load* on each target, not just link**: per-ABI JNI packaging on Android (`arm64-v8a` for devices, `x86_64` for the emulator) with 16 KB-page-size-aligned `.so`s, and the desktop `.so`/`.dll` shipped alongside the executable on a config-resolved load path — closing the silent gap between "compiles in CI" and "runs on device".
+- [ ] Implement the **first-run verified model fetch** on the 0.10 resumable-fetch convention — a **free-disk-space preflight**, chunked/resumable HTTP-range download, **checksum/signature verified before load with an atomic temp→final rename** (0.1 fetch policy + 0.6 verify-before-load) so a corrupt partial can never be loaded, and a re-fetch-on-corruption path — closing the supply-chain gap for the largest untracked asset. *(⏭ hardened later: signing-key custody + the model file at rest in platform secure storage move to 0.6/Phase 3; here we verify against the pinned checksum and store under a config-resolved path.)*
 - [ ] Implement **runtime Tier A/B selection**: a first-run device-capability check (RAM/SoC/ABI vs the [DEVICE-SPEC](../specs/DEVICE-SPEC.md) floor) chooses the Tier A primary or the Tier B fallback, resolved through the **config authority** (0.2) — so 4 GB-class devices never attempt a model they cannot hold.
-- [ ] Load weights via **memory mapping (mmap)** and manage an **explicit KV-cache lifecycle** — allocate per session, reset between cases, and reuse the stable Tier-1 prompt prefix across turns (1.3) instead of re-encoding it — cutting cold-start, peak RAM, and per-turn latency (the 1.6 budget).
-- [ ] Run **all inference off the UI isolate** (0.9) with a **streaming token callback** and a **cancellation path** (session abandoned / app backgrounded mid-generation) that **frees/resets the native context** so a cancelled turn leaves no orphaned call and no partial KV state; a foreground resume re-arms cleanly.
-- [ ] Provide a **deterministic decode mode** (fixed seed + temperature-0 / greedy) selectable via config, distinct from the shipped sampling profile, so the 1.6 acting-quality and token-budget samples are byte-reproducible (0.8) rather than a moving target.
+- [ ] Load weights via **memory mapping (mmap)** and manage an **explicit KV-cache lifecycle** — allocate per session, **reset (not reallocate) between cases**, and reuse the stable Tier-1 prompt prefix across turns (1.3) instead of re-encoding it — cutting cold-start, peak RAM, and per-turn latency (the 1.6 budget); a case switch frees what it allocated and leaks nothing.
+- [ ] Run **all inference off the UI isolate** (0.9) with a **streaming token callback**, a **single-flight generation guard** (a second request is queued or rejected, never raced against the native context), and a **cancellation path** (session abandoned / app backgrounded mid-generation) that **frees/resets the native context** so a cancelled turn leaves no orphaned call and no partial KV state; a foreground resume re-arms cleanly.
+- [ ] Provide a **deterministic decode mode** (fixed seed + temperature-0 / greedy, **pinned thread count + batch size**) selectable via config, distinct from the shipped sampling profile — reproducible **on the same build + architecture** (cross-architecture byte-identity is deliberately *not* claimed for float matmul; see the Determinism-scope note) so the 1.6 samples are a fixed target rather than a moving one.
+- [ ] **Expose a grammar / constrained-decoding seam (llama.cpp GBNF)** from day one — unused by the baseline sampling profile, but wired so the 1.6 acting-quality escalation ladder ([DECISION 0018](../project/DECISION_LOG.md)) is a config flip, not an FFI rewrite.
+- [ ] Expose the full **generation-parameter set** through the **central config authority** (0.2) — tier, context window, thread count / CPU-affinity, batch size, seed, sampling temperature, top-p / top-k, repetition penalty, max output tokens, and stop / EOS tokens; no hard-coded model constants, and run a **warm-up (first-token) pass at load** so the first real turn is not a latency outlier in measurement.
 - [ ] Add the **C++ logging shim across the FFI boundary** (0.7) so native load/inference events emit the same structured, correlation-id–stamped line as Dart — no raw `std::cout` / `stdout` bypass.
-- [ ] Expose model params — tier, context window, **thread count / CPU-affinity, batch size**, seed + sampling temperature — through the **central config authority** (0.2); no hard-coded model constants, and run a **warm-up (first-token) pass at load** so the first real turn is not a latency outlier in measurement.
-- [ ] Keep the model **resident** per the 0.9 memory-pressure rule (loaded once, reused across turns, explicit unload on shutdown / memory-pressure signal); classify inference failures on the 0.7 error taxonomy (load failure / OOM / cancellation / generation error) and **degrade an OOM to an actionable error or a Tier B retry**, never a hard crash.
+- [ ] Keep the model **resident** per the 0.9 memory-pressure rule (loaded once, reused across turns, explicit unload on shutdown / memory-pressure signal); classify inference failures on the 0.7 error taxonomy (**missing / corrupt / unsupported-ABI model, load failure, OOM, cancellation, generation error**) and **degrade an OOM to an actionable error or a Tier B retry**, never a hard crash.
+- [ ] **Add a native memory-safety gate**: repeated `load → generate → cancel → unload` cycles leak no memory and trigger no use-after-free under a sanitizer (ASan/LSan) on the Linux CI build — the hand-managed FFI boundary is load-bearing and the cheapest place to catch a leak is here.
 - [ ] Confirm build + verified model load + warm-up + one streaming inference on **Linux desktop and the x86 Android emulator** from the 0.1 one-command bootstrap.
 
 ### 1.2 — Minimal patient manifest schema + loader
@@ -697,9 +731,11 @@ or **checksum-mismatched** manifest fails loudly; the sample passes the
 content-integrity lint and draws only from the fictional-taxonomy registry.
 
 - [ ] Define the minimal manifest schema in `packages/` (identity, style archetype, initial pressure/sim state, available interaction patterns) shared by app + tools, using the **canonical serialization + additive-only evolution** contract (0.8) with **`schema_version` + `content_checksum` fields from day one** and **field-level length/size caps**, so the untrusted-input *shape* (0.12) exists before Phase 4/6 accept external manifests.
+- [ ] **Publish the schema as a language-neutral contract** (e.g. JSON Schema, per the 0.8 shared-schema strategy) as the single source of truth, with the Dart typed models generated/derived from it — so `tools/` and a future non-Dart server (0.1) validate the *same* shape and the manifest contract cannot fork across the trust boundary.
 - [ ] **Set a total manifest byte budget + per-field caps** sized so a fully-populated worst-case manifest still fits the Tier-1 token budget ([C-7](../specs/PROMPT-TOKEN-BUDGET.md)) — so the 1.6 gate never discovers an inherently over-budget content shape after the fact.
 - [ ] Define the **initial-state contract**: the manifest's pressure/sim-state fields are exactly the typed inputs the deterministic core (1.4) consumes, and the interaction-pattern enum foreshadows the Phase 2.1 card taxonomy — so Phase 2/4 extend the contract rather than reshaping it.
 - [ ] Implement the loader + typed models in `shared/`; **malformed, unknown-`schema_version`, or checksum-mismatched manifests fail fast** with an actionable error on the 0.7 error taxonomy, never loading partially.
+- [ ] **Decode untrusted input defensively**: enforce total-size, nesting-depth, and per-field caps *before* typing, and reject anything over budget — so the resource-exhaustion guard the Phase 4/6 external-manifest path needs exists from the first loader, even though the PoC content is bundled and trusted.
 - [ ] Apply the **0.8 wire-compatibility rule to unknown fields**: a known-`schema_version` manifest carrying an unrecognised additive field loads (ignoring the unknown field) rather than failing, so a newer bundled case degrades safely on an older build — the compatibility contract Phase 4.1 relies on.
 - [ ] **Verify the `content_checksum` on load** (integrity) and reject on mismatch — the local, unsigned precursor to the Phase 4.4 signed-manifest verify path, so the trust seam exists before the network does. *(Cryptographic signing + key custody are deferred to Phase 3/4; here we verify against the embedded checksum only.)*
 - [ ] Resolve the **bundled-sample location + any tunable caps through the config authority** (0.2) — the PoC case ships as a small committed asset (0.1 large-binary policy: JSON is fine to commit; only the model is fetched), its path and limits never hard-coded.
@@ -729,7 +765,10 @@ survive (load-bearing logic per Principle 4).
 
 - [ ] Implement the tiered assembler as a **pure, deterministic** function in `core/` (0.8 — no wall-clock, no ambient randomness), matching the C-7 signature.
 - [ ] Source the **model's real tokenizer** through the `shared/` inference service so token counting matches llama.cpp exactly — a budget enforced against an approximate counter is not enforced; **cache the tokenizer handle** and count off the UI isolate so per-turn budgeting is cheap (0.9).
+- [ ] **Apply the model's chat template** (from the GGUF metadata or a config-pinned template) inside the assembler so the roleplay frame is emitted in the exact turn format the instruction-tuned model expects — a wrong or missing chat template silently wrecks the 1.6 acting-quality gate even when the token count is within budget.
+- [ ] **Version the system / roleplay-frame template with the `ruleset_version`** (0.7): it is model-facing content, not user-facing copy, so it is pinned and reproducible rather than localized — a frame change is a tracked ruleset change, not an invisible tweak.
 - [ ] Emit a **byte-stable Tier-1 prefix** (deterministic field ordering, T1 assembled before T2/T3) so the fixed prefix is identical turn-to-turn — enabling the 1.1 KV-cache/prefix reuse rather than re-encoding the frame every turn (performance contract, not just correctness).
+- [ ] **Own the sliding conversation-window structure** and its length `N` (resolved through config): the assembler *consumes* it and the session loop (1.5) *maintains* it, and the assembler never mutates it — preserving the pure-function contract.
 - [ ] Enforce `tokenBudget` with the C-7 tier-ordered truncation (T2 conversation window → T2 digest; **never** T1 or T3) and reserve generation headroom; the budget value resolves through the **config authority** (0.2), not a literal. If **T1 alone exceeds budget**, fail loudly (a manifest-schema defect, per C-7) rather than silently dropping clue tokens.
 - [ ] Implement the **history-digest compiler** — a fixed-token structured summary (prior style, trust trajectory, medication history, key outcomes), never raw deltas — deterministic for a fixed input.
 - [ ] Establish **template-level isolation** so manifest/history strings are inserted as data and can never be read as instructions (0.12) — the assembler is the injection-contract enforcement point.
@@ -753,10 +792,12 @@ byte-identical outcome and prompt context across two runs; the model output
 changes nothing mechanical.
 
 - [ ] Implement the deterministic turn resolver in `core/` (no I/O, no model calls) on the **0.8 seeded-RNG + injected-clock seam** — fixed state + action + seed → identical outcome.
+- [ ] **Define the minimal PoC action set** the resolver handles — a small fixed set drawn from the manifest's interaction-pattern enum (1.2) — so there is a concrete turn to resolve and score, foreshadowing the Phase 2.1 card taxonomy without building it.
 - [ ] Define the **structured-delta schema in `packages/`** (0.8 canonical serialization) as the local, pre-server precursor of the Phase 3.3 receipt shape, so Phase 3 extends it additively; deltas carry the **0.8 fixed-point money/ratio type** even in the PoC so no platform float leaks into `core/`.
+- [ ] **Tag each resolved turn's delta with the `ruleset_version`** (0.7) so an outcome is replayable against the exact rules that produced it — the local, pre-server precursor of the Phase 3.3 receipt's `ruleset_version` pin, and distinct from the manifest's `schema_version` (1.2).
 - [ ] Emit outcomes as **structured deltas** (never transcripts) and enforce the 0.6 **"no raw transcript reaches a durable store"** rule even in the local-only PoC. *(⏭ hardened later: the transcript-blocking test/lint becomes a CI gate in 0.6/Phase 2.)*
 - [ ] Apply each turn **transactionally**: a cancelled or failed generation (1.1) rolls the turn back so core state is never half-applied — the reliability guarantee the streaming/cancellation path depends on.
-- [ ] Route mandatory clue tokens into the prompt and **validate their survival post-generation with a templated fallback** (§4) so a model omission degrades to deterministic text rather than a silent mechanical loss.
+- [ ] Route mandatory clue tokens into the prompt and **validate their survival post-generation with a bounded regeneration loop then a templated fallback** (§4): retry at most `K` (config) times, then emit the deterministic templated line — so a forgetful model degrades to fixed text instead of looping or silently losing a clue.
 - [ ] Keep **all** model interaction behind the `shared/` inference service; `core/` never imports the FFI layer (Principle 2 + the 0.2/0.9 boundary).
 - [ ] Unit-test the split, including a **property-based determinism test** (0.5) across seeds/states: a fixed state + action yields a byte-identical outcome and prompt context, and no model output alters anything mechanical.
 
@@ -777,15 +818,16 @@ conventions rather than throwaway wiring.
 Android emulator; the UI streams tokens without frame stalls, and a
 backgrounded/killed session relaunches into a consistent state.
 
-- [ ] Build the minimal session UI (case view, action input, **streaming** dialogue render) with **no hard-coded strings** (0.11 externalization) and the **a11y baseline** (semantic labels, scalable text, contrast).
+- [ ] Build the minimal session UI (case view, **structured card/choice action selector — never a free-text prompt box (§4, 0.12)**, **streaming** dialogue render) with **no hard-coded strings** (0.11 externalization) and the **a11y baseline** (semantic labels, scalable text, contrast) — keeping the direct prompt-injection channel closed from the first slice.
 - [ ] Establish the **typed navigation/routing** convention (0.9) for the launch → case-select → session flow, with the deep-link seam stubbed for the C-5 desktop OAuth callback (no server in Phase 1).
 - [ ] Wire UI → sim core → prompt assembler → inference → render through **GetX dependency injection** (0.9 / [DECISION 0016](../project/DECISION_LOG.md)) — the config authority and inference service are injected, never global singletons.
 - [ ] Keep inference **off the UI isolate** and **stream tokens** into the view so perceived latency stays low and the frame loop never stalls (0.9).
+- [ ] **Own the sliding conversation-window + delta-log accumulation** across turns, and **reset the KV cache + sim state on new-case / session reset** (1.1) so a fresh case never inherits stale context — the client-side half of the 1.1 KV lifecycle.
 - [ ] **Surface the 0.7 error taxonomy in the UI**: model load / OOM / cancellation / generation errors render as actionable, localized states, and offline is shown as a first-class state — never a silent hang.
 - [ ] Give the first-run model fetch a **progress + deferrable UI** (pause/resume, metered-connection posture per 0.10) so the download-acceptance gate (1.6) measures a real user path, not a blocking spinner.
 - [ ] Honour **reduce-motion and input alternatives** (0.11) for the streaming render and action input, so the distinctive UI stays reachable from the first slice.
 - [ ] Propagate a **single correlation/session id** across the Dart client and the C++ FFI layer for the whole turn (0.7) so the loop is debuggable without persisting any transcript.
-- [ ] Implement **app-lifecycle / crash-recovery** (0.9): a backgrounded, OS-killed, or crashed session relaunches into a consistent state with no lost or double-applied turn, exercising the durable local-state seam (no server yet).
+- [ ] Implement **app-lifecycle / crash-recovery** (0.9): the full session — **sim state + conversation window + delta log + correlation id** — is durably checkpointed at each turn boundary so a backgrounded, OS-killed, or crashed session relaunches into a consistent state with **no lost or double-applied turn**, exercising the durable local-state seam (no server yet).
 - [ ] Confirm the loop is **fully local/offline** (no server dependency in Phase 1) and that the same build path runs on Linux desktop and the x86 Android emulator.
 
 ### 1.6 — PoC exit-gate measurement
@@ -807,13 +849,16 @@ marked **pending** until the human opens physical-device testing.
 
 - [ ] Wire **local measurement instrumentation** on the 0.7 metrics contract (timers/gauges: tokens/sec, inference latency, peak RAM, cold-start, frame budget) into the FFI layer and the loop — you cannot measure a gate you did not instrument.
 - [ ] Build a **headless reproducibility harness** that runs the core → assembler → inference path with no UI under the fixed seed + greedy decode, so the token-budget and determinism artifacts are reproducible in CI and the harness is reusable by the Phase 2.8 solvability bots and Phase 4.3 validation (0.1 single-core-implementation rule).
+- [ ] **Take N samples per metric and report the distribution (median + p95), never a single shot** — a one-shot number hides warm-up outliers and thermal variance and is not a defensible gate.
 - [ ] Measure **acting quality for both the Tier A primary and the Phi-3.5-mini comparator** ([DECISION 0015](../project/DECISION_LOG.md)) under a worst-case full-manifest prompt against a **written rubric** (in-character, honours clue tokens, respects style archetype, no rule-breaking), recorded with the fixed seed (0.8) so the sample is reproducible and the final pick is evidence-based.
 - [ ] If acting quality **fails the rubric**, escalate along the fixed ladder — **prompt/few-shot exemplars → grammar-constrained decoding (llama.cpp GBNF) → one-time offline LoRA fine-tune (merged to fixed shipped weights) → model-tier bump** — *before* Phase 2 spend, per [DECISION 0018](../project/DECISION_LOG.md); runtime/continuous training stays out of scope (§18, [ARCHITECTURE](../code/ARCHITECTURE.md) §7). The sim core owning all mechanics (1.4) is the safety net that lets prompting-first be the baseline.
 - [ ] Record the **prompt token budget** (C-7): chosen model's advertised max, measured usable factor, and worst-case token count vs `input_budget` with reserve — feeding back to the manifest schema (Phase 4.1) if T1 overflows.
+- [ ] **Measure the prompt-prefix KV-cache reuse benefit** — per-turn latency and tokens processed *with* vs *without* T1-prefix reuse (1.1/1.3) — so the performance contract is validated rather than assumed and a regression here is visible.
 - [ ] Implement + measure the **download-acceptance** path: the 0.10 resumable, deferrable, metered-connection-aware first-run fetch of the bundled GGUF, with its retry strategy and a recorded acceptance method.
 - [ ] Record the **device-viability** method + the Tier B (SmolLM2 1.7B) fallback plan against the [DEVICE-SPEC](../specs/DEVICE-SPEC.md) floor — peak RAM within budget and tokens/sec above the playability threshold — **physical-device measurement gated on human sign-off** (kept explicitly *pending* until then).
 - [ ] Measure **sustained throughput under thermal load**: a multi-turn run on mobile (not a single cold shot), recording whether tokens/sec collapses under throttling — the real playability risk on minimum-spec devices.
 - [ ] Record **warm vs cold first-token latency** separately (the 1.1 warm-up pass) and a **rough per-turn energy/battery draw** on mobile against a budget, so playability accounts for the second turn and the battery cost, not just the first token.
+- [ ] **Record the greedy-decode reproducibility scope explicitly**: byte-identical on the same build + architecture + pinned thread count, with the expected x86-emulator-vs-arm64-device divergence (float matmul) documented — so the determinism artifact is not misread as a bug and Phase 2/3 replay expectations are correctly scoped.
 - [ ] Record the **0.7 performance-budget baselines** vs their targets (cold-start, tokens/sec + latency, peak RAM vs the DEVICE-SPEC ceiling, frame budget, binary size incl. model delivery) and confirm the app **survives OS memory pressure** on a minimum-spec device (the 0.9 rule). *(⏭ hardened later: any telemetry/crash collection stays local-only here; the opt-in, privacy-scrubbed pipeline is built in 0.7/Phase 6.6.)*
 - [ ] Record all artifacts in `docs/reports/` under a **PoC exit-report template** and state the **decision gate explicitly**: any red gate revisits the architecture (or drops to Tier B) before Phase 2 spend — "it produced text" is not a pass (§1).
 
