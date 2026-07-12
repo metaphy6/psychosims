@@ -25,14 +25,14 @@ Counts are per major phase.
 | Phase | Items | Done | Status |
 |---|---|---|---|
 | 0 — Foundations & Conceptual Corrections | 92 | 11 | 🟡 in progress |
-| 1 — Minimal Cross-Platform Runtime (PoC) | 59 | 0 | ⚪ planned |
+| 1 — Minimal Cross-Platform Runtime (PoC) | 60 | 0 | ⚪ planned |
 | 2 — Deterministic Game Core (offline) | 26 | 0 | ⚪ planned |
 | 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 19 | 0 | ⚪ planned |
-| **Total** | **270** | **11** | |
+| **Total** | **271** | **11** | |
 
 ---
 
@@ -808,6 +808,7 @@ marked **pending** until the human opens physical-device testing.
 - [ ] Wire **local measurement instrumentation** on the 0.7 metrics contract (timers/gauges: tokens/sec, inference latency, peak RAM, cold-start, frame budget) into the FFI layer and the loop — you cannot measure a gate you did not instrument.
 - [ ] Build a **headless reproducibility harness** that runs the core → assembler → inference path with no UI under the fixed seed + greedy decode, so the token-budget and determinism artifacts are reproducible in CI and the harness is reusable by the Phase 2.8 solvability bots and Phase 4.3 validation (0.1 single-core-implementation rule).
 - [ ] Measure **acting quality for both the Tier A primary and the Phi-3.5-mini comparator** ([DECISION 0015](../project/DECISION_LOG.md)) under a worst-case full-manifest prompt against a **written rubric** (in-character, honours clue tokens, respects style archetype, no rule-breaking), recorded with the fixed seed (0.8) so the sample is reproducible and the final pick is evidence-based.
+- [ ] If acting quality **fails the rubric**, escalate along the fixed ladder — **prompt/few-shot exemplars → grammar-constrained decoding (llama.cpp GBNF) → one-time offline LoRA fine-tune (merged to fixed shipped weights) → model-tier bump** — *before* Phase 2 spend, per [DECISION 0018](../project/DECISION_LOG.md); runtime/continuous training stays out of scope (§18, [ARCHITECTURE](../code/ARCHITECTURE.md) §7). The sim core owning all mechanics (1.4) is the safety net that lets prompting-first be the baseline.
 - [ ] Record the **prompt token budget** (C-7): chosen model's advertised max, measured usable factor, and worst-case token count vs `input_budget` with reserve — feeding back to the manifest schema (Phase 4.1) if T1 overflows.
 - [ ] Implement + measure the **download-acceptance** path: the 0.10 resumable, deferrable, metered-connection-aware first-run fetch of the bundled GGUF, with its retry strategy and a recorded acceptance method.
 - [ ] Record the **device-viability** method + the Tier B (SmolLM2 1.7B) fallback plan against the [DEVICE-SPEC](../specs/DEVICE-SPEC.md) floor — peak RAM within budget and tokens/sec above the playability threshold — **physical-device measurement gated on human sign-off** (kept explicitly *pending* until then).
