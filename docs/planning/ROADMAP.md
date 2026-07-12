@@ -24,8 +24,8 @@ Counts are per major phase.
 
 | Phase | Items | Done | Status |
 |---|---|---|---|
-| 0 — Foundations & Conceptual Corrections | 93 | 11 | 🟡 in progress |
-| 1 — Minimal Cross-Platform Runtime (PoC) | 21 | 0 | ⚪ planned |
+| 0 — Foundations & Conceptual Corrections | 92 | 11 | 🟡 in progress |
+| 1 — Minimal Cross-Platform Runtime (PoC) | 22 | 0 | ⚪ planned |
 | 2 — Deterministic Game Core (offline) | 26 | 0 | ⚪ planned |
 | 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
@@ -371,7 +371,6 @@ defined, wired for real in the owning server phases).
 - [ ] Implement secret handling end-to-end: `.env.example`, CI + pre-commit secret-scanning, and the enforced "names not values" rule.
 - [ ] Add dependency **lockfiles + a pinned-version policy** and **generate an SBOM**; fail CI on unreviewed drift.
 - [ ] Add dependency **vulnerability + license-compliance** scanning (ties to C-2 model redistribution terms + third-party deps).
-- [ ] **Verify the base-model artifact's integrity** — the ~1.8 GB GGUF fetch (0.1) checks a pinned checksum/signature before load, closing the supply-chain gap for the largest untracked asset.
 - [ ] **Establish the signing-key custody plan** for every signature the design relies on — mobile/desktop app signing ([ADR-0002](../design/ADR-0002-desktop-distribution-and-auth.md)) and server-signed presence/receipts/manifests (Phases 3/4) — locations, rotation, and access only; no keys in-repo.
 - [ ] **Establish the client-side data-at-rest posture**: the durable offline receipt queue (Phase 3.4), the cached primitive profile (3.2), auth tokens, and any device-held signing keys live in platform secure storage (Keychain / Keystore / OS credential store), never plaintext on disk — the client half of the key-custody plan above.
 - [ ] **Design the server-side abuse-prevention baseline** (policy + shapes only): the authenticated-request rule, per-account/per-endpoint rate-limit + throttle conventions, and request-quota shapes every anti-farming and anomaly-detection system (§3, §17, §21) will plug into — so the enforcement built in Phase 3.1 rides a documented convention rather than being re-invented per feature.
@@ -615,6 +614,7 @@ assumes it works.
 **Validation.** App runs one inference and renders raw output on Linux + Android emulator.
 
 - [ ] Integrate llama.cpp via Flutter FFI; load a GGUF model behind a `shared/` inference service.
+- [ ] **Verify the base model's integrity before load** — check the ~1.8 GB GGUF against its pinned checksum/signature (per the 0.1 fetch policy + the 0.10 verify-before-load convention) before handing it to the inference service, closing the supply-chain gap for the largest untracked asset.
 - [ ] Confirm build + model load on Linux desktop and the x86 Android emulator.
 - [ ] Expose model params (size, context window) through the central config authority.
 
