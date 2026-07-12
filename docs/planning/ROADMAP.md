@@ -367,6 +367,11 @@ exist and are referenced from the architecture doc; the audit-trail, abuse-limit
 backup/restore, and data-erasure conventions are documented (schemas + drills
 defined, wired for real in the owning server phases).
 
+> ⚠️ **Deferred to post-PoC ([DECISION 0017](../project/DECISION_LOG.md)):** No
+> security implementation work starts until the Phase 1 PoC is up and running.
+> All bullets below are picked up as Phase 2 pre-work once the PoC exit gates
+> (Phase 1.6) pass.
+
 - [ ] Add `SECURITY.md` + a lightweight threat-model stub anchored on the server-authoritative trust boundary and the "no transcripts durable" invariant.
 - [ ] Implement secret handling end-to-end: `.env.example`, CI + pre-commit secret-scanning, and the enforced "names not values" rule.
 - [ ] Add dependency **lockfiles + a pinned-version policy** and **generate an SBOM**; fail CI on unreviewed drift.
@@ -483,7 +488,7 @@ thread — so features add behaviour, not architecture.
 state and back; a heavy task runs off the UI isolate without dropping frames;
 local state survives a simulated app upgrade via the migration path.
 
-- [ ] Decide + record (ADR) the **state-management + dependency-injection approach**, and make the [config authority](#02--centralized-configuration-authority) + shared services injectable through it (no globals, no ad-hoc singletons).
+- [ ] Implement **GetX** as the state-management + dependency-injection layer ([DECISION 0016](../project/DECISION_LOG.md)), and make the [config authority](#02--centralized-configuration-authority) + shared services injectable through it (no globals, no ad-hoc singletons); document the choice in an ADR.
 - [ ] Establish the **navigation/routing convention** (typed routes + deep-link readiness for the C-5 desktop OAuth callback) so `session/` / `clinic/` / `progression/` flows compose predictably.
 - [ ] Define the **local-persistence & offline-first storage abstraction** — one seam for durable local state (the Phase 3.4 receipt queue, cached primitive profile, settings) with an explicit **local cache schema-migration** policy so state survives app upgrades and never scatters into per-feature stores.
 - [ ] Declare the **on-device concurrency model**: inference (llama.cpp/FFI), serialization, and fetch run off the UI isolate so the frame loop never stalls — a performance rule Phase 1.1 builds against.
