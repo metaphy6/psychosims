@@ -45,10 +45,15 @@ never discovered afterward (§1).
 
 ## Recommendation (provisional, to confirm at PoC)
 
-- **Primary (Tier A) candidates:** an Apache-2.0/MIT model first (Qwen2.5 1.5B, Phi-3.5-mini)
-  to minimize legal surface; Gemma 2 2B and Llama 3.2 3B as quality-comparison
-  candidates if their custom terms clear review.
-- **Fallback (Tier B):** SmolLM2 1.7B (Apache-2.0).
+**Provisional selection (recorded as [DECISION 0015](../project/DECISION_LOG.md)):**
+prefer **permissive licenses only** (Apache-2.0 / MIT) to keep the base-model legal
+surface to "include the license text + notices" — no acceptable-use policy,
+in-app attribution string, or MAU clause.
+
+- **Tier A — primary:** **Qwen2.5 1.5B (Apache-2.0)** — fits the on-device 1–3B target; **verify the exact 1.5B size is Apache-2.0** (Qwen licenses vary per size).
+- **Tier A — comparator:** **Phi-3.5-mini (MIT)** — cleanest license; only used if peak RAM clears the [DEVICE-SPEC](DEVICE-SPEC.md) floor (3.8B is above the 3B target).
+- **Tier B — fallback:** **SmolLM2 1.7B (Apache-2.0)**.
+- **Deferred unless they clearly beat the permissive picks on acting quality:** Gemma 2 2B (Gemma Terms) and Llama 3.2 1B/3B (Llama Community License) — usable but add notice pass-through, an AUP, a "Built with Llama" attribution, and (Llama) a >700M-MAU clause. **StableLM 2 1.6B is disqualified** unless a commercial-permitted variant is confirmed.
 - The **final pick is an output of the Phase 1.6 acting-quality + device gates**,
   recorded in the PoC exit report and the [DECISION_LOG](../project/DECISION_LOG.md).
 
