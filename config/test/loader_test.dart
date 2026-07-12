@@ -28,6 +28,22 @@ void main() {
               nCtx: 512,
               nBatch: 1024,
             ),
+            inference: const InferenceConfig(
+              threadCount: 1,
+              seed: 0,
+              temperature: 0.0,
+              topP: 1.0,
+              topK: 1,
+              repetitionPenalty: 1.0,
+              stopTokens: [],
+              kvCacheType: 'f16',
+              greedyDecode: true,
+            ),
+            content: ContentConfig(
+              bundledManifestPath: '',
+              maxManifestBytes: 128 * 1024,
+              maxManifestDepth: 8,
+            ),
             promptBudget: PromptBudgetConfig(
               maxInputTokens: 256,
               maxOutputTokens: 64,

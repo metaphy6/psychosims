@@ -16,6 +16,7 @@ void main() {
       final safe = safeConfig(cfg);
       expect(safe.keys, contains('network'));
       expect(safe.keys, contains('model'));
+      expect(safe.keys, contains('content'));
       expect(safe.keys, contains('balance'));
       expect(safe.keys, contains('featureFlags'));
     });

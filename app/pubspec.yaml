@@ -3,13 +3,15 @@ publish_to: 'none'
 version: 0.1.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: '>=3.10.0'
+  sdk: '>=3.1.0 <4.0.0'
+  flutter: '>=3.13.0'
 
 dependencies:
   flutter:
     sdk: flutter
+  ffi: ^2.1.0
   get: ^4.6.6
+  path: ^1.8.0
   psyconfig:
     path: ../config
   psychemas:
@@ -18,9 +20,13 @@ dependencies:
     path: ../packages/psycore
 
 dev_dependencies:
+  crypto: ^3.0.3
+  ffigen: ^10.0.0
   flutter_lints: ^3.0.0
   flutter_test:
     sdk: flutter
 
 flutter:
   uses-material-design: true
+  assets:
+    - ../content/manifests/poc_sample.json

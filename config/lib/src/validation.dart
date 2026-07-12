@@ -24,6 +24,25 @@ void validateConfig(Config cfg) {
     errors.add('model.nBatch must not exceed model.nCtx');
   }
 
+  if (cfg.inference.threadCount <= 0) {
+    errors.add('inference.threadCount must be positive');
+  }
+  if (cfg.inference.temperature < 0) {
+    errors.add('inference.temperature must be non-negative');
+  }
+  if (cfg.inference.topP < 0 || cfg.inference.topP > 1) {
+    errors.add('inference.topP must be in [0, 1]');
+  }
+  if (cfg.inference.topK < 0) {
+    errors.add('inference.topK must be non-negative');
+  }
+  if (cfg.inference.repetitionPenalty < 0) {
+    errors.add('inference.repetitionPenalty must be non-negative');
+  }
+  if (cfg.inference.kvCacheType.isEmpty) {
+    errors.add('inference.kvCacheType must not be empty');
+  }
+
   if (cfg.promptBudget.maxInputTokens <= 0) {
     errors.add('promptBudget.maxInputTokens must be positive');
   }

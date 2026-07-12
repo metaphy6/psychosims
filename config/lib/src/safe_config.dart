@@ -20,6 +20,11 @@ Map<String, Object?> safeConfig(Config cfg) {
       'nCtx': cfg.model.nCtx,
       'nBatch': cfg.model.nBatch,
     },
+    'content': <String, Object?>{
+      'bundledManifestPath': cfg.content.bundledManifestPath,
+      'maxManifestBytes': cfg.content.maxManifestBytes,
+      'maxManifestDepth': cfg.content.maxManifestDepth,
+    },
     'promptBudget': <String, Object?>{
       'maxInputTokens': cfg.promptBudget.maxInputTokens,
       'maxOutputTokens': cfg.promptBudget.maxOutputTokens,

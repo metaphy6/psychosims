@@ -1,0 +1,15 @@
+# FFI bindings generator configuration for Psychosims native inference library.
+# Regenerate with: (cd app && dart run ffigen --config ffigen.yaml)
+# Generated code is checked in per docs/code/GENERATED.md; do not hand-edit.
+
+name: PsychosimsNativeBindings
+description: Dart FFI bindings for native/include/psychosims_native.h
+output: lib/shared/generated/psychosims_native_bindings.dart
+headers:
+  entry-points:
+    - ../native/include/psychosims_native.h
+  include-directives:
+    - ../native/include/psychosims_native.h
+comments:
+  style: any
+  length: full

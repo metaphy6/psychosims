@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:psychosims/app/screens/home_screen.dart';
+import 'package:get/get.dart';
+
+import 'app/app_routes.dart';
+import 'features/session/session_bindings.dart';
+import 'features/session/session_screen.dart';
+import 'screens/home_screen.dart';
+import 'shared/injection.dart';
+import 'shared/l10n.dart';
 
 void main() {
   runApp(const PsychosimsApp());
@@ -10,13 +17,25 @@ class PsychosimsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Psychosims',
+    return GetMaterialApp(
+      title: L10n.appTitle,
+      initialBinding: AppBindings(),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      initialRoute: AppRoutes.home,
+      getPages: [
+        GetPage(
+          name: AppRoutes.home,
+          page: () => const HomeScreen(),
+        ),
+        GetPage(
+          name: AppRoutes.session,
+          page: () => const SessionScreen(),
+          binding: SessionBindings(),
+        ),
+      ],
     );
   }
 }

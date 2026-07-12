@@ -35,6 +35,22 @@ Config _baseDefaults() {
       nCtx: 2048,
       nBatch: 512,
     ),
+    inference: const InferenceConfig(
+      threadCount: 4,
+      seed: 42,
+      temperature: 0.7,
+      topP: 0.9,
+      topK: 40,
+      repetitionPenalty: 1.0,
+      stopTokens: ['<|im_end|>', '<|endoftext|>'],
+      kvCacheType: 'f16',
+      greedyDecode: false,
+    ),
+    content: ContentConfig(
+      bundledManifestPath: 'content/manifests/poc_sample.json',
+      maxManifestBytes: 128 * 1024,
+      maxManifestDepth: 8,
+    ),
     promptBudget: PromptBudgetConfig(
       maxInputTokens: 1536,
       maxOutputTokens: 256,
@@ -82,6 +98,22 @@ Config _environmentOverlay(String environment) {
           nCtx: 512,
           nBatch: 128,
         ),
+        inference: const InferenceConfig(
+          threadCount: 1,
+          seed: 42,
+          temperature: 0.0,
+          topP: 1.0,
+          topK: 1,
+          repetitionPenalty: 1.0,
+          stopTokens: [],
+          kvCacheType: 'f16',
+          greedyDecode: true,
+        ),
+        content: ContentConfig(
+          bundledManifestPath: 'content/manifests/poc_sample.json',
+          maxManifestBytes: 128 * 1024,
+          maxManifestDepth: 8,
+        ),
         promptBudget: PromptBudgetConfig(
           maxInputTokens: 256,
           maxOutputTokens: 64,
@@ -125,6 +157,22 @@ Config _environmentOverlay(String environment) {
           nCtx: 2048,
           nBatch: 512,
         ),
+        inference: const InferenceConfig(
+          threadCount: 4,
+          seed: 42,
+          temperature: 0.7,
+          topP: 0.9,
+          topK: 40,
+          repetitionPenalty: 1.0,
+          stopTokens: ['<|im_end|>', '<|endoftext|>'],
+          kvCacheType: 'f16',
+          greedyDecode: false,
+        ),
+        content: ContentConfig(
+          bundledManifestPath: 'content/manifests/poc_sample.json',
+          maxManifestBytes: 128 * 1024,
+          maxManifestDepth: 8,
+        ),
         promptBudget: PromptBudgetConfig(
           maxInputTokens: 1536,
           maxOutputTokens: 256,
@@ -167,6 +215,22 @@ Config _environmentOverlay(String environment) {
           quantization: '',
           nCtx: 0,
           nBatch: 0,
+        ),
+        inference: const InferenceConfig(
+          threadCount: 0,
+          seed: 0,
+          temperature: 0.0,
+          topP: 0.0,
+          topK: 0,
+          repetitionPenalty: 0.0,
+          stopTokens: [],
+          kvCacheType: '',
+          greedyDecode: false,
+        ),
+        content: ContentConfig(
+          bundledManifestPath: '',
+          maxManifestBytes: 0,
+          maxManifestDepth: 0,
         ),
         promptBudget: PromptBudgetConfig(
           maxInputTokens: 0,
@@ -223,6 +287,33 @@ Config _merge(Config base, Config overlay) {
       quantization: _pick(base.model.quantization, overlay.model.quantization),
       nCtx: _pick(base.model.nCtx, overlay.model.nCtx),
       nBatch: _pick(base.model.nBatch, overlay.model.nBatch),
+    ),
+    inference: InferenceConfig(
+      threadCount:
+          _pick(base.inference.threadCount, overlay.inference.threadCount),
+      seed: _pick(base.inference.seed, overlay.inference.seed),
+      temperature:
+          _pick(base.inference.temperature, overlay.inference.temperature),
+      topP: _pick(base.inference.topP, overlay.inference.topP),
+      topK: _pick(base.inference.topK, overlay.inference.topK),
+      repetitionPenalty: _pick(base.inference.repetitionPenalty,
+          overlay.inference.repetitionPenalty),
+      stopTokens: overlay.inference.stopTokens.isEmpty
+          ? base.inference.stopTokens
+          : overlay.inference.stopTokens,
+      kvCacheType:
+          _pick(base.inference.kvCacheType, overlay.inference.kvCacheType),
+      greedyDecode:
+          overlay.inference.greedyDecode || base.inference.greedyDecode,
+      grammarPath: overlay.inference.grammarPath ?? base.inference.grammarPath,
+    ),
+    content: ContentConfig(
+      bundledManifestPath: _pick(base.content.bundledManifestPath,
+          overlay.content.bundledManifestPath),
+      maxManifestBytes: _pick(
+          base.content.maxManifestBytes, overlay.content.maxManifestBytes),
+      maxManifestDepth: _pick(
+          base.content.maxManifestDepth, overlay.content.maxManifestDepth),
     ),
     promptBudget: PromptBudgetConfig(
       maxInputTokens: _pick(base.promptBudget.maxInputTokens,

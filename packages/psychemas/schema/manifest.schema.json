@@ -1,0 +1,110 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://psychosims.example/schemas/manifest-1.0.0.json",
+  "title": "Psychosims Patient Manifest",
+  "description": "Canonical patient manifest schema for the Phase 1 PoC.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "ruleset_version",
+    "id",
+    "content_checksum",
+    "memory_class",
+    "name_key",
+    "display_name_key",
+    "style_archetype",
+    "initial_state",
+    "interaction_patterns",
+    "clue_tokens",
+    "max_history_turns",
+    "model_facing_template"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Schema version of this manifest.",
+      "enum": ["1.0.0"]
+    },
+    "ruleset_version": {
+      "type": "string",
+      "description": "Ruleset version that consumes this manifest.",
+      "maxLength": 64
+    },
+    "id": {
+      "type": "string",
+      "description": "Stable case identifier.",
+      "maxLength": 128
+    },
+    "content_checksum": {
+      "type": "string",
+      "description": "SHA-256 of the canonical JSON serialization.",
+      "maxLength": 128
+    },
+    "memory_class": {
+      "type": "string",
+      "description": "Whether the case persists history across sessions.",
+      "enum": ["stateless", "persistent"]
+    },
+    "name_key": {
+      "type": "string",
+      "description": "Localization key for the case title.",
+      "maxLength": 256
+    },
+    "display_name_key": {
+      "type": "string",
+      "description": "Localization key for the short display name.",
+      "maxLength": 256
+    },
+    "style_archetype": {
+      "type": "string",
+      "description": "Core-facing style archetype token.",
+      "enum": ["vexa", "torpida", "vulnax", "dormios", "quiesa"]
+    },
+    "initial_state": {
+      "type": "object",
+      "description": "Core-facing initial pressure / sim state.",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      }
+    },
+    "interaction_patterns": {
+      "type": "array",
+      "description": "Whitelisted actions for this case.",
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "enum": [
+          "openQuestion",
+          "validate",
+          "reframe",
+          "setBoundary",
+          "reflect",
+          "discloseParallel"
+        ]
+      }
+    },
+    "clue_tokens": {
+      "type": "array",
+      "description": "Mandatory clue tokens for this case.",
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "maxLength": 256
+      }
+    },
+    "max_history_turns": {
+      "type": "integer",
+      "description": "Maximum conversation-window turns.",
+      "minimum": 1,
+      "maximum": 64
+    },
+    "model_facing_template": {
+      "type": "string",
+      "description": "Model-facing prose inserted as data by the assembler.",
+      "maxLength": 8192
+    }
+  }
+}

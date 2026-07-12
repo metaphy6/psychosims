@@ -7,6 +7,8 @@ class Config {
 
   final NetworkConfig network;
   final ModelConfig model;
+  final InferenceConfig inference;
+  final ContentConfig content;
   final PromptBudgetConfig promptBudget;
   final BalanceConfig balance;
   final FeatureFlags featureFlags;
@@ -16,6 +18,8 @@ class Config {
     this.schemaVersion = '1.0.0',
     required this.network,
     required this.model,
+    required this.inference,
+    required this.content,
     required this.promptBudget,
     required this.balance,
     required this.featureFlags,
@@ -50,6 +54,49 @@ class ModelConfig {
     required this.quantization,
     required this.nCtx,
     required this.nBatch,
+  });
+}
+
+class InferenceConfig {
+  final int threadCount;
+  final int seed;
+  final double temperature;
+  final double topP;
+  final int topK;
+  final double repetitionPenalty;
+  final List<String> stopTokens;
+  final String kvCacheType;
+  final bool greedyDecode;
+  final String? grammarPath;
+
+  const InferenceConfig({
+    required this.threadCount,
+    required this.seed,
+    required this.temperature,
+    required this.topP,
+    required this.topK,
+    required this.repetitionPenalty,
+    required this.stopTokens,
+    required this.kvCacheType,
+    required this.greedyDecode,
+    this.grammarPath,
+  });
+}
+
+class ContentConfig {
+  /// Asset key or filesystem path for the bundled PoC manifest.
+  final String bundledManifestPath;
+
+  /// Maximum manifest byte budget.
+  final int maxManifestBytes;
+
+  /// Maximum nesting depth for JSON decoding.
+  final int maxManifestDepth;
+
+  const ContentConfig({
+    required this.bundledManifestPath,
+    required this.maxManifestBytes,
+    required this.maxManifestDepth,
   });
 }
 
