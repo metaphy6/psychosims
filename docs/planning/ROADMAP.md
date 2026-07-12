@@ -24,7 +24,7 @@ Counts are per major phase.
 
 | Phase | Items | Done | Status |
 |---|---|---|---|
-| 0 — Foundations & Conceptual Corrections | 92 | 11 | 🟡 in progress |
+| 0 — Foundations & Conceptual Corrections | 92 | 92 | 🟢 complete |
 | 1 — Minimal Cross-Platform Runtime (PoC) | 93 | 0 | ⚪ planned |
 | 2 — Deterministic Game Core (offline) | 26 | 0 | ⚪ planned |
 | 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
@@ -32,7 +32,7 @@ Counts are per major phase.
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 19 | 0 | ⚪ planned |
-| **Total** | **304** | **11** | |
+| **Total** | **304** | **92** | |
 
 ---
 
@@ -170,8 +170,11 @@ the config authority loads + validates a sample config and rejects a malformed
 one; the ~1.8 GB base model is fetched out-of-band and checksum-verified rather
 than committed; the deterministic `core/` produces an identical outcome for a
 fixed state + action + seed; the same log event renders identically across the
-Dart, native, and server stacks; CI runs build/lint/format/test on every push;
-the secret-scan gate catches a planted secret; the six Phase 0.3 correction
+Dart, native, and server stacks; CI runs build/lint/format/test on every push
+(the security-enforcement gates — secret-scan, SBOM, and vulnerability/license
+scanning — are documented as conventions but deferred to Phase 2 pre-work per
+[DECISION 0017](../project/DECISION_LOG.md), so the PoC runs without them); the
+six Phase 0.3 correction
 artifacts (C-1…C-6) are committed, with authoritative specs also produced for
 C-7…C-10; the client's state-management, dependency-injection, local-persistence
 and concurrency conventions are declared and exercised by a trivial slice; a
