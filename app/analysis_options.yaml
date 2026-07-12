@@ -1,0 +1,9 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    avoid_print: true
+    prefer_single_quotes: true
+    # Disabled while the skeleton stabilizes; local path deps interact oddly
+    # with the alphabetical sorter across Dart analyzer versions.
+    sort_pub_dependencies: false

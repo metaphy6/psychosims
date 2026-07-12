@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Local pre-commit hook mirroring CI gates.
+# Install with: git config core.hooksPath .githooks
+
+cd "$(dirname "$0")/.."
+
+make format.check
+make lint
+make test

@@ -188,6 +188,23 @@ def _check_skill_links(failures: list[str]) -> None:
         ok("all referenced skill files exist")
 
 
+def _check_toolchains(failures: list[str]) -> None:
+    step("🔧 pinned toolchains present")
+    required = {
+        "dart": "dart --version",
+        "flutter": "flutter --version",
+        "python3": "python3 --version",
+        "g++": "g++ --version",
+    }
+    for name, cmd in required.items():
+        import shutil
+        if shutil.which(name):
+            dim(f"  ✓ {name}")
+        else:
+            failures.append(f"toolchain missing: {name} ({cmd})")
+            err(f"  ✗ {name} not found")
+
+
 def main() -> None:
     info(f"🩺 doctor — checking framework wiring in {REPO_ROOT}")
     failures: list[str] = []
@@ -196,6 +213,7 @@ def main() -> None:
     _check_json(failures)
     _check_tracking(failures)
     _check_skill_links(failures)
+    _check_toolchains(failures)
     print()
     if failures:
         err(f"💥 {len(failures)} failure(s):")

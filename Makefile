@@ -71,11 +71,84 @@ skills.status:
 skills.find:
 	@TAG="$(TAG)" $(XOPS)/skills_ops.py find
 
-## test              Run the xops test suite
+## test              Run all test suites (xops + project)
 test:
 	@bash xops/test/run_tests.sh
+	@$(MAKE) --no-print-directory dart.test
+	@$(MAKE) --no-print-directory server.test
+	@$(MAKE) --no-print-directory native.test
 
-## verify            Verifier gate: full test suite + make doctor (run cold)
+## verify            Verifier gate: build + lint + format + test + doctor (run cold)
 verify:
+	@$(MAKE) --no-print-directory build
+	@$(MAKE) --no-print-directory lint
+	@$(MAKE) --no-print-directory format.check
 	@$(MAKE) --no-print-directory test
 	@$(MAKE) --no-print-directory doctor
+
+## build             Build all project modules
+build:
+	@$(MAKE) --no-print-directory native.build
+	@$(MAKE) --no-print-directory server.build
+
+## lint              Lint all project modules
+lint:
+	@scripts/env_read_check.sh
+	@scripts/no_raw_print_check.sh
+	@scripts/check_hardcoded_strings.sh
+	@$(MAKE) --no-print-directory dart.lint
+	@$(MAKE) --no-print-directory server.lint
+
+## format.check      Check formatting of all project modules
+format.check:
+	@$(MAKE) --no-print-directory dart.format.check
+	@$(MAKE) --no-print-directory server.format.check
+
+## format            Format all project modules
+format:
+	@$(MAKE) --no-print-directory dart.format
+	@$(MAKE) --no-print-directory server.format
+
+## dart.test         Run Dart package tests
+dart.test:
+	@scripts/dart_test.sh
+
+## dart.lint         Run Dart static analysis
+dart.lint:
+	@scripts/dart_lint.sh
+
+## dart.format.check Check Dart formatting
+dart.format.check:
+	@scripts/dart_format.sh --check
+
+## dart.format       Format Dart code
+dart.format:
+	@scripts/dart_format.sh
+
+## server.test       Run Python server tests
+server.test:
+	@scripts/server_test.sh
+
+## server.lint       Lint Python server code
+server.lint:
+	@scripts/server_lint.sh
+
+## server.format.check Check Python formatting
+server.format.check:
+	@scripts/server_format.sh --check
+
+## server.format     Format Python code
+server.format:
+	@scripts/server_format.sh
+
+## server.build      Install server dependencies
+server.build:
+	@scripts/server_build.sh
+
+## native.build      Build native C/C++ stub
+native.build:
+	@scripts/native_build.sh
+
+## native.test       Run native C/C++ tests
+native.test:
+	@scripts/native_test.sh

@@ -1,0 +1,41 @@
+# Fictional clinical taxonomy registry.
+# See docs/code/CONTENT_INTEGRITY.md
+#
+# Names must be evocative, not alien: familiar roots + plausible suffixes,
+# never a near-homophone of a real trademark or reskinned real label.
+
+approved_roots:
+  - brum
+  - cath
+  - dorm
+  - ferve
+  - lent
+  - mora
+  - nerv
+  - quies
+  - sangu
+  - torp
+  - vexa
+  - vuln
+
+clinical_suffixes:
+  - osis
+  - itis
+  - ia
+  - esis
+  - emia
+
+pharma_suffixes:
+  - axine
+  - oline
+  - erol
+  - idone
+  - etan
+  - amine
+  - exole
+
+# Forbidden exact terms and patterns (real DSM/ICD or drug brands).
+forbidden_patterns:
+  - "(?i)\\b(depression|schizophrenia|bipolar|ptsd|ocd|adhd|autism|dementia|alzheimer|parkinson|anxiety disorder|personality disorder)\\b"
+  - "(?i)\\b(prozac|zoloft|xanax|lexapro|abilify|adderall|ritalin|valium|klonopin|paxil|celexa|cymbalta|effexor|wellbutrin)\\b"
+  - "(?i)\\b(dsm[- ]?5|dsm[- ]?v|icd[- ]?10|icd[- ]?11)\\b"

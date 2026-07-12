@@ -1,0 +1,39 @@
+# Module boundary owners for Psychosims.
+# Paths are matched in order; later lines override earlier ones.
+
+# Agent framework + repo ops
+AGENTS.md @maintainer
+.github/ @maintainer
+xops/ @maintainer
+Makefile @maintainer
+
+# Client app
+app/ @client-leads
+app/lib/core/ @core-leads
+app/lib/shared/ @client-leads
+app/lib/features/session/ @session-leads
+app/lib/features/cards/ @session-leads
+app/lib/features/clinic/ @clinic-leads
+app/lib/features/progression/ @economy-leads
+
+# Native / FFI layer
+native/ @native-leads
+
+# Server control plane
+server/ @server-leads
+
+# Shared schemas + deterministic core
+packages/ @core-leads
+
+# Config authority
+config/ @core-leads
+
+# Content pipeline
+content/ @content-leads
+
+# Tools / sandboxes / bots
+tools/ @core-leads
+
+# Docs + planning
+docs/ @maintainer
+docs/planning/ @maintainer

@@ -85,9 +85,15 @@ retrofit. Every subsequent phase consumes `Config` via DI from the start.
   an invariant violation ([`../code/ARCHITECTURE.md`](../code/ARCHITECTURE.md) §5);
   consider a lint rule.
 
+## Enforcement
+
+- Raw environment reads outside `config/` are rejected by `scripts/env_read_check.sh`,
+  which runs as part of `make lint` and CI.
+- Every balance constant is bound to the `balance` group in `Config`, sourced from
+  the [C-4 balance spec](../specs/BALANCE-SPEC.md).
+
 ## Open questions
 
-- Exact config file format (e.g. typed Dart + a serialized overlay vs a validated
-  external file) — settled during Phase 0.2 implementation.
 - Whether server + client share one schema package or two aligned ones under
   `packages/` — decided when the server language/runtime is finalized (Phase 3).
+  (Resolved: Python server mirrors Dart schemas via JSON Schema / OpenAPI.)

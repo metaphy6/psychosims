@@ -17,3 +17,68 @@ docs/tracking/state/*
 # user-local overrides
 .env
 .env.local
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+pubspec.lock
+*.iml
+.idea/
+android/.gradle/
+android/app/debug/
+android/app/profile/
+android/app/release/
+ios/Pods/
+ios/.symlinks/
+macos/Pods/
+macos/.symlinks/
+linux/flutter/
+windows/flutter/
+web/flutter/
+
+# Python server
+.venv/
+.pydeps/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+dist/
+.uv/
+
+# Native build artifacts
+*.so
+*.a
+*.o
+*.obj
+*.dll
+*.dylib
+*.exe
+native/build/
+native/third_party/
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+
+# Large binaries — models, assets, build outputs are never committed
+*.gguf
+*.bin
+*.onnx
+*.pt
+*.ckpt
+models/
+assets/models/
+*.zip
+*.tar.gz
+*.tar
+
+# Coverage / reports
+coverage/
+*.lcov
+
+# OS noise
+.DS_Store
+Thumbs.db

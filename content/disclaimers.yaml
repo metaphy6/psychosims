@@ -1,0 +1,14 @@
+# Disclaimer string keys for fictional framing.
+# These keys are resolved by the localization layer; copy is finalized in Phase 7.5.
+# See docs/code/CONTENT_INTEGRITY.md
+
+keys:
+  fictional_simulation:
+    en: "This is a fictional simulation. It is not medical advice, diagnosis, or treatment."
+    placeholder: true
+  not_medical_advice:
+    en: "If you need real mental health support, please contact a qualified professional."
+    placeholder: true
+  entertainment_focus:
+    en: "Psychosims is an entertainment experience. All clinical content is fictional."
+    placeholder: true

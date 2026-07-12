@@ -38,11 +38,13 @@ deterministic rules never mix with UI or I/O.
 | Component | Path | Responsibility |
 |---|---|---|
 | Client app | `app/` | Flutter cross-platform client (the game loop + UI). |
-| — Sim core | `app/lib/core/` | **Pure deterministic rules**: state, outcomes, prompt assembler. No I/O, no model calls. |
+| — Sim core | `packages/psycore/` | **Pure deterministic rules**: state, outcomes, prompt assembler. No I/O, no model calls. Imported by `app/lib/core/` and `tools/`. |
+| — App adapter | `app/lib/core/` | Thin adapter that re-exports `packages/psycore/` for the Flutter app and wires DI. |
 | — Features | `app/lib/features/` | One directory per domain: `session/`, `cards/`, `clinic/`, `progression/`, `recovery/`, `content/`, `presentation/`. |
-| — Shared | `app/lib/shared/` | Reusable utilities, models, services (inference service, config access, networking). |
-| Server | `server/` | Authoritative control plane (auth, receipts, ownership, matchmaking, signing, moderation, royalties). |
-| Shared packages | `packages/` | Cross-cutting Dart packages reused by app + tools (manifest schema, receipt schema, shared models). |
+| — Shared | `app/lib/shared/` | Reusable utilities, models, services (inference service, config access, networking, logging). |
+| Server | `server/` | Authoritative control plane (auth, receipts, ownership, matchmaking, signing, moderation, royalties). Python/FastAPI. |
+| Native / FFI | `native/` | C/C++ shim to llama.cpp and generated Dart FFI bindings. |
+| Shared packages | `packages/` | Cross-cutting Dart packages reused by app + tools (`psychemas/`, `psycore/`). |
 | Content pipeline | `content/` | Nine-axis manifest generation, validation gate, signing inputs. |
 | Config authority | `config/` | **The single centralized configuration source** (schema, overlays, loader). See §4. |
 | Tooling | `tools/` | Balance sandbox, bots, integration sandbox, diagnostics. |
@@ -77,10 +79,18 @@ or `packages/`. Nothing reads configuration except through `config/` (§4).
 - **Auth:** server-authoritative identity for the life of the product; the client
   caches but never owns it (§3). Apple/Google on mobile; desktop channels decided
   in roadmap C-5.
-- **Logging:** structured logs; **never** raw dialogue transcripts server-side;
-  bug logs are scrubbed and opt-in (§18).
+- **Logging:** one cross-stack structured log-line schema, rendered identically
+  by Dart, the C++ FFI shim, and the Python server. See
+  [LOGGING.md](LOGGING.md). Direct `print`/`std::cout`/`stdout` writes fail CI.
 - **Errors:** classify user / system / external; offline is a first-class state
-  (durable receipt queue, idempotency keys) not an error (§3).
+  (durable receipt queue, idempotency keys) not an error. See
+  [ERROR_TAXONOMY.md](ERROR_TAXONOMY.md) (§3).
+- **Versioning & identifiers:** `ruleset_version` and `manifest_schema_version`
+  live in one registry ([VERSIONING.md](VERSIONING.md));
+  canonical serialization and wire-compatibility rules live in
+  [SERIALIZATION.md](SERIALIZATION.md) and [SHARED_SCHEMAS.md](SHARED_SCHEMAS.md);
+  identifier and idempotency-key strategy lives in [IDENTIFIERS.md](IDENTIFIERS.md)
+  (§3).
 - **Trust boundary:** "a client-computed number is a claim, not a fact." High-value
   economy outputs are computed server-side (§3).
 

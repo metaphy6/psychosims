@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.4.0'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install native toolchain
+        run: sudo apt-get update && sudo apt-get install -y g++
+
+      - name: Verify
+        run: make verify
+
+      - name: No raw print/stdout gate
+        run: scripts/no_raw_print_check.sh
+
+      - name: No hard-coded UI string gate
+        run: scripts/check_hardcoded_strings.sh
+
+      - name: Content integrity gate
+        run: scripts/content_integrity_check.sh

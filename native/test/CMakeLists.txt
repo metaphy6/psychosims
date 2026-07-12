@@ -1,0 +1,3 @@
+add_executable(native_smoke_test native_smoke_test.cpp)
+target_link_libraries(native_smoke_test psychosims_native)
+add_test(NAME native_smoke COMMAND native_smoke_test)

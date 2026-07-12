@@ -1,0 +1,14 @@
+# Versioning registry — single source of truth for ruleset and schema versions.
+# See docs/code/VERSIONING.md
+
+ruleset_version: 0.1.0
+manifest_schema_version: 0.1.0
+supported_ranges:
+  client_min: 0.1.0
+  client_max: 0.1.0
+
+# Ruleset sunset policy: old versions remain supported for at least one minor
+# manifest schema release after deprecation, gated by a server feature flag.
+deprecation_policy:
+  notice_days: 30
+  min_supported_after_deprecation: "0.1.0"

@@ -1,0 +1,10 @@
+{
+  "id": "fixture-receipt-001",
+  "schemaVersion": "0.1.0",
+  "rulesetVersion": "0.1.0",
+  "patientId": "fixture-p-001",
+  "turnCount": 3,
+  "deltas": [
+    {"axis": "trust", "deltaMillis": 50, "reasonKey": "reason.relatable"}
+  ]
+}
