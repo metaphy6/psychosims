@@ -39,7 +39,14 @@ Config _baseDefaults() {
       modelFileSizeBytes: 1073741824,
       // Checksums are populated after first verified download; empty values
       // disable verify-before-load until the release manifest pins them.
-      modelChecksums: const {},
+      modelChecksums: const {
+        'https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf':
+            '6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e',
+        'https://huggingface.co/bartowski/Phi-3.5-mini-instruct-GGUF/resolve/main/Phi-3.5-mini-instruct-Q4_K_M.gguf':
+            'e4165e3a71af97f1b4820da61079826d8752a2088e313af0c7d346796c38eff5',
+        'https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/main/smollm2-1.7b-instruct-q4_k_m.gguf':
+            'decd2598bc2c8ed08c19adc3c8fdd461ee19ed5708679d1c54ef54a5a30d4f33',
+      },
       maxFetchRetries: 3,
       minFreeDiskBytes: 3221225472,
       tierAFloorBytes: 8589934592,

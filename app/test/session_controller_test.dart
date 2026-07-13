@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
@@ -11,6 +12,7 @@ import 'package:psychosims/features/session/session_bindings.dart';
 import 'package:psychosims/features/session/session_controller.dart';
 import 'package:psychosims/shared/inference_service.dart';
 import 'package:psychosims/shared/logger.dart';
+import 'package:psychosims/shared/session_persistence.dart';
 
 import 'test_manifest_data.dart';
 
@@ -54,6 +56,9 @@ void main() {
     Get.put<Config>(loadConfig(environment: 'test'));
     Get.put<InferenceService>(inference);
     Get.put<PsyLog>(logger);
+    Get.put<SessionPersistenceService>(
+      SessionPersistenceService(directory: Directory.systemTemp),
+    );
   });
 
   tearDown(() {

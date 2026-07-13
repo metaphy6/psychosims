@@ -3,9 +3,9 @@ import 'package:psyconfig/psyconfig.dart';
 import 'package:psychosims/shared/tier_selector.dart';
 
 Config _testConfig() {
-  return Config(
+  return const Config(
     schemaVersion: '1.0.0',
-    network: const NetworkConfig(
+    network: NetworkConfig(
       apiBaseUrl: '',
       connectTimeoutMillis: 1000,
       receiveTimeoutMillis: 1000,
@@ -17,7 +17,7 @@ Config _testConfig() {
       quantization: 'Q4_K_M',
       nCtx: 2048,
       nBatch: 512,
-      modelChecksums: const {
+      modelChecksums: {
         'https://models.example/qwen2.5-1.5b-q4_k_m.gguf': 'sha256:aaa',
         'https://models.example/phi-3.5-mini-q4_k_m.gguf': 'sha256:bbb',
         'https://models.example/smollm2-1.7b-q4_k_m.gguf': 'sha256:ccc',
@@ -26,7 +26,7 @@ Config _testConfig() {
       tierBFloorBytes: 4 * 1024 * 1024 * 1024,
       tierAAvailableHeadroomBytes: 1 * 1024 * 1024 * 1024,
     ),
-    inference: const InferenceConfig(
+    inference: InferenceConfig(
       threadCount: 4,
       seed: 42,
       temperature: 0.7,
@@ -37,17 +37,17 @@ Config _testConfig() {
       kvCacheType: 'f16',
       greedyDecode: false,
     ),
-    content: const ContentConfig(
+    content: ContentConfig(
       bundledManifestPath: '',
       maxManifestBytes: 128 * 1024,
       maxManifestDepth: 8,
     ),
-    promptBudget: const PromptBudgetConfig(
+    promptBudget: PromptBudgetConfig(
       maxInputTokens: 1536,
       maxOutputTokens: 256,
       prefixCacheTokens: 512,
     ),
-    balance: const BalanceConfig(
+    balance: BalanceConfig(
       startingClinicCurrency: 500,
       sessionFeeClinicCurrency: 50,
       startingStudyPoints: 0,
@@ -63,11 +63,11 @@ Config _testConfig() {
       ownershipLeaseTtlHours: 48,
       rulesetVersionSunsetDays: 90,
     ),
-    featureFlags: const FeatureFlags(
+    featureFlags: FeatureFlags(
       enableOfflineQueue: true,
       enableTelemetry: false,
     ),
-    secretsRefs: const SecretsRefs(apiKeyRef: 'KEY'),
+    secretsRefs: SecretsRefs(apiKeyRef: 'KEY'),
   );
 }
 

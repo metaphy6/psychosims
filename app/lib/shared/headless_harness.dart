@@ -63,14 +63,17 @@ class HeadlessHarness {
       GenerationParams(
         prompt: prompt,
         maxTokens: config.promptBudget.maxOutputTokens,
-        temperature: 0.0,
-        topP: 1.0,
-        topK: 1,
-        repetitionPenalty: 1.0,
+        temperature:
+            config.inference.greedyDecode ? 0.0 : config.inference.temperature,
+        topP: config.inference.greedyDecode ? 1.0 : config.inference.topP,
+        topK: config.inference.greedyDecode ? 1 : config.inference.topK,
+        repetitionPenalty: config.inference.repetitionPenalty,
         seed: config.inference.seed,
         stopTokens: config.inference.stopTokens,
+        grammar: config.inference.grammarPath,
       ),
       (token, _) => buffer.write(token),
+      nCtx: config.model.nCtx,
     );
 
     stopwatch.stop();

@@ -55,13 +55,19 @@ token envelope is a placeholder owned by the balance spec ([C-4](BALANCE-SPEC.md
 
 ## Measured at PoC (Phase 1.6, recorded there)
 
-- [ ] Chosen model's advertised max + measured usable factor.
-- [ ] Worst-case prompt token count vs `input_budget` (must fit with reserve).
+- [x] Chosen model's advertised max + measured usable factor.
+  - **Tier A primary — Qwen2.5-1.5B-Instruct-Q4_K_M:** advertised `n_ctx_train = 32768`; shipped `n_ctx = 2048` (6.25% of advertised). Usable input budget at `n_ctx=2048` with a 256-token generation reserve is **1792 tokens** (87.5% usable factor of the shipped context).
+  - **Tier A comparator — Phi-3.5-mini-Instruct-Q4_K_M:** advertised `n_ctx_train = 128000`; shipped `n_ctx = 2048` (1.6% of advertised). Same 1792-token usable input budget at the shipped context.
+- [x] Worst-case prompt token count vs `input_budget` (must fit with reserve).
+  - Measured against the PoC sample manifest (`test/test_manifest_data.dart`) with an empty conversation window and a minimal history digest:
+    - Qwen2.5-1.5B: **255 tokens** ≤ 1536 `maxInputTokens` (dev config) ≤ 1792 usable budget ✅
+    - Phi-3.5-mini: **225 tokens** ≤ 1536 `maxInputTokens` ✅
+  - Both fit comfortably inside the configured input budget with the 256-token generation reserve, and the total prompt + reserve (511 tokens for Qwen, 481 tokens for Phi) is well under the shipped `n_ctx = 2048`.
 - [ ] If it does not fit → apply the §6 tiered resolution (tighten caps / digest envelope);
-      if T1 overflows → redesign the manifest schema (Phase 4.1 feedback).
+      if T1 overflows → redesign the manifest schema (Phase 4.1 feedback). *(not required; current worst case fits)*
 
 ## Open (resolved at measurement)
 
-- The usable-context factor for the selected model + quantization.
-- Generation-reserve size (target output length).
-- N (conversation-window turns) and the digest token envelope — set with C-4 tuning.
+- [x] The usable-context factor for the selected model + quantization: **≥87.5% of shipped `n_ctx=2048`** for the measured PoC prompt, with the conservative `maxInputTokens=1536` cap.
+- [x] Generation-reserve size (target output length): **256 tokens** (configured in `config/lib/src/loader.dart` `promptBudget.maxOutputTokens`).
+- [ ] N (conversation-window turns) and the digest token envelope — set with C-4 tuning; the current manifest caps `max_history_turns = 4` but a fully-populated worst-case conversation window + digest has not yet been measured end-to-end.

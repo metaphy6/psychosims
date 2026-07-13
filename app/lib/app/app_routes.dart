@@ -7,4 +7,5 @@ class AppRoutes {
 
   static const String home = '/';
   static const String session = '/session';
+  static const String modelFetch = '/model-fetch';
 }

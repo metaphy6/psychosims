@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:psyconfig/psyconfig.dart';
@@ -12,6 +14,13 @@ import 'test_manifest_data.dart';
 String _libraryPath() =>
     p.join('..', 'native', 'build', 'libpsychosims_native.so');
 
+String _modelPath() {
+  const primary = '../assets/models/qwen2.5-1.5b-instruct-q4_k_m.gguf';
+  return File(primary).existsSync()
+      ? primary
+      : '/tmp/psychosims_poc_model.gguf';
+}
+
 void main() {
   test('runs a deterministic turn end-to-end', () async {
     final logger = PsyLog(minLevel: LogLevel.warn);
@@ -19,7 +28,7 @@ void main() {
       libraryPath: _libraryPath(),
       logger: logger,
     );
-    inference.loadModel('/tmp/psychosims_poc_model.gguf');
+    await inference.loadModel(_modelPath());
     final manifest = testManifest();
 
     final harness = HeadlessHarness(
@@ -39,6 +48,6 @@ void main() {
     expect(result.nextState.turn, 1);
     expect(result.deltas, isNotEmpty);
 
-    inference.dispose();
+    await inference.dispose();
   });
 }

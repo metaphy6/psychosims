@@ -11,6 +11,7 @@ import '../../shared/inference_service.dart';
 import '../../shared/l10n.dart';
 import '../../shared/logger.dart';
 import '../../shared/response_planner.dart';
+import '../../shared/session_persistence.dart';
 
 /// UI-facing state for the session screen.
 enum SessionStatus { loading, ready, generating, error }
@@ -47,6 +48,7 @@ class SessionController extends GetxController {
     required this.logger,
     required this.responsePlanner,
     required this.clock,
+    this.persistence,
     this.modelPath,
   });
 
@@ -55,6 +57,11 @@ class SessionController extends GetxController {
   final PsyLog logger;
   final ResponsePlanner responsePlanner;
   final core.Clock clock;
+
+  /// Optional durable checkpointing service. When provided, the controller
+  /// persists the structured session state at each turn boundary and clears it
+  /// when a new case is loaded.
+  final SessionPersistenceService? persistence;
 
   /// Optional resolved local model path. When null or missing, the controller
   /// falls back to the PoC stub path so first-run development/CI still works.
@@ -71,6 +78,7 @@ class SessionController extends GetxController {
   final List<StructuredDelta> _deltaLog = [];
   late final core.TurnResolver _resolver;
   final _cancelToken = CancelToken();
+  Future<void>? _loadCaseFuture;
 
   bool get hasManifest => manifest.value != null;
 
@@ -103,7 +111,23 @@ class SessionController extends GetxController {
   }
 
   /// Loads the bundled manifest configured by [config.content.bundledManifestPath].
+  ///
+  /// Re-entrant: if a load is already in progress, awaits that load instead of
+  /// starting a second one. This prevents races when [onInit] and a test both
+  /// call loadCase close together.
   Future<void> loadCase() async {
+    if (_loadCaseFuture != null) {
+      return _loadCaseFuture!;
+    }
+    _loadCaseFuture = _doLoadCase();
+    try {
+      await _loadCaseFuture!;
+    } finally {
+      _loadCaseFuture = null;
+    }
+  }
+
+  Future<void> _doLoadCase() async {
     status.value = SessionStatus.loading;
     errorMessage.value = '';
     try {
@@ -127,11 +151,19 @@ class SessionController extends GetxController {
       _deltaLog.clear();
       displayTurns.clear();
       inference.resetKvCache();
+      await persistence?.clear();
       final resolvedModelPath = _resolveModelPath();
-      inference.loadModel(
+      await inference.loadModel(
         resolvedModelPath,
-        paramsJson: '{"correlation_id":"$_correlationId"}',
+        params: ModelLoadParams(
+          nCtx: config.model.nCtx,
+          nBatch: config.model.nBatch,
+          nThreads: config.inference.threadCount,
+          kvCacheType: config.inference.kvCacheType,
+          correlationId: _correlationId,
+        ),
       );
+      await inference.warmUp();
 
       status.value = SessionStatus.ready;
       _sessionLogger
@@ -224,11 +256,12 @@ class SessionController extends GetxController {
             temperature: config.inference.greedyDecode
                 ? 0.0
                 : config.inference.temperature,
-            topP: config.inference.topP,
-            topK: config.inference.topK,
+            topP: config.inference.greedyDecode ? 1.0 : config.inference.topP,
+            topK: config.inference.greedyDecode ? 1 : config.inference.topK,
             repetitionPenalty: config.inference.repetitionPenalty,
             seed: config.inference.seed,
             stopTokens: config.inference.stopTokens,
+            grammar: config.inference.grammarPath,
           ),
           (token, _) {
             buffer.write(token);
@@ -236,6 +269,7 @@ class SessionController extends GetxController {
                 displayTurns[streamIndex].copyWith(text: buffer.toString());
           },
           correlationId: _correlationId,
+          nCtx: config.model.nCtx,
         );
         return buffer.toString();
       }
@@ -261,6 +295,14 @@ class SessionController extends GetxController {
         text: planned.dialogue,
       ));
       _trimConversationWindow(loaded.maxHistoryTurns);
+
+      await persistence?.save(SessionCheckpoint(
+        correlationId: _correlationId,
+        manifestId: loaded.id,
+        state: _currentState,
+        conversationWindow: _conversationWindow,
+        deltaLog: _deltaLog,
+      ));
 
       _sessionLogger.success('session', 'turn_complete', kv: {
         'turn': _currentState.turn,
@@ -317,7 +359,21 @@ class SessionController extends GetxController {
 
   String _mapErrorMessage(Object error) {
     if (error is InferenceException) {
-      return const L10n().errorMessage('errors.generation_failed');
+      switch (error.kind) {
+        case InferenceErrorKind.missingModel:
+        case InferenceErrorKind.loadFailure:
+          return const L10n().errorMessage('errors.model_load_failed');
+        case InferenceErrorKind.corruptModel:
+          return const L10n().errorMessage('errors.model_corrupt');
+        case InferenceErrorKind.outOfMemory:
+          return const L10n().errorMessage('errors.out_of_memory');
+        case InferenceErrorKind.cancelled:
+          return const L10n().errorMessage('errors.generation_cancelled');
+        case InferenceErrorKind.contextOverflow:
+        case InferenceErrorKind.generationError:
+        case InferenceErrorKind.unsupportedAbi:
+          return const L10n().errorMessage('errors.generation_failed');
+      }
     }
     return error.toString();
   }

@@ -13,9 +13,19 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text(L10n.appTitle)),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () => Get.toNamed(AppRoutes.session),
-          child: const Text('Start PoC Session'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              onPressed: () => Get.toNamed(AppRoutes.session),
+              child: const Text(L10n.homeStartPocSession),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => Get.toNamed(AppRoutes.modelFetch),
+              child: const Text(L10n.homeFetchModel),
+            ),
+          ],
         ),
       ),
     );

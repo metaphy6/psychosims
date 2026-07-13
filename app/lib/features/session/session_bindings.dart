@@ -7,6 +7,7 @@ import 'package:psyconfig/psyconfig.dart';
 
 import '../../shared/logger.dart';
 import '../../shared/response_planner.dart';
+import '../../shared/session_persistence.dart';
 import '../../shared/tier_selector.dart';
 import 'session_controller.dart';
 
@@ -26,6 +27,7 @@ class SessionBindings extends Bindings {
         responsePlanner: const ResponsePlanner(),
         clock: core.InjectedClock(0),
         modelPath: resolvedPath,
+        persistence: Get.find<SessionPersistenceService>(),
       ),
     );
   }
