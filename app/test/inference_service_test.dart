@@ -215,4 +215,68 @@ void main() {
     );
     await service.dispose();
   });
+
+  test('resetKvCache keeps model loaded', () async {
+    final modelPath = _realModelPath();
+    final service = InferenceService.load(
+      libraryPath: _libraryPath(),
+      logger: logger,
+    );
+    await service.loadModel(modelPath ?? '/tmp/model.gguf');
+    expect(service.isLoaded, isTrue);
+    service.resetKvCache();
+    expect(service.isLoaded, isTrue);
+    expect(service.metadata(), containsPair('n_ctx', isPositive));
+    await service.dispose();
+  });
+
+  test('load params expose batch decode settings in metadata', () async {
+    final modelPath = _realModelPath();
+    final service = InferenceService.load(
+      libraryPath: _libraryPath(),
+      logger: logger,
+    );
+    await service.loadModel(
+      modelPath ?? '/tmp/model.gguf',
+      params: const ModelLoadParams(nCtx: 512, nBatch: 64, nThreads: 2),
+    );
+    final meta = service.metadata();
+    expect(meta['n_batch'], 64);
+    expect(meta['n_threads'], 2);
+    await service.dispose();
+  });
+
+  test('metadata reports real model size when mmap-loaded', () async {
+    final modelPath = _realModelPath();
+    final service = InferenceService.load(
+      libraryPath: _libraryPath(),
+      logger: logger,
+    );
+    await service.loadModel(modelPath ?? '/tmp/model.gguf');
+    final meta = service.metadata();
+    if (modelPath != null) {
+      expect(meta['size_bytes'], greaterThan(0));
+    }
+    await service.dispose();
+  });
+
+  test('lastGenerateStats reports prompt and generation timing', () async {
+    final modelPath = _realModelPath();
+    final service = InferenceService.load(
+      libraryPath: _libraryPath(),
+      logger: logger,
+    );
+    await service.loadModel(modelPath ?? '/tmp/model.gguf');
+    await service.generate(
+      const GenerationParams(prompt: 'hello', maxTokens: 5),
+      (_, __) {},
+    );
+    final stats = service.lastGenerateStats();
+    expect(stats, contains('prompt_tokens'));
+    expect(stats, contains('prompt_eval_ms'));
+    expect(stats, contains('generated_tokens'));
+    expect(stats, contains('generation_ms'));
+    expect(stats, contains('total_ms'));
+    await service.dispose();
+  });
 }

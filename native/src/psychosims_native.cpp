@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cctype>
+#include <chrono>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -11,6 +12,17 @@
 #include <mutex>
 #include <string>
 #include <vector>
+
+namespace {
+
+using SteadyClock = std::chrono::steady_clock;
+using Millis = std::chrono::milliseconds;
+
+int64_t to_ms(SteadyClock::duration d) {
+    return std::chrono::duration_cast<Millis>(d).count();
+}
+
+} // namespace
 
 #if __has_include(<llama.h>)
 #define PSYCHOSIMS_WITH_LLAMA_CPP 1
@@ -367,16 +379,27 @@ bool parse_chat_messages(const char* json,
 // Opaque context.
 // ---------------------------------------------------------------------------
 
+struct GenerateStats {
+    int prompt_tokens = 0;
+    int64_t prompt_eval_ms = 0;
+    int generated_tokens = 0;
+    int64_t generation_ms = 0;
+    int64_t total_ms = 0;
+};
+
 struct PsyContext {
     std::atomic<bool> cancelled{false};
     std::string last_detokenized;
     std::string last_metadata;
+    std::string last_stats;
     std::string model_path;
     std::string corr_id;
     std::string kv_cache_type;
     int n_ctx = 4096;
     int n_batch = 512;
     int n_threads = 4;
+    GenerateStats last_generate_stats;
+    std::vector<llama_token> cached_prompt_tokens;
 #if PSYCHOSIMS_WITH_LLAMA_CPP
     llama_model* model = nullptr;
     llama_context* lctx = nullptr;
@@ -639,6 +662,9 @@ int32_t psy_generate(
 
 #if PSYCHOSIMS_WITH_LLAMA_CPP
     if (ctx->real_mode && ctx->lctx && ctx->vocab) {
+        const auto total_start = SteadyClock::now();
+        ctx->last_generate_stats = GenerateStats();
+
         psy_log(PSY_LOG_INFO, "native:inference", "generate", corr_id,
                 ("prompt_len=" + std::to_string(prompt.size())).c_str(),
                 "llama.cpp generate started");
@@ -709,11 +735,34 @@ int32_t psy_generate(
             return -1;
         }
 
-        // Decode prompt in chunks.
-        int32_t n_past = 0;
+        // Decode prompt in chunks, reusing the longest common prefix with
+        // the previous turn so the stable Tier-1 frame is not re-evaluated.
+        const auto prompt_start = SteadyClock::now();
+
+        size_t common_prefix = 0;
+        if (!ctx->cached_prompt_tokens.empty()) {
+            const size_t min_len = std::min(
+                prompt_tokens.size(), ctx->cached_prompt_tokens.size());
+            while (common_prefix < min_len &&
+                   prompt_tokens[common_prefix] ==
+                       ctx->cached_prompt_tokens[common_prefix]) {
+                ++common_prefix;
+            }
+        }
+
+        // Trim any divergent KV cells so new positions stay consecutive.
+        if (common_prefix > 0 && ctx->lctx) {
+            llama_memory_seq_rm(
+                llama_get_memory(ctx->lctx), 0,
+                static_cast<llama_pos>(common_prefix), -1);
+        }
+
+        int32_t n_past = static_cast<int32_t>(common_prefix);
         bool decode_ok = true;
         const size_t total_prompt = prompt_tokens.size();
-        for (size_t i = 0; i < total_prompt && decode_ok; i += static_cast<size_t>(n_batch)) {
+        for (size_t i = common_prefix;
+             i < total_prompt && decode_ok;
+             i += static_cast<size_t>(n_batch)) {
             const size_t chunk = std::min(static_cast<size_t>(n_batch),
                                           total_prompt - i);
             batch.n_tokens = static_cast<int32_t>(chunk);
@@ -731,6 +780,12 @@ int32_t psy_generate(
             }
             n_past += static_cast<int32_t>(chunk);
         }
+        ctx->cached_prompt_tokens = prompt_tokens;
+        ctx->last_generate_stats.prompt_tokens =
+            static_cast<int>(prompt_tokens.size());
+        ctx->last_generate_stats.prompt_eval_ms =
+            to_ms(SteadyClock::now() - prompt_start);
+
         if (!decode_ok) {
             llama_batch_free(batch);
             llama_sampler_free(smpl);
@@ -740,6 +795,7 @@ int32_t psy_generate(
         }
 
         // Sampling loop.
+        const auto generation_start = SteadyClock::now();
         llama_token token = prompt_tokens.empty() ? -1 : prompt_tokens.back();
         std::string generated;
         Utf8Accumulator utf8;
@@ -803,6 +859,10 @@ int32_t psy_generate(
         utf8.flush(token, callback, user_data);
         llama_batch_free(batch);
         llama_sampler_free(smpl);
+
+        ctx->last_generate_stats.generated_tokens = emitted;
+        ctx->last_generate_stats.generation_ms = to_ms(SteadyClock::now() - generation_start);
+        ctx->last_generate_stats.total_ms = to_ms(SteadyClock::now() - total_start);
 
         psy_log(PSY_LOG_SUCCESS, "native:inference", "generate", corr_id,
                 ("tokens=" + std::to_string(emitted)).c_str(),
@@ -880,6 +940,7 @@ void psy_cancel(PsyContext* ctx) {
 
 void psy_reset_kv(PsyContext* ctx) {
     if (!ctx) return;
+    ctx->cached_prompt_tokens.clear();
 #if PSYCHOSIMS_WITH_LLAMA_CPP
     if (ctx->real_mode && ctx->lctx) {
         llama_memory_clear(llama_get_memory(ctx->lctx), true);
@@ -892,4 +953,16 @@ void psy_reset_kv(PsyContext* ctx) {
     psy_log(PSY_LOG_INFO, "native:inference", "kv_cache_reset",
             ctx->corr_id.empty() ? "none" : ctx->corr_id.c_str(),
             nullptr, "stub KV reset (no-op)");
+}
+
+const char* psy_last_generate_stats(PsyContext* ctx) {
+    if (!ctx) return "{}";
+    const GenerateStats& s = ctx->last_generate_stats;
+    ctx->last_stats =
+        std::string("{\"prompt_tokens\":") + std::to_string(s.prompt_tokens) +
+        ",\"prompt_eval_ms\":" + std::to_string(s.prompt_eval_ms) +
+        ",\"generated_tokens\":" + std::to_string(s.generated_tokens) +
+        ",\"generation_ms\":" + std::to_string(s.generation_ms) +
+        ",\"total_ms\":" + std::to_string(s.total_ms) + "}";
+    return ctx->last_stats.c_str();
 }

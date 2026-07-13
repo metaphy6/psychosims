@@ -75,6 +75,18 @@ void psy_cancel(PsyContext* ctx);
 /// Resets the KV cache for a new case/session without unloading the model.
 void psy_reset_kv(PsyContext* ctx);
 
+/// Returns timing/statistics for the last generation as a JSON string.
+///
+/// Fields include:
+///   - prompt_tokens: number of prompt tokens processed
+///   - prompt_eval_ms: milliseconds spent in prompt decode
+///   - generated_tokens: number of generated tokens emitted
+///   - generation_ms: milliseconds spent in the sampling loop
+///   - total_ms: total generation time
+///
+/// The returned pointer is valid until the next call on the same context.
+const char* psy_last_generate_stats(PsyContext* ctx);
+
 #ifdef __cplusplus
 }
 #endif

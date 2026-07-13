@@ -10,6 +10,7 @@ import 'package:psyconfig/psyconfig.dart';
 import '../../shared/inference_service.dart';
 import '../../shared/l10n.dart';
 import '../../shared/logger.dart';
+import '../../shared/model_profile_resolver.dart';
 import '../../shared/response_planner.dart';
 import '../../shared/session_persistence.dart';
 
@@ -247,6 +248,11 @@ class SessionController extends GetxController {
       displayTurns.add(streamingTurn);
       final streamIndex = displayTurns.length - 1;
 
+      final activeProfile = const ModelProfileResolver().resolve(
+        modelPath ?? '/tmp/model.gguf',
+        config,
+      );
+
       final buffer = StringBuffer();
       Future<String> generate() async {
         await inference.generate(
@@ -260,7 +266,7 @@ class SessionController extends GetxController {
             topK: config.inference.greedyDecode ? 1 : config.inference.topK,
             repetitionPenalty: config.inference.repetitionPenalty,
             seed: config.inference.seed,
-            stopTokens: config.inference.stopTokens,
+            stopTokens: activeProfile.stopTokens,
             grammar: config.inference.grammarPath,
           ),
           (token, _) {

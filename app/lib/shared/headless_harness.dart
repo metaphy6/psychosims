@@ -8,6 +8,7 @@ import 'package:psyconfig/psyconfig.dart';
 import 'inference_service.dart';
 import 'logger.dart';
 import 'metrics_service.dart';
+import 'model_profile_resolver.dart';
 
 /// Headless reproducibility harness for the PoC exit gates.
 ///
@@ -34,6 +35,7 @@ class HeadlessHarness {
     required core.SimState state,
     required InteractionPattern action,
     List<core.ConversationTurn> conversationWindow = const [],
+    String? modelPath,
   }) async {
     final stopwatch = Stopwatch()..start();
 
@@ -58,6 +60,11 @@ class HeadlessHarness {
       outputReserve: config.promptBudget.maxOutputTokens,
     );
 
+    final activeProfile = const ModelProfileResolver().resolve(
+      modelPath ?? '/tmp/model.gguf',
+      config,
+    );
+
     final buffer = StringBuffer();
     await inference.generate(
       GenerationParams(
@@ -69,7 +76,7 @@ class HeadlessHarness {
         topK: config.inference.greedyDecode ? 1 : config.inference.topK,
         repetitionPenalty: config.inference.repetitionPenalty,
         seed: config.inference.seed,
-        stopTokens: config.inference.stopTokens,
+        stopTokens: activeProfile.stopTokens,
         grammar: config.inference.grammarPath,
       ),
       (token, _) => buffer.write(token),
@@ -94,11 +101,82 @@ class HeadlessHarness {
     );
   }
 
+  /// Runs two turns with the same Tier-1 prefix and reports prompt-decode
+  /// timing for each. This provides the measurement harness for the KV-cache
+  /// prefix-reuse benefit; once the native layer skips already-decoded prefix
+  /// tokens, the second turn's `prompt_tokens`/`prompt_eval_ms` will drop.
+  Future<PrefixCacheBenchmark> benchmarkPrefixCacheReuse({
+    required PatientManifest manifest,
+    required core.SimState state,
+    required InteractionPattern action,
+    String? modelPath,
+  }) async {
+    // Cold turn: full prompt decode.
+    final cold = await runTurn(
+      manifest: manifest,
+      state: state,
+      action: action,
+      modelPath: modelPath,
+    );
+    final coldStats = inference.lastGenerateStats();
+
+    // Warm turn: same T1 prefix plus a synthetic follow-up user turn.
+    final warmWindow = [
+      core.ConversationTurn(role: 'user', text: action.name),
+      core.ConversationTurn(role: 'assistant', text: cold.rawResponse),
+      core.ConversationTurn(role: 'user', text: action.name),
+    ];
+    await runTurn(
+      manifest: manifest,
+      state: cold.nextState,
+      action: action,
+      conversationWindow: warmWindow,
+      modelPath: modelPath,
+    );
+    final warmStats = inference.lastGenerateStats();
+
+    return PrefixCacheBenchmark(
+      coldPromptTokens: (coldStats['prompt_tokens'] as num?)?.toInt() ?? 0,
+      coldPromptEvalMs: (coldStats['prompt_eval_ms'] as num?)?.toInt() ?? 0,
+      warmPromptTokens: (warmStats['prompt_tokens'] as num?)?.toInt() ?? 0,
+      warmPromptEvalMs: (warmStats['prompt_eval_ms'] as num?)?.toInt() ?? 0,
+    );
+  }
+
   /// Resolves the path to the native library for CI runs.
   static String defaultLibraryPath() {
     final candidate = p.join('native', 'build', 'libpsychosims_native.so');
     return File(candidate).absolute.path;
   }
+}
+
+/// Result of a prefix-cache reuse benchmark.
+class PrefixCacheBenchmark {
+  final int coldPromptTokens;
+  final int coldPromptEvalMs;
+  final int warmPromptTokens;
+  final int warmPromptEvalMs;
+
+  const PrefixCacheBenchmark({
+    required this.coldPromptTokens,
+    required this.coldPromptEvalMs,
+    required this.warmPromptTokens,
+    required this.warmPromptEvalMs,
+  });
+
+  /// Percentage reduction in prompt tokens decoded on the warm turn.
+  double get tokenReductionPercent {
+    if (coldPromptTokens == 0) return 0.0;
+    return 100.0 * (coldPromptTokens - warmPromptTokens) / coldPromptTokens;
+  }
+
+  Map<String, Object?> toJson() => {
+        'cold_prompt_tokens': coldPromptTokens,
+        'cold_prompt_eval_ms': coldPromptEvalMs,
+        'warm_prompt_tokens': warmPromptTokens,
+        'warm_prompt_eval_ms': warmPromptEvalMs,
+        'token_reduction_percent': tokenReductionPercent,
+      };
 }
 
 class HarnessResult {

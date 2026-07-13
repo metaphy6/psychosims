@@ -567,6 +567,21 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
     }
   }
 
+  /// Returns statistics for the last generation as a JSON object.
+  ///
+  /// Fields include `prompt_tokens`, `prompt_eval_ms`, `generated_tokens`,
+  /// `generation_ms`, and `total_ms`. Returns an empty map if unloaded.
+  Map<String, Object?> lastGenerateStats() {
+    if (_ctx == null) return const {};
+    final ptr = _bindings.psy_last_generate_stats(_ctx!);
+    final json = ptr.cast<Utf8>().toDartString();
+    try {
+      return jsonDecode(json) as Map<String, Object?>;
+    } on FormatException {
+      return const {};
+    }
+  }
+
   @override
   int count(String text) {
     if (_ctx == null) return const core.WhitespaceTokenCounter().count(text);

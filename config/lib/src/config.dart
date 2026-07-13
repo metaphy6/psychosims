@@ -14,6 +14,11 @@ class Config {
   final FeatureFlags featureFlags;
   final SecretsRefs secretsRefs;
 
+  /// Per-model inference profiles keyed by an identifier derived from the
+  /// model file name or tier URL. Used to resolve model-specific stop tokens,
+  /// EOS tokens, and recommended context/KV-cache settings.
+  final Map<String, ModelProfile> modelProfiles;
+
   const Config({
     this.schemaVersion = '1.0.0',
     required this.network,
@@ -24,6 +29,7 @@ class Config {
     required this.balance,
     required this.featureFlags,
     required this.secretsRefs,
+    this.modelProfiles = const {},
   });
 }
 
@@ -199,6 +205,38 @@ class FeatureFlags {
         return false;
     }
   }
+}
+
+/// Per-model inference profile.
+///
+/// Tokenizers, chat templates, and stop tokens are model-specific: Qwen2.5,
+/// Phi-3.5-mini, and SmolLM2 tokenize differently and expect different chat
+/// frames. The active model's profile is resolved from config at runtime so
+/// the prompt assembler and generation loop never hard-code one.
+class ModelProfile {
+  /// Human-readable identifier, e.g. `qwen2.5-1.5b`.
+  final String modelKey;
+
+  /// Stop strings used to end generation for this model.
+  final List<String> stopTokens;
+
+  /// Optional explicit EOS token if it differs from the GGUF default.
+  final String? eosToken;
+
+  /// Recommended context window for this model/quantization combination.
+  final int? recommendedNCtx;
+
+  /// Recommended KV-cache quantization type for this model on constrained
+  /// devices (e.g. `q8_0`).
+  final String? recommendedKvCacheType;
+
+  const ModelProfile({
+    required this.modelKey,
+    required this.stopTokens,
+    this.eosToken,
+    this.recommendedNCtx,
+    this.recommendedKvCacheType,
+  });
 }
 
 class SecretsRefs {

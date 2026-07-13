@@ -95,6 +95,29 @@ Config _baseDefaults() {
       enableTelemetry: false,
     ),
     secretsRefs: SecretsRefs(apiKeyRef: 'PSYCHOSIMS_API_KEY'),
+    modelProfiles: const {
+      'qwen2.5-1.5b': ModelProfile(
+        modelKey: 'qwen2.5-1.5b',
+        stopTokens: ['<|im_end|>', '<|endoftext|>'],
+        eosToken: '<|endoftext|>',
+        recommendedNCtx: 2048,
+        recommendedKvCacheType: 'f16',
+      ),
+      'phi-3.5-mini': ModelProfile(
+        modelKey: 'phi-3.5-mini',
+        stopTokens: ['<|endoftext|>', '<|end|>'],
+        eosToken: '<|endoftext|>',
+        recommendedNCtx: 2048,
+        recommendedKvCacheType: 'f16',
+      ),
+      'smollm2-1.7b': ModelProfile(
+        modelKey: 'smollm2-1.7b',
+        stopTokens: ['<|endoftext|>', '<|im_end|>'],
+        eosToken: '<|endoftext|>',
+        recommendedNCtx: 2048,
+        recommendedKvCacheType: 'q8_0',
+      ),
+    },
   );
 }
 
@@ -428,6 +451,9 @@ Config _merge(Config base, Config overlay) {
       apiKeyRef:
           _pick(base.secretsRefs.apiKeyRef, overlay.secretsRefs.apiKeyRef),
     ),
+    modelProfiles: overlay.modelProfiles.isEmpty
+        ? base.modelProfiles
+        : overlay.modelProfiles,
   );
 }
 

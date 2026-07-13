@@ -207,6 +207,31 @@ class PsychosimsNativeBindings {
           'psy_reset_kv');
   late final _psy_reset_kv =
       _psy_reset_kvPtr.asFunction<void Function(ffi.Pointer<PsyContext>)>();
+
+  /// Returns timing/statistics for the last generation as a JSON string.
+  ///
+  /// Fields include:
+  /// - prompt_tokens: number of prompt tokens processed
+  /// - prompt_eval_ms: milliseconds spent in prompt decode
+  /// - generated_tokens: number of generated tokens emitted
+  /// - generation_ms: milliseconds spent in the sampling loop
+  /// - total_ms: total generation time
+  ///
+  /// The returned pointer is valid until the next call on the same context.
+  ffi.Pointer<ffi.Char> psy_last_generate_stats(
+    ffi.Pointer<PsyContext> ctx,
+  ) {
+    return _psy_last_generate_stats(
+      ctx,
+    );
+  }
+
+  late final _psy_last_generate_statsPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(
+              ffi.Pointer<PsyContext>)>>('psy_last_generate_stats');
+  late final _psy_last_generate_stats = _psy_last_generate_statsPtr
+      .asFunction<ffi.Pointer<ffi.Char> Function(ffi.Pointer<PsyContext>)>();
 }
 
 final class PsyContext extends ffi.Opaque {}

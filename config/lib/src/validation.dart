@@ -61,6 +61,15 @@ void validateConfig(Config cfg) {
     errors.add('inference.kvCacheType must not be empty');
   }
 
+  for (final entry in cfg.modelProfiles.entries) {
+    if (entry.key.isEmpty) {
+      errors.add('modelProfiles keys must not be empty');
+    }
+    if (entry.value.modelKey.isEmpty) {
+      errors.add('modelProfiles[${entry.key}].modelKey must not be empty');
+    }
+  }
+
   if (cfg.promptBudget.maxInputTokens <= 0) {
     errors.add('promptBudget.maxInputTokens must be positive');
   }
