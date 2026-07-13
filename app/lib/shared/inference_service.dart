@@ -16,6 +16,7 @@ class ModelLoadParams {
   final int nCtx;
   final int nBatch;
   final int nThreads;
+  final bool useMmap;
   final String? kvCacheType;
   final String? correlationId;
 
@@ -23,6 +24,7 @@ class ModelLoadParams {
     this.nCtx = 2048,
     this.nBatch = 512,
     this.nThreads = 4,
+    this.useMmap = true,
     this.kvCacheType,
     this.correlationId,
   });
@@ -31,6 +33,7 @@ class ModelLoadParams {
         'n_ctx': nCtx,
         'n_batch': nBatch,
         'n_threads': nThreads,
+        'use_mmap': useMmap,
         if (kvCacheType != null && kvCacheType!.isNotEmpty)
           'kv_cache_type': kvCacheType,
         if (correlationId != null && correlationId!.isNotEmpty)
@@ -530,7 +533,7 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
   Future<void> warmUp() async {
     if (_ctx == null || _disposed) return;
     await generate(
-      const GenerationParams(prompt: '', maxTokens: 1),
+      const GenerationParams(prompt: 'hello', maxTokens: 1),
       (_, __) {},
     );
     _logger.info('inference', 'warmup_complete');

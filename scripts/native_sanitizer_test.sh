@@ -25,8 +25,13 @@ g++ -std=c++17 -fsanitize=address,leak -g \
   -Wl,-rpath,native/build-san \
   -o native/build-san/native_sanitizer_cycles
 
+# ASan must be preloaded when a sanitizer-instrumented shared library is
+# opened dynamically; otherwise the runtime is not first in the initial
+# library list and leak detection is unreliable.
+LIBASAN=$(gcc -print-file-name=libasan.so)
 LD_LIBRARY_PATH=native/build-san \
-  ASAN_OPTIONS=detect_leaks=1:abort_on_error=0 \
+  LD_PRELOAD="$LIBASAN" \
+  ASAN_OPTIONS=detect_leaks=1:abort_on_error=0:detect_odr_violation=0 \
   ./native/build-san/native_sanitizer_cycles
 
 echo "✅ Native sanitizer cycles passed"

@@ -31,6 +31,33 @@ class Config {
     required this.secretsRefs,
     this.modelProfiles = const {},
   });
+
+  /// Returns a copy with the supplied fields replaced.
+  Config copyWith({
+    String? schemaVersion,
+    NetworkConfig? network,
+    ModelConfig? model,
+    InferenceConfig? inference,
+    ContentConfig? content,
+    PromptBudgetConfig? promptBudget,
+    BalanceConfig? balance,
+    FeatureFlags? featureFlags,
+    SecretsRefs? secretsRefs,
+    Map<String, ModelProfile>? modelProfiles,
+  }) {
+    return Config(
+      schemaVersion: schemaVersion ?? this.schemaVersion,
+      network: network ?? this.network,
+      model: model ?? this.model,
+      inference: inference ?? this.inference,
+      content: content ?? this.content,
+      promptBudget: promptBudget ?? this.promptBudget,
+      balance: balance ?? this.balance,
+      featureFlags: featureFlags ?? this.featureFlags,
+      secretsRefs: secretsRefs ?? this.secretsRefs,
+      modelProfiles: modelProfiles ?? this.modelProfiles,
+    );
+  }
 }
 
 class NetworkConfig {
@@ -52,6 +79,12 @@ class ModelConfig {
   final String quantization;
   final int nCtx;
   final int nBatch;
+
+  /// Load model weights via OS memory mapping (mmap) instead of reading them
+  /// into heap. Mmap reduces peak resident memory and cold-start latency, but
+  /// may be disabled on memory-constrained or sandboxed targets for
+  /// compatibility testing.
+  final bool useMmap;
 
   /// Expected final model file size, in bytes. Zero means unknown.
   final int modelFileSizeBytes;
@@ -85,6 +118,7 @@ class ModelConfig {
     required this.quantization,
     required this.nCtx,
     required this.nBatch,
+    this.useMmap = true,
     this.modelFileSizeBytes = 0,
     this.modelChecksums = const {},
     this.maxFetchRetries = 3,
@@ -119,6 +153,33 @@ class InferenceConfig {
     required this.greedyDecode,
     this.grammarPath,
   });
+
+  /// Returns a copy with the supplied fields replaced.
+  InferenceConfig copyWith({
+    int? threadCount,
+    int? seed,
+    double? temperature,
+    double? topP,
+    int? topK,
+    double? repetitionPenalty,
+    List<String>? stopTokens,
+    String? kvCacheType,
+    bool? greedyDecode,
+    String? grammarPath,
+  }) {
+    return InferenceConfig(
+      threadCount: threadCount ?? this.threadCount,
+      seed: seed ?? this.seed,
+      temperature: temperature ?? this.temperature,
+      topP: topP ?? this.topP,
+      topK: topK ?? this.topK,
+      repetitionPenalty: repetitionPenalty ?? this.repetitionPenalty,
+      stopTokens: stopTokens ?? this.stopTokens,
+      kvCacheType: kvCacheType ?? this.kvCacheType,
+      greedyDecode: greedyDecode ?? this.greedyDecode,
+      grammarPath: grammarPath ?? this.grammarPath,
+    );
+  }
 }
 
 class ContentConfig {

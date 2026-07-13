@@ -426,12 +426,13 @@ PsyContext* psy_context_load(const char* model_path, const char* params) {
     ctx->n_ctx = json_get_int(params, "n_ctx", 2048);
     ctx->n_batch = json_get_int(params, "n_batch", 512);
     ctx->n_threads = json_get_int(params, "n_threads", 4);
+    const bool use_mmap = json_get_bool(params, "use_mmap", true);
     ctx->kv_cache_type = json_get_string(params, "kv_cache_type", "f16");
 
 #if PSYCHOSIMS_WITH_LLAMA_CPP
     {
         llama_model_params mparams = llama_model_default_params();
-        mparams.use_mmap = true;
+        mparams.use_mmap = use_mmap;
         llama_model* model = llama_model_load_from_file(model_path, mparams);
         if (model) {
             llama_context_params cparams = llama_context_default_params();
@@ -757,6 +758,10 @@ int32_t psy_generate(
                 static_cast<llama_pos>(common_prefix), -1);
         }
 
+        // Decode the prompt in batched chunks of up to n_batch tokens.
+        // Batched prompt evaluation dominates first-turn latency; the same
+        // chunked path is used for the T1-prefix warm-up so measurements
+        // reflect the shipped ingestion path.
         int32_t n_past = static_cast<int32_t>(common_prefix);
         bool decode_ok = true;
         const size_t total_prompt = prompt_tokens.size();

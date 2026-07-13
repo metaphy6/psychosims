@@ -149,6 +149,7 @@ server.build:
 native.build:
 	@scripts/native_build.sh
 
-## native.test       Run native C/C++ tests
+## native.test       Run native C/C++ tests + ASan/LSan cycle gate
 native.test:
 	@scripts/native_test.sh
+	@scripts/native_sanitizer_test.sh

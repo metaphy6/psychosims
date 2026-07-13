@@ -33,8 +33,12 @@ Config _baseDefaults() {
       tierBUrl:
           'https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/main/smollm2-1.7b-instruct-q4_k_m.gguf',
       quantization: 'Q4_K_M',
+      // nCtx is sized to hold the C-7 worst-case input budget
+      // (maxInputTokens + maxOutputTokens) plus a small safety margin.
+      // For the PoC this is 1536 input + 256 output + 256 margin = 2048.
       nCtx: 2048,
       nBatch: 512,
+      useMmap: true,
       // Approximate file sizes; measured and pinned at build time.
       modelFileSizeBytes: 1073741824,
       // Checksums are populated after first verified download; empty values
@@ -138,6 +142,7 @@ Config _environmentOverlay(String environment) {
           quantization: 'Q4_K_M',
           nCtx: 512,
           nBatch: 128,
+          useMmap: true,
           modelFileSizeBytes: 0,
           modelChecksums: const {},
           maxFetchRetries: 2,
@@ -204,6 +209,7 @@ Config _environmentOverlay(String environment) {
           quantization: 'Q4_K_M',
           nCtx: 2048,
           nBatch: 512,
+          useMmap: true,
           modelFileSizeBytes: 0,
           modelChecksums: const {},
           maxFetchRetries: 3,
@@ -270,6 +276,7 @@ Config _environmentOverlay(String environment) {
           quantization: '',
           nCtx: 0,
           nBatch: 0,
+          useMmap: true,
           modelFileSizeBytes: 0,
           modelChecksums: const {},
           maxFetchRetries: 0,
@@ -349,6 +356,7 @@ Config _merge(Config base, Config overlay) {
       quantization: _pick(base.model.quantization, overlay.model.quantization),
       nCtx: _pick(base.model.nCtx, overlay.model.nCtx),
       nBatch: _pick(base.model.nBatch, overlay.model.nBatch),
+      useMmap: _pick(base.model.useMmap, overlay.model.useMmap),
       modelFileSizeBytes: _pick(
         base.model.modelFileSizeBytes,
         overlay.model.modelFileSizeBytes,

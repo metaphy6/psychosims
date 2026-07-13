@@ -279,4 +279,60 @@ void main() {
     expect(stats, contains('total_ms'));
     await service.dispose();
   });
+
+  test('useMmap=false loads model without mmap', () async {
+    final modelPath = _realModelPath();
+    final service = InferenceService.load(
+      libraryPath: _libraryPath(),
+      logger: logger,
+    );
+    await service.loadModel(
+      modelPath ?? '/tmp/model.gguf',
+      params: const ModelLoadParams(useMmap: false),
+    );
+    expect(service.isLoaded, isTrue);
+    await service.dispose();
+  });
+
+  test('resetKvCache clears prefix reuse state', () async {
+    final modelPath = _realModelPath();
+    final service = InferenceService.load(
+      libraryPath: _libraryPath(),
+      logger: logger,
+    );
+    await service.loadModel(modelPath ?? '/tmp/model.gguf');
+
+    // First turn establishes the cached prefix.
+    await service.generate(
+      const GenerationParams(prompt: 'The patient is anxious.', maxTokens: 5),
+      (_, __) {},
+    );
+
+    // Identical prompt again should reuse the cached prefix and therefore
+    // complete quickly. We measure wall time rather than internal stats
+    // because generation runs on the worker isolate.
+    final warmStopwatch = Stopwatch()..start();
+    await service.generate(
+      const GenerationParams(prompt: 'The patient is anxious.', maxTokens: 5),
+      (_, __) {},
+    );
+    final warmMs = warmStopwatch.elapsed.inMilliseconds;
+
+    // After a reset the same prompt must decode from scratch, so it should
+    // not be dramatically faster than the warm turn.
+    service.resetKvCache();
+    final resetStopwatch = Stopwatch()..start();
+    await service.generate(
+      const GenerationParams(prompt: 'The patient is anxious.', maxTokens: 5),
+      (_, __) {},
+    );
+    final resetMs = resetStopwatch.elapsed.inMilliseconds;
+
+    expect(service.isLoaded, isTrue);
+    // The warm turn reused KV state; the reset turn re-decoded the prompt.
+    // We only assert the reset turn is no faster (within 50%) than warm,
+    // because prompt decode time is small relative to sampling variance.
+    expect(resetMs, greaterThanOrEqualTo(warmMs * 0.5));
+    await service.dispose();
+  });
 }

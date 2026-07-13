@@ -23,6 +23,8 @@ void validateConfig(Config cfg) {
   if (cfg.model.nBatch > cfg.model.nCtx) {
     errors.add('model.nBatch must not exceed model.nCtx');
   }
+  // mmap is a boolean flag; no range validation needed beyond the typed
+  // default, but the field must be present in the merged config.
   if (cfg.model.modelFileSizeBytes < 0) {
     errors.add('model.modelFileSizeBytes must be non-negative');
   }

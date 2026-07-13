@@ -160,6 +160,7 @@ class SessionController extends GetxController {
           nCtx: config.model.nCtx,
           nBatch: config.model.nBatch,
           nThreads: config.inference.threadCount,
+          useMmap: config.model.useMmap,
           kvCacheType: config.inference.kvCacheType,
           correlationId: _correlationId,
         ),

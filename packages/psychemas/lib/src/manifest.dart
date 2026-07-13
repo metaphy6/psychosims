@@ -75,6 +75,39 @@ class PatientManifest {
     required this.modelFacingTemplate,
   });
 
+  /// Returns a copy with the supplied fields replaced.
+  PatientManifest copyWith({
+    String? schemaVersion,
+    String? rulesetVersion,
+    String? id,
+    String? contentChecksum,
+    MemoryClass? memoryClass,
+    String? nameKey,
+    String? displayNameKey,
+    StyleArchetype? styleArchetype,
+    Map<String, int>? initialState,
+    List<InteractionPattern>? interactionPatterns,
+    List<String>? clueTokens,
+    int? maxHistoryTurns,
+    String? modelFacingTemplate,
+  }) {
+    return PatientManifest(
+      schemaVersion: schemaVersion ?? this.schemaVersion,
+      rulesetVersion: rulesetVersion ?? this.rulesetVersion,
+      id: id ?? this.id,
+      contentChecksum: contentChecksum ?? this.contentChecksum,
+      memoryClass: memoryClass ?? this.memoryClass,
+      nameKey: nameKey ?? this.nameKey,
+      displayNameKey: displayNameKey ?? this.displayNameKey,
+      styleArchetype: styleArchetype ?? this.styleArchetype,
+      initialState: initialState ?? this.initialState,
+      interactionPatterns: interactionPatterns ?? this.interactionPatterns,
+      clueTokens: clueTokens ?? this.clueTokens,
+      maxHistoryTurns: maxHistoryTurns ?? this.maxHistoryTurns,
+      modelFacingTemplate: modelFacingTemplate ?? this.modelFacingTemplate,
+    );
+  }
+
   /// Serializes to a canonical, deterministic JSON map.
   ///
   /// Field ordering is fixed so that checksums are reproducible across runs
