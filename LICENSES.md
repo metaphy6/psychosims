@@ -38,20 +38,20 @@
 
 ## Compliance Notes
 
-1. **Model Quantization**: Qwen and Phi models are quantized using llama.cpp (GGUF format), 
+1. **Model Quantization**: Qwen and Phi models are quantized using llama.cpp (GGUF format),
    preserving original licenses.
 
-2. **Deterministic Simulation**: Models are used for deterministic, seeded psychology case 
-   simulation, not general-purpose generation. All output is subject to prototype safeguards 
+2. **Deterministic Simulation**: Models are used for deterministic, seeded psychology case
+   simulation, not general-purpose generation. All output is subject to prototype safeguards
    (injection isolation, token budgeting, deterministic core).
 
-3. **Academic Use**: This software is developed for research and educational purposes 
+3. **Academic Use**: This software is developed for research and educational purposes
    (learning psychology simulation techniques).
 
-4. **Attribution in Binaries**: Model names and version info are embedded in build metadata 
+4. **Attribution in Binaries**: Model names and version info are embedded in build metadata
    and discoverable via `InferenceService.metadata()`.
 
 ---
 
-**Generated**: 2026-07-13  
+**Generated**: 2026-07-13
 **Phase**: 1 (PoC)
