@@ -6,7 +6,7 @@ void main() {
     test('loads a valid test config', () {
       final cfg = loadConfig(environment: 'test');
       expect(cfg.network.apiBaseUrl, equals('http://localhost:8080'));
-      expect(cfg.model.nCtx, equals(512));
+      expect(cfg.model.nCtx, equals(4096));
       expect(cfg.balance.startingClinicCurrency, equals(10000));
     });
 

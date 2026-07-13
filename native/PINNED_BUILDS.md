@@ -11,6 +11,18 @@ module so that behaviour is reproducible across machines and CI.
 | Pinned commit | `6b4dc2116` (tag `b9977`) | Recent stable tag at integration time; includes `llama_decode`, `llama_token_to_piece`, `llama_chat_apply_template`, KV-cache management, and sampler APIs used by Phase 1.1. |
 | Submodule path | `native/third_party/llama.cpp` | Large dependency; vendored as a submodule per the 0.1 large-binary policy. |
 
+### Pinned patches
+
+The submodule is patched at build time by [`scripts/native_build.sh`](../scripts/native_build.sh),
+which applies every `native/patches/*.patch` idempotently (each patch is applied
+only when it applies cleanly, so re-running on an already-patched tree is a
+no-op). This keeps arm64 reproducibility from depending on an unrecorded
+working-tree edit.
+
+| Patch | Purpose |
+|---|---|
+| `0001-sgemm-arm-fp16-scalar-fallback.patch` | Adds a scalar fallback for `load(const ggml_fp16_t*)` in `ggml-cpu/llamafile/sgemm.cpp` when the target ARM core lacks `__ARM_FEATURE_FP16_VECTOR_ARITHMETIC`, so the `arm64-v8a` device build compiles on cores without FP16 vector loads. |
+
 ## Quantization + download sources
 
 | Tier | Model | Quantization | Download URL | Rationale |

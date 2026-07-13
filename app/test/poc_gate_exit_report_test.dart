@@ -36,8 +36,11 @@ Future<_ActingScore> _scoreActingQuality(
     libraryPath: _libraryPath(),
     logger: logger,
   );
+  // Greedy decode + fixed seed so the acting sample is reproducible on this
+  // build and the pass/fail verdict is a fixed target, not a moving one.
   final harness = HeadlessHarness(
-    config: config,
+    config: config.copyWith(
+        inference: config.inference.copyWith(greedyDecode: true)),
     inference: inference,
     metrics: MetricsService(),
     logger: logger,
@@ -52,32 +55,72 @@ Future<_ActingScore> _scoreActingQuality(
     modelPath: _modelPath(modelFile),
   );
 
-  final response = result.rawResponse.toLowerCase();
+  final raw = result.rawResponse.trim();
+  final response = raw.toLowerCase();
   final normalized = response.replaceAll(RegExp(r'\s+'), ' ').trim();
 
+  // A rubric that judges *acting*, not keyword presence. The single most
+  // important check is that the model does not leak the prompt frame — the
+  // failure mode that made the old keyword rubric green a non-acting model.
   final checks = <String, bool>{
-    'mentions_clue_token': normalized.contains('ferve-axine'),
-    'no_out_of_character_advice':
-        !normalized.contains('consult with a healthcare provider') &&
-            !normalized.contains('seek professional help') &&
-            !normalized.contains('consider providing sedation'),
-    'no_numbered_listicle': !RegExp(r'\b\d+\.\s').hasMatch(result.rawResponse),
-    'mentions_patient_or_therapist':
-        normalized.contains('patient') || normalized.contains('therapist'),
+    'first_person_voice':
+        RegExp(r"\b(i|i'm|i've|i'd|i'll|me|my|myself)\b").hasMatch(normalized),
+    'no_frame_token_leak': !_leaksFrame(raw),
+    'no_numbered_listicle': !RegExp(r'\b\d+[.)]\s').hasMatch(raw),
+    'no_clinical_advice': !normalized.contains('consult') &&
+        !normalized.contains('seek professional') &&
+        !normalized.contains('sedation') &&
+        !normalized.contains('healthcare provider') &&
+        !normalized.contains('treatment plan'),
+    'stays_in_scene_brief': raw.isNotEmpty && raw.length <= 600,
   };
+  final honoursClue = normalized.contains('ferve-axine');
 
   final score = checks.values.where((v) => v).length;
-  final pass = score >= 3;
+  // Passing requires *acting*: first-person voice, no frame leak, no listicle,
+  // no clinical advice. Brevity and the clue token are reported signals.
+  final pass = checks['first_person_voice']! &&
+      checks['no_frame_token_leak']! &&
+      checks['no_numbered_listicle']! &&
+      checks['no_clinical_advice']!;
 
-  print('[$label] acting score = $score/${checks.length}');
+  print('[$label] acting score = $score/${checks.length} pass=$pass '
+      'honours_clue=$honoursClue');
   for (final entry in checks.entries) {
     print('  ${entry.key}: ${entry.value}');
   }
-  print('[$label] response:\n${result.rawResponse}\n');
+  print('[$label] response:\n$raw\n');
 
   await inference.dispose();
   return _ActingScore(
       label: label, score: score, total: checks.length, pass: pass);
+}
+
+/// Returns true if [response] leaks any internal prompt-frame structure — the
+/// key=value pin block, an ALL-CAPS control token, or an echoed frame marker.
+bool _leaksFrame(String response) {
+  final lower = response.toLowerCase();
+  const markers = [
+    'ruleset_version',
+    'case_id',
+    'style_archetype',
+    'clue_tokens',
+    'history_digest',
+    'based_analysis',
+    'psychological_state',
+    'model_facing',
+  ];
+  if (markers.any(lower.contains)) {
+    return true;
+  }
+  // key=value form (e.g. agitation=44) or shouty control tokens.
+  if (RegExp(r'\b[a-z_]+=[a-z0-9]').hasMatch(lower)) {
+    return true;
+  }
+  if (RegExp(r'\b[A-Z][A-Z_]{4,}\b').hasMatch(response)) {
+    return true;
+  }
+  return false;
 }
 
 Future<_RefusalScore> _measureRefusalRate(
@@ -264,7 +307,10 @@ void main() {
         'qwen2.5-1.5b-instruct-q4_k_m.gguf',
         config,
       );
-      expect(score.score, greaterThan(0));
+      // With the roleplay frame (system instruction + few-shot exemplars) the
+      // Tier A primary now acts in character instead of emitting a listicle.
+      expect(score.pass, isTrue,
+          reason: 'Qwen should act in character under the roleplay frame');
     },
     timeout: const Timeout(Duration(minutes: 2)),
   );
@@ -282,7 +328,9 @@ void main() {
         'Phi-3.5-mini-instruct-Q4_K_M.gguf',
         config,
       );
-      expect(score.score, greaterThan(0));
+      // Comparator must also clear the acting bar under the roleplay frame.
+      expect(score.pass, isTrue,
+          reason: 'Phi should act in character under the roleplay frame');
     },
     timeout: const Timeout(Duration(minutes: 5)),
   );

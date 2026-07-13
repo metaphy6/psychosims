@@ -230,6 +230,7 @@ class SessionController extends GetxController {
       final assembler = core.PromptAssembler(
         tokenCounter: inference,
         chatTemplate: inference,
+        roleplayFrame: const core.PatientRoleplayFrame(),
       );
       final prompt = assembler.assemble(
         rulesetVersion: loaded.rulesetVersion,

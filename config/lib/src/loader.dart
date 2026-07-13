@@ -140,7 +140,7 @@ Config _environmentOverlay(String environment) {
           tierAFallbackUrl: '',
           tierBUrl: '',
           quantization: 'Q4_K_M',
-          nCtx: 512,
+          nCtx: 4096,
           nBatch: 128,
           useMmap: true,
           modelFileSizeBytes: 0,
@@ -167,10 +167,13 @@ Config _environmentOverlay(String environment) {
           maxManifestBytes: 128 * 1024,
           maxManifestDepth: 8,
         ),
+        // Budget sized so the shipped roleplay frame fits even under the
+        // stub backend's character-counting tokenizer (used in CI when no real
+        // GGUF is present). The real tokenizer needs far less.
         promptBudget: PromptBudgetConfig(
-          maxInputTokens: 256,
-          maxOutputTokens: 64,
-          prefixCacheTokens: 64,
+          maxInputTokens: 3072,
+          maxOutputTokens: 256,
+          prefixCacheTokens: 256,
         ),
         balance: BalanceConfig(
           startingClinicCurrency: 10000,

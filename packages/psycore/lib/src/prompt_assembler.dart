@@ -2,6 +2,7 @@ import 'package:psychemas/psychemas.dart';
 
 import 'chat_template.dart';
 import 'conversation_turn.dart';
+import 'roleplay_frame.dart';
 import 'sim_state.dart';
 import 'token_counter.dart';
 
@@ -36,9 +37,15 @@ class PromptAssembler {
   final TokenCounter tokenCounter;
   final ChatTemplate chatTemplate;
 
+  /// The versioned roleplay frame (instruction preamble + few-shot exemplars).
+  /// Defaults to [NoRoleplayFrame] so the pure core stays testable at tiny
+  /// token budgets; the app injects [PatientRoleplayFrame].
+  final RoleplayFrame roleplayFrame;
+
   const PromptAssembler({
     required this.tokenCounter,
     required this.chatTemplate,
+    this.roleplayFrame = const NoRoleplayFrame(),
   });
 
   /// Assembles the prompt for one turn.
@@ -53,37 +60,57 @@ class PromptAssembler {
     required int inputBudget,
     required int outputReserve,
   }) {
-    final t1 = _buildTier1(rulesetVersion, manifest);
+    final exemplars = roleplayFrame.exemplars();
+    final t1 = _buildTier1(rulesetVersion, manifest, state);
     final t1Rendered = chatTemplate.render(systemFrame: t1, turns: const []);
     final t1Tokens = tokenCounter.count(t1Rendered);
 
-    if (t1Tokens + outputReserve > inputBudget) {
+    // Exemplars are fixed roleplay-frame content, not truncatable window turns,
+    // so they are reserved out of the budget alongside T1.
+    final exemplarTokens =
+        exemplars.isEmpty ? 0 : _renderedTier2Tokens(t1, exemplars);
+
+    if (t1Tokens + exemplarTokens + outputReserve > inputBudget) {
       throw const PromptAssemblyException(
         PromptAssemblyError.tier1Overflow,
-        'Tier 1 + output reserve exceeds input budget',
+        'Tier 1 (frame + exemplars) + output reserve exceeds input budget',
       );
     }
 
-    final t2Budget = inputBudget - t1Tokens - outputReserve;
+    final t2Budget = inputBudget - t1Tokens - exemplarTokens - outputReserve;
     final t2 = _buildTier2(t1, conversationWindow, state, budget: t2Budget);
 
     return chatTemplate.render(
       systemFrame: t1,
-      turns: t2.turns,
+      turns: [...exemplars, ...t2.turns],
     );
   }
 
   /// Builds the immutable Tier-1 prefix.
   ///
   /// Field ordering is deterministic so the same manifest + ruleset always
-  /// produces the same bytes, enabling KV-cache prefix reuse.
-  String _buildTier1(String rulesetVersion, PatientManifest manifest) {
+  /// produces the same bytes, enabling KV-cache prefix reuse. The machine pin
+  /// block (ruleset/case/archetype/clue markers) is kept for reproducibility
+  /// and injection-isolation; the versioned roleplay instruction that turns the
+  /// model into an *actor* is appended after it.
+  String _buildTier1(
+    String rulesetVersion,
+    PatientManifest manifest,
+    SimState state,
+  ) {
     final buffer = StringBuffer()
       ..writeln('ruleset_version=$rulesetVersion')
       ..writeln('case_id=${manifest.id}')
       ..writeln('style_archetype=${manifest.styleArchetype.name}')
       ..writeln('clue_tokens=${manifest.clueTokens.join(", ")}')
       ..writeln(manifest.modelFacingTemplate);
+    final instruction =
+        roleplayFrame.instruction(manifest: manifest, state: state);
+    if (instruction.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln(instruction);
+    }
     return buffer.toString().trim();
   }
 
@@ -100,13 +127,16 @@ class PromptAssembler {
     SimState state, {
     required int budget,
   }) {
-    final digest = ConversationTurn(
-      role: 'system',
-      text: _buildHistoryDigest(state),
-    );
-
-    // Start with the full conversation window plus digest.
-    final turns = List<ConversationTurn>.of(conversationWindow)..add(digest);
+    // Start with the full conversation window. A history digest is only added
+    // once the session has advanced past the opening turn; on turn 0 the
+    // roleplay frame's current-feeling line already conveys the state.
+    final turns = List<ConversationTurn>.of(conversationWindow);
+    if (state.turn > 0) {
+      turns.add(ConversationTurn(
+        role: 'system',
+        text: _buildHistoryDigest(state),
+      ));
+    }
 
     // Drop oldest turns until the rendered T2 fits the budget.
     while (turns.isNotEmpty &&
@@ -115,7 +145,7 @@ class PromptAssembler {
       turns.removeAt(0);
     }
 
-    // If even the digest alone is over budget, drop it entirely.
+    // If even a single remaining turn is over budget, drop it entirely.
     if (turns.isNotEmpty && _renderedTier2Tokens(t1, turns) > budget) {
       turns.clear();
     }
@@ -128,12 +158,26 @@ class PromptAssembler {
     return tokenCounter.count(rendered) - tokenCounter.count(t1);
   }
 
-  /// Builds a deterministic, fixed-token structured summary of prior state.
+  /// Builds a deterministic, natural-language summary of prior state.
+  ///
+  /// Emitted as plain prose (never `HISTORY_DIGEST`/`axis=value`) so the model
+  /// reads it as scene context to voice, not a data table to analyse.
   String _buildHistoryDigest(SimState state) {
-    final sortedAxes = state.axes.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
-    final axisSummary = sortedAxes.map((e) => '${e.key}=${e.value}').join(' ');
-    return 'HISTORY_DIGEST turn=${state.turn} $axisSummary';
+    final agitation = state.axes['agitation'];
+    final resistance = state.axes['resistance'];
+    final trust = state.axes['trust'];
+    final parts = <String>[];
+    if (agitation != null) parts.add('${_axisWord(agitation)} agitated');
+    if (resistance != null) parts.add('${_axisWord(resistance)} guarded');
+    if (trust != null) parts.add('${_axisWord(trust)} trusting');
+    final summary = parts.isEmpty ? 'unsettled' : parts.join(', ');
+    return 'So far this session you have felt $summary.';
+  }
+
+  static String _axisWord(int value) {
+    if (value <= 25) return 'only slightly';
+    if (value <= 60) return 'moderately';
+    return 'very';
   }
 }
 

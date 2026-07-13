@@ -7,6 +7,7 @@ export 'src/conversation_turn.dart';
 export 'src/fixed_point.dart';
 export 'src/prng.dart';
 export 'src/prompt_assembler.dart';
+export 'src/roleplay_frame.dart';
 export 'src/sim_state.dart';
 export 'src/token_counter.dart';
 export 'src/turn_input.dart';
