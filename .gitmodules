@@ -1,3 +1,8 @@
 [submodule "native/third_party/llama.cpp"]
 	path = native/third_party/llama.cpp
 	url = https://github.com/ggerganov/llama.cpp.git
+	# The native build applies native/patches/*.patch to this submodule's
+	# working tree (idempotently). Ignore those working-tree edits so the
+	# parent repo stays clean, while still flagging any change to the pinned
+	# commit SHA.
+	ignore = dirty
