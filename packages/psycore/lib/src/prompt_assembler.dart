@@ -2,6 +2,7 @@ import 'package:psychemas/psychemas.dart';
 
 import 'chat_template.dart';
 import 'conversation_turn.dart';
+import 'multi_session_digest_compiler.dart';
 import 'roleplay_frame.dart';
 import 'sim_state.dart';
 import 'token_counter.dart';
@@ -59,6 +60,8 @@ class PromptAssembler {
     required List<ConversationTurn> conversationWindow,
     required int inputBudget,
     required int outputReserve,
+    CaseHistoryEnvelope? historyEnvelope,
+    ClinicalEncyclopedia encyclopedia = ClinicalEncyclopedia.empty,
   }) {
     final exemplars = roleplayFrame.exemplars();
     final t1 = _buildTier1(rulesetVersion, manifest, state);
@@ -78,7 +81,14 @@ class PromptAssembler {
     }
 
     final t2Budget = inputBudget - t1Tokens - exemplarTokens - outputReserve;
-    final t2 = _buildTier2(t1, conversationWindow, state, budget: t2Budget);
+    final t2 = _buildTier2(
+      t1,
+      conversationWindow,
+      state,
+      budget: t2Budget,
+      historyEnvelope: historyEnvelope,
+      encyclopedia: encyclopedia,
+    );
 
     return chatTemplate.render(
       systemFrame: t1,
@@ -126,15 +136,21 @@ class PromptAssembler {
     List<ConversationTurn> conversationWindow,
     SimState state, {
     required int budget,
+    CaseHistoryEnvelope? historyEnvelope,
+    ClinicalEncyclopedia encyclopedia = ClinicalEncyclopedia.empty,
   }) {
     // Start with the full conversation window. A history digest is only added
     // once the session has advanced past the opening turn; on turn 0 the
     // roleplay frame's current-feeling line already conveys the state.
     final turns = List<ConversationTurn>.of(conversationWindow);
-    if (state.turn > 0) {
+    if (state.turn > 0 || (historyEnvelope?.priorSessionCount ?? 0) > 0) {
       turns.add(ConversationTurn(
         role: 'system',
-        text: _buildHistoryDigest(state),
+        text: _buildHistoryDigest(
+          state,
+          historyEnvelope: historyEnvelope,
+          encyclopedia: encyclopedia,
+        ),
       ));
     }
 
@@ -162,7 +178,18 @@ class PromptAssembler {
   ///
   /// Emitted as plain prose (never `HISTORY_DIGEST`/`axis=value`) so the model
   /// reads it as scene context to voice, not a data table to analyse.
-  String _buildHistoryDigest(SimState state) {
+  String _buildHistoryDigest(
+    SimState state, {
+    CaseHistoryEnvelope? historyEnvelope,
+    ClinicalEncyclopedia encyclopedia = ClinicalEncyclopedia.empty,
+  }) {
+    if (historyEnvelope != null && historyEnvelope.priorSessionCount > 0) {
+      return const MultiSessionDigestCompiler().compile(
+        envelope: historyEnvelope,
+        state: state,
+        encyclopedia: encyclopedia,
+      );
+    }
     final parts = <String>[
       '${_axisWord(state.agitationLevel)} agitated',
       '${_axisWord(state.resistance)} guarded',

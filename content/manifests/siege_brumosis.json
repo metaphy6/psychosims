@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "ruleset_version": "0.1.0",
+  "id": "siege.brumosis",
+  "content_checksum": "sha256:ed7775fff07cf2893876bb941d5f10872feb7f8c964f06581335b8ed00692f16",
+  "memory_class": "persistent",
+  "name_key": "case.siege.brumosis.title",
+  "display_name_key": "case.siege.brumosis.display",
+  "style_archetype": "torpida",
+  "initial_state": {
+    "trust": 40,
+    "agitation": 30,
+    "trauma": 0
+  },
+  "interaction_patterns": [
+    "open_question",
+    "reframe",
+    "validate",
+    "reflect"
+  ],
+  "clue_tokens": [
+    "brumosis-marker"
+  ],
+  "max_history_turns": 6,
+  "model_facing_template": "A withdrawn patient presents with a persistent somatic marker. The breakthrough requires the Bull's Eye counter-card after researching brumosis."
+}

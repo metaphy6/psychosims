@@ -26,6 +26,19 @@ int deriveTurnSeed({
   return seed;
 }
 
+/// Derives a deterministic seed for the offline case router cursor.
+int deriveRouterSeed({
+  required String profileId,
+  required int cursor,
+  required int rootSeed,
+}) {
+  var seed = rootSeed & _mask64;
+  seed = _mix(seed, _foldString(profileId));
+  seed = _mix(seed, cursor & _mask64);
+  seed = _mix(seed, 0x9e3779b97f4a7c15); // router domain separation constant
+  return seed;
+}
+
 const int _mask64 = 0xFFFFFFFFFFFFFFFF;
 
 int _mix(int value, int delta) {
