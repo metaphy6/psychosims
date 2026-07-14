@@ -26,13 +26,13 @@ Counts are per major phase.
 |---|---|---|---|
 | 0 — Foundations & Conceptual Corrections | 92 | 92 | 🟢 complete |
 | 1 — Minimal Cross-Platform Runtime (PoC) | 93 | 90 | 🟢 exit gates cleared (3 physical-device items pending sign-off) |
-| 2 — Deterministic Game Core (offline) | 59 | 0 | ⚪ planned |
+| 2 — Deterministic Game Core (offline) | 85 | 0 | ⚪ planned |
 | 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 22 | 0 | ⚪ planned |
-| **Total** | **340** | **182** | |
+| **Total** | **366** | **182** | |
 
 ---
 
@@ -911,28 +911,52 @@ content-integrity gate over a much larger case pool (0.12).
 
 > 🧩 **Build order & dependencies (read before picking up a sub-phase).** The
 > sub-phases are numbered by topic, not by strict build order (as in Phase 1).
-> The deterministic spine goes first: the typed session state + outcome engine
-> (2.3) and the offline persistence/profile seam (2.9) are **foundational and
-> stood up early**, because the card taxonomy (2.1), loadout (2.2), progression
-> (2.5), recovery (2.6), and clinic economy (2.7) all mutate state that must
-> resolve deterministically and survive a restart. The balance sandbox (2.8) is
-> numbered last but is **infrastructure that depends on 2.1–2.7 existing** — it
-> cannot tune constants for systems that are not built — and it *reuses* the
-> Phase 1.6 headless harness rather than standing up a second core runner (0.1
-> single-core rule). Suggested order: **2.3 + 2.9 → 2.1 → 2.2 → 2.4 → 2.5 → 2.6
-> → 2.7 → 2.8.**
+> **The determinism substrate (2.0) goes first, before any game rule** — the
+> Phase 1 PoC shipped a *stand-in* PRNG and seed derivation that are **not**
+> byte-identical across architectures (see the determinism note below), so 2.0
+> replaces them and every later rule is built on the hardened substrate. The
+> deterministic spine follows: the typed session state + outcome engine (2.3)
+> and the offline persistence/profile seam (2.9) are **foundational and stood up
+> early**, because the card taxonomy (2.1), loadout (2.2), progression (2.5),
+> recovery (2.6), and clinic economy (2.7) all mutate state that must resolve
+> deterministically and survive a restart. The balance sandbox (2.8) is numbered
+> last but is **infrastructure that depends on 2.1–2.7 existing** — it cannot
+> tune constants for systems that are not built — and it runs on the **2.0
+> core-only run path**, *not* the LLM-coupled Phase 1.6 app harness
+> ([`app/lib/shared/headless_harness.dart`](../../app/lib/shared/headless_harness.dart),
+> which imports `dart:io` + the inference service): the single deterministic
+> core is reused (0.1 single-core rule), but the headless *driver* is extracted
+> so bots run with no Flutter, no I/O, and no model binary present. Suggested
+> order: **2.0 → 2.3 + 2.9 → 2.1 → 2.2 → 2.4 → 2.5 → 2.6 → 2.7 → 2.8 → 2.10** —
+> with the **2.10 offline case corpus authored up *alongside* 2.3–2.7** (2.4's
+> siege loop and 2.8's balance tuning both need real cases to run on), and the
+> **Phase 2 exit report (2.10) closing the phase** the way 1.6 closed the PoC.
 
 > 🎯 **Determinism & economy integrity (carried from 0.8).** Every rule in this
 > phase lives in the pure `packages/psycore` core: **no wall-clock, no ambient
-> randomness, no platform float**. All randomness flows through the seeded PRNG;
-> every time-dependent rule (Postponing multi-session decay §16, recovery-window
+> randomness, no platform float**. ⚠️ **The Phase 1 PoC does not yet satisfy
+> this**: its `SeededPrng` wraps `dart:math`'s `Random` (an implementation-
+> defined sequence that is *not* stable across architectures or SDK versions),
+> its per-turn seed mixes in `Clock.nowMillis()` and per-isolate-randomized
+> `String.hashCode` (so a replay at a different time or on a different isolate
+> diverges), and it exposes a float `nextDouble()`. **2.0 replaces all three**
+> with a specified, portable integer PRNG (fixed-width wrapping arithmetic,
+> pinned to `ruleset_version`) and a pure seed-derivation function over stable
+> fields only — *this is the precondition for the "byte-identical across
+> architectures" claim, not something the PoC already delivers.* After 2.0, all
+> randomness flows through that PRNG using **integer draws only**; every
+> time-dependent rule (Postponing multi-session decay §16, recovery-window
 > cooldowns §23, tax weeks and audit cadence §22, reputation recency-weighting
 > §10) reads the **injected, server-reconcilable clock** (0.8 authoritative-time
 > seam), and the device clock is treated as untrusted so a player cannot advance
 > a cooldown or dodge a tax by changing it. Every currency, multiplier, and
 > percentage (§9, §14, §22, §24) is the **deterministic fixed-point money/ratio
-> type** (0.8) — rounding can never mint or destroy currency — and each balance
-> constant resolves through the **config authority** (0.2) sourced from
+> type** (0.8) with a **single documented rounding mode**, so rounding can never
+> mint or destroy currency (a ledger-conservation invariant, property-tested);
+> config percentages arrive as `double` at the config boundary and are converted
+> to fixed-point ratios **once, at the config→core seam** — no float
+> multiplication ever happens inside a deterministic rule. Each balance constant
+> resolves through the **config authority** (0.2) sourced from
 > [C-4](../specs/BALANCE-SPEC.md), never hard-coded in a feature.
 
 > 🔗 **Everything here is the local precursor to a server system — build the
@@ -958,17 +982,79 @@ content-integrity gate over a much larger case pool (0.12).
 **Validation.** A full offline career loop is playable end-to-end — curate a
 loadout, run multi-session cases with the four card types and fictional
 pharmacology, earn XP/study/reputation, buy and operate a clinic, recover from
-near-bankruptcy — and **survives an app restart** from the durable save with no
-lost or double-applied progress; every outcome is a **byte-identical
-deterministic replay** for a fixed state + action + seed *across architectures*
-(0.8); the economy runs entirely on **fixed-point money** with no float in
-`core/`; every balance constant loads from **config** (a hard-coded balance
-literal in a feature fails review); the balance **sandbox runs bot sessions
-headlessly without the LLM** (§2.2) and reports sources/sinks/inflation/
-dead-currency plus mechanical-solvability metrics; load-bearing logic (card
-resolution, economy math, reputation, the resolver) is covered by unit +
-property-based tests that move with the code; and every offline case passes the
-**content-integrity gate** (no real DSM/ICD label or drug brand, 0.12).
+near-bankruptcy — and **survives an app restart** (and a simulated mid-write
+kill) from the durable save with no lost or double-applied progress; every
+outcome is a **byte-identical deterministic replay** for a fixed state + action
++ seed *across architectures* on the hardened 2.0 substrate, pinned by a
+checked-in golden replay fixture (0.8); the economy runs entirely on
+**fixed-point money** with no float in `core/`, and a **ledger-conservation**
+property test proves rounding never mints or destroys currency; every balance
+constant loads from **config** (a hard-coded balance literal in a feature fails
+review); the balance **sandbox runs thousands of bot sessions headlessly on the
+2.0 core-only run path — no LLM, no Flutter, no model binary present** (§2.2) —
+and reports sources/sinks/inflation/dead-currency plus mechanical-solvability
+metrics as distributions (median/p95); load-bearing logic (the PRNG + seed
+derivation, card resolution, economy math, reputation, the resolver) is covered
+by unit + property-based tests that move with the code; every offline case,
+fictional drug, encyclopedia entry, and study field passes the
+**content-integrity gate** (no real DSM/ICD label or drug brand, 0.12); and the
+phase closes on a **recorded balance/solvability exit report** (2.10, the offline
+analog of 1.6) that states an explicit go/revisit decision before any Phase 3
+spend — "the systems compile" is not a pass.
+
+### 2.0 — Deterministic core substrate hardening
+
+**What.** Replace the Phase 1 PoC's stand-in determinism primitives with the
+production substrate every Phase 2 rule depends on: a specified portable PRNG, a
+pure seed-derivation function, the extended fixed-point money/ratio type with a
+documented rounding mode, an enforced float ban in `core/`, **one shared
+canonical serializer** every `packages/` schema encodes through, a
+**fully-injected clock seam** (authoritative time + a real advancing monotonic
+source), and an extracted **core-only run path** (no I/O, no inference) that the
+sandbox (2.8) and Phase 4.3 drive.
+
+**Why.** Phase 2's entire validation rests on "byte-identical replay across
+architectures", but the PoC cannot deliver it: `dart:math`'s `Random` is
+implementation-defined, the per-turn seed mixes in the clock and
+per-isolate-randomized `String.hashCode`, and the economy type lacks the
+ratio/division math taxes and multipliers require. **A code audit surfaced two
+more holes the "0.8 done" checkbox hides.** First, the canonical-serialization
+contract is only actually implemented for `PatientManifest`: `SessionReceipt`,
+`StructuredDelta`, `SimState`, and `TurnOutput` mix `snake_case` and `camelCase`
+*within the same serialized tree*, carry no canonical byte encoder, and the
+key-sorting helper is copy-pasted in three places — so the golden replay fixture
+and the Phase 3.3 cross-boundary receipt check would be validating
+non-canonical bytes. Second, the PoC `InjectedClock` **reads `DateTime.now()` in
+its constructor** (a wall-clock leak the purity gate must catch) and its
+`monotonicMillis()` returns a **constant that never advances** (so the 2.6
+recovery cooldowns cannot measure elapsed time). Fixing all of this *after* card,
+economy, and save logic exist would invalidate every golden fixture and every
+persisted receipt. It is cheapest — and only correct — to harden the substrate
+first.
+
+**How.** Turns the determinism / economy-integrity contract from an aspiration
+into a mechanically enforced foundation the other eight sub-phases build on
+without re-deriving it.
+
+**Validation.** A fixed (state, action, seed) replays byte-identically across
+x86 + arm64 and two SDK versions; **every `packages/` schema round-trips through
+the one shared canonical serializer with a single key-casing convention and
+byte-identical output**; a property test proves ratio math conserves currency; a
+lint fails any `double` / `Random` / `DateTime` / wall-clock read, any
+output-affecting unordered-collection iteration, or any mutable static on a
+`core/` path (so the same code fans out safely across sandbox isolates); the
+core-only harness runs a full case with no Flutter, no `dart:io`, and no model
+binary present.
+
+- [ ] Replace `SeededPrng` with a **specified, portable integer PRNG** (a documented algorithm — e.g. SplitMix64 / PCG — using explicit fixed-width wrapping arithmetic, not `dart:math`'s implementation-defined `Random`), exposing **integer draws only** (no `nextDouble` on the core path); pin the algorithm + its constants to the `ruleset_version` registry (0.7) so any change is a tracked ruleset bump, not a silent replay break.
+- [ ] Define a **pure, deterministic per-turn seed-derivation function** over *stable* inputs only (case id, turn index, ordered action, root session seed) via a stable content hash — **never** `Clock.nowMillis()` and **never** `String.hashCode` (which Dart randomizes per isolate) — so a replay at any time, on any isolate, on any architecture reproduces the identical stream. This corrects the PoC `TurnResolver` seed (`state.seed ^ action.name.hashCode ^ manifest.id.hashCode ^ clock.nowMillis()`).
+- [ ] Extend the **fixed-point money/ratio type** (`FixedPoint`) with the operations the economy needs — multiply-by-ratio, divide, and percentage application — each with a **single documented rounding mode** (e.g. round-half-to-even) and a **saturating / overflow-checked** backing so a large tax or multiplier can never silently wrap; unit-prove the **ledger-conservation invariant** (no value minted or destroyed by rounding).
+- [ ] Establish the **config→core numeric seam**: the percentages and rates that live as `double` in `BalanceConfig` (e.g. `misfortuneRollPercent`, `doubtTransferBasePercent`, `discountPracticeXpPenaltyPercent`) become **integer basis points** (or a documented exact decimal→fixed-point conversion) resolved to fixed-point ratios **once, at the boundary** — closing the `FixedPoint.fromDouble` float-multiply hole (`value * scale`), so no `double` and no float multiplication ever enters a deterministic rule and a non-representable config value like `0.1` cannot perturb a replay.
+- [ ] Establish **one shared canonical JSON serializer** in `packages/` (deterministic key sorting, a **single `snake_case` convention**, and stable number/string/enum encoding) and migrate **every** schema onto it — `PatientManifest` (folding in its private `_sortedIntMap`), `SessionReceipt`, `StructuredDelta`, `SimState`, `TurnOutput` — deleting the **three duplicated** sort helpers (`manifest_loader._sortedJson`, `manifest._sortedIntMap`, and the in-test copy); add a **contract test** that every schema shares the one casing convention and round-trips byte-identically, because the golden replay fixture below and the Phase 3.3 cross-boundary receipt check are only trustworthy if `core/`'s serialized output is genuinely canonical (today only the manifest is).
+- [ ] Add a **`core/` purity gate** wired into CI (0.5): fail the build if `dart:math` `Random`, a `double` literal/type, any `DateTime` / wall-clock call, **output-affecting unordered `Map`/`Set` iteration**, or **mutable top-level/static state** appears on a deterministic code path in `packages/psycore` — closing the holes the PoC left open by convention only and guaranteeing the core is **isolate-safe** so the 2.8 sandbox can fan it across isolates without shared-state races.
+- [ ] Harden the **clock seam**: replace the PoC `InjectedClock` — which **reads `DateTime.now()` in its constructor** (a wall-clock leak the purity gate would flag) and whose `monotonicMillis()` returns a **constant that never advances** — with a fully-injected authoritative clock plus a **real, advancing monotonic source** the harness and app drive explicitly, so replay stays time-independent and the 2.6 cooldowns can actually measure elapsed local time (the device clock stays untrusted, 0.8).
+- [ ] Extract a **pure core-only run path** — a headless driver in `packages/psycore` (or a thin `tools/` entry) that resolves a full case from (manifest, loadout, seed, scripted actions) with **no inference, no `dart:io`, no Flutter** — distinct from the LLM-coupled [`headless_harness.dart`](../../app/lib/shared/headless_harness.dart); both drive the *same* single core (0.1), but only this path is usable by 2.8 bots and Phase 4.3 solvability in CI without the model binary.
+- [ ] Commit a **cross-architecture golden replay fixture** (0.5 / 0.8): a canonical (state, action, seed) → serialized outcome vector that CI verifies byte-for-byte, so any accidental reintroduction of nondeterminism (float, unstable hash, clock leak) flips a test red rather than surfacing as a rejected receipt in Phase 3.
 
 ### 2.1 — Card taxonomy & signature principle
 
@@ -990,12 +1076,14 @@ measurably weaker/less-stable effect out-of-context; Manipulative resolves
 three-way by trust state; a fixed state + card + seed replays byte-identically.
 
 - [ ] **Reconcile the PoC `InteractionPattern` enum with the four card types**: define the production card model in `psychemas`/`psycore` so the six PoC patterns (1.2/1.4) become card *instances* tagged with their type + signature, and evolve the manifest `interactionPatterns` contract **additively** (0.8 wire-compat) so PoC content still loads and the transition is not a schema break.
-- [ ] Implement the four card types and their **context-bias resolution** in pure `packages/psycore` (0.8 seeded RNG, no float): a signature-aligned play resolves strongly and predictably; a mismatched play still functions but with a wider, less favourable outcome band.
-- [ ] Implement **Manipulative three-outcome resolution** (success / partial / derangement) keyed to trust state, thresholds from config (C-4); a low-trust failure proposes a **derangement manifest mutation as a structured delta** (§16), never an in-place manifest rewrite, so the Phase 3.3 receipt / Phase 5.3 trauma multiplier can validate it later.
+- [ ] Implement the four card types and their **context-bias resolution** in pure `packages/psycore` using the **2.0 portable PRNG (integer draws only, no float)**: a signature-aligned play resolves strongly and predictably; a mismatched play still functions but with a wider, less favourable outcome band drawn deterministically from the seed.
+- [ ] Implement **Manipulative three-outcome resolution** (success / partial / derangement) keyed to trust state, thresholds from config (C-4); a low-trust failure proposes the **derangement mutation as a bounded, *enumerated/whitelisted* structured delta** (§16) — a selection from a fixed catalogue of secondary-pathology states, **never free text and never an in-place manifest rewrite** — so it stays injection-safe (0.12) and the Phase 3.3 receipt / Phase 5.3 trauma multiplier can bound-check it later.
+- [ ] **Type each resolved play into the structured delta** (2.3): record the card type, signature, and computed context-fit as enumerated fields so the receipt's ordered-action list is machine-checkable by the Phase 3.3 validator and readable by the 2.4 grading report — never a free-text move log.
 - [ ] Implement **Postponing tempo control**: the config-tuned 1–2 turn freeze, plus the **multi-session decay modifier** (§16) that raises baseline starting agitation across sessions via the injected-clock seam (0.8) — a stalling player pays a growing, deterministic price.
 - [ ] Implement the **Transference Spike** reclassification (§16): in high-trauma states, Relatable plays resolve programmatically as Manipulative failures, flipping the required tactic — driven by core state, never the model.
 - [ ] Expose the **Linguistic Vector / style-filter hook** (§16 AI-fatigue countermeasure): the resolved card + patient `styleArchetype` shift the prompt-assembler frame (1.3) so identical mechanics sound distinct, without letting the dialogue layer change any outcome (§4 boundary).
-- [ ] Bind every card constant (trust bumps, freeze turns, decay rate, Manipulative thresholds) to the config `balance` group (0.2 + C-4); no card-number literal in a feature.
+- [ ] Implement the **card aesthetic-variety presentation hook** (§16): a card's surface form (full-sentence prompt, compact phrase, symbolic/coded cue) is resolved in the presentation layer from its type token and honours the 0.11 a11y contract — the deterministic core resolves on **type + signature only**, so visual variety never shifts an outcome (§4 boundary).
+- [ ] Bind every card constant (trust bumps, freeze turns, decay rate, Manipulative thresholds) to the config `balance` group (0.2 + C-4) through the **2.0 config→core fixed-point ratio seam** for any percentage-like value; no card-number literal in a feature.
 - [ ] **Unit- + property-test** the taxonomy (0.5): signature-in-context beats mismatched-out-of-context across seeds; Manipulative's three outcomes partition cleanly by trust; determinism is byte-identical for fixed inputs.
 
 ### 2.2 — Therapy deck & loadout system
@@ -1015,10 +1103,11 @@ first turn.
 loadout demonstrably fails a case the right loadout solves; the slot count comes
 from config.
 
-- [ ] Implement the **card library + capped active loadout** in `app/lib/features/` (0.9 feature-module skeleton), slot count from config (C-4, 5–6); the cap is enforced in the deterministic core, not only the UI.
+- [ ] Implement the **card library + capped active loadout** in `app/lib/features/` (0.9 feature-module skeleton), slot count from config (C-4, 5–6); the cap **and card ownership** (only owned/unlocked cards are equippable) are enforced in the deterministic core, not only the UI.
 - [ ] Implement the **clinical preparation phase** (intake review → deck curation) so the player evaluates the initial manifest profile before committing a loadout.
 - [ ] Implement the **focus and emotional-delivery controllers** (§11 sliders: Childhood↔Workspace, Warm↔Objective) as typed core inputs feeding `SimState` — never free text, keeping the direct injection channel closed (0.12).
 - [ ] Make loadout gaps **measurable and readable**: a case whose defenses require an un-equipped card type is resolvable-with vs stuck-without, surfaced as a visible tactical gap (this feeds the §13 strategic-exit choices in 2.7).
+- [ ] **Capture the equipped loadout + controller settings in the session start-state** (the 2.3 receipt precursor) so the core rejects a play whose card is not in the loadout, and the Phase 3.3 validator can later reject any receipt whose ordered actions reference un-equipped cards — closing a receipt-forgery vector before the server exists.
 - [ ] Wire the loadout + controllers through **GetX DI** (0.9) and the **a11y / input-alternative contract** (0.11) so the card interface is reachable by keyboard/switch/pointer and honours reduce-motion.
 - [ ] **Unit-test** loadout enforcement (over-cap rejected; the core honours the cap) and that controller settings deterministically alter resolution inputs.
 
@@ -1043,12 +1132,15 @@ fixed-point contract.
 architectures; unit tests cover success/fail/stabilize/crisis and each lifecycle
 transition; no float or transcript touches `core/`.
 
-- [ ] **Evolve `SimState` from the PoC generic `axes` map to the typed model** (trustScore, agitationLevel, activeDefense, medication state, session progress) while preserving the 0.8 determinism contract (bounded integers / fixed-point, seeded RNG, injected clock) and canonical serialization (consumed by the 2.9 save and the Phase 3 receipt).
-- [ ] Implement **outcome resolution** (succeed / fail / stabilize / crisis) with structured deltas; each delta carries `ruleset_version` and fixed-point values (0.8) and is applied **transactionally** — a cancelled or failed generation rolls the turn back with no half-applied state (carried from 1.4).
+- [ ] **Evolve `SimState` from the PoC generic `Map<String,int> axes` to the typed model** (trustScore, agitationLevel, activeDefense, session progress, plus a **typed medication state** — prescribed fictional-drug tokens, dosage, accrued tolerance, dependency) while preserving the 0.8 determinism contract (bounded integers / fixed-point, the 2.0 PRNG, injected clock) and byte-stable canonical serialization; evolve the manifest's `initialState` map into the same typed shape **additively** (0.8 wire-compat) so PoC content still loads. The state is consumed by the 2.9 save and the Phase 3 receipt.
+- [ ] Implement **outcome resolution** (succeed / fail / stabilize / crisis) with structured deltas, using the **2.0 deterministic seed derivation + portable PRNG**; each delta carries `ruleset_version` and fixed-point values (0.8) and is applied **transactionally** — a cancelled or failed generation rolls the turn back with no half-applied state (carried from 1.4).
 - [ ] Implement the **local case lifecycle** (open → in-treatment → cured / abandoned / hard-failed → archived, plus crisis, walkout, and the §16 derangement branch) as the **offline, single-owner precursor to the [C-8](../specs/PATIENT-LIFECYCLE.md) / Phase 3.6 server-arbitrated state machine** — the same transitions, locally trusted for now.
-- [ ] Implement **fictional pharmacology** (§16, §22): prescribe from an invented formulary, model tolerance / side-effects and their effect on case pressure and dialogue behavior, and record medication history in the deltas — with **no real drug brand or class** anywhere (0.12 content-integrity gate + fictional-taxonomy registry).
-- [ ] Shape the **structured-delta / session-receipt precursor** (start state, ordered card actions, claimed deltas, `ruleset_version`) so the Phase 3.3 receipt validator wraps it additively (0.8 wire-compat) and per-tier plausibility bounds have a stable target.
+- [ ] Implement **fictional pharmacology** (§16, §22): prescribe from an invented formulary (its drug names **extend the 0.12 fictional-taxonomy registry** and pass the CI no-real-label lint), model tolerance / side-effects and their effect on case pressure, record medication history as typed deltas, and let medication shift only **dialogue delivery via the style-filter — never the mechanical outcome** (§4 boundary); a persistent-`memory_class` case can **inherit chemical dependency from its history** (§17), wiring 2.3 pharmacology to the 2.4 carry-over and the 2.7 over-medication audit.
+- [ ] **Evolve the existing `SessionReceipt` + `StructuredDelta` (already in `packages/psychemas`) into the full precursor shape** rather than inventing new types: the receipt gains the **start state + ordered card actions** alongside the `turnCount` / `ruleset_version` it already carries, and its `deltas` — **today an untyped `List<Map<String,Object?>>`** — become a **typed `List<StructuredDelta>`** so the receipt is type-checked end-to-end, not raw maps; the delta gains a **typed axis enum** and a **distinct economy/currency delta variant carrying fixed-point money** (today it is a generic string `axis` + `deltaMillis`). Shape it so **Phase 3.3 adds only per-tier plausibility bounds + anomaly detection, not a new schema** (0.8 wire-compat) — the receipt shape stops forking between Phase 2 and Phase 3.
+- [ ] **Stamp each receipt with its idempotency key + correlation/session id** (0.7) so the 2.5 event keying, the 2.9 receipt-queue shape, and the Phase 3.4 server dedupe all bind to a field **on the receipt** rather than a side channel — the local precursor to the exactly-once submission contract, established before the server exists.
+- [ ] Define the **local `ruleset_version`-change policy** for persisted career state: deltas and receipts tagged with a superseded `ruleset_version` stay **replayable against that version's pinned PRNG constants** (2.0) or are **migrated forward** under a documented rule, never silently reinterpreted — the offline analog of the Phase 3.3 sunset schedule, so an app update that bumps the ruleset can never corrupt or double-apply an in-progress save.
 - [ ] Enforce the **no-raw-transcript-durable rule** (0.6) in the core even offline: outcomes are structured deltas, never dialogue text.
+- [ ] **Carry the 1.4 degrade-to-fixed-text safety net into the production resolver**: missing clue tokens, an empty generation, a model refusal, or safety-boilerplate (small instruct models balk at mature / Manipulative content, [C-6](../specs/AGE-RATING-AND-CONTENT-STRATEGY.md)) all route through the same bounded-regeneration → deterministic templated-fallback path, so the turn still resolves to fixed text — never a blank or broken exchange (reliability).
 - [ ] Keep **all** model interaction behind the `shared/` inference service; `core/` never imports the FFI layer (Principle 2 boundary), and model output still cannot alter anything mechanical (§4).
 - [ ] **Unit- + property-test** the resolver across representative scenarios and seeds (0.5): the four outcome paths, every lifecycle transition, pharmacology effects, and byte-identical determinism; a golden fixture pins a full multi-turn case.
 
@@ -1070,10 +1162,11 @@ budget.
 the history digest stays within its fixed token envelope regardless of session
 count; the grading report scores a completed case.
 
-- [ ] Implement **clue collection + the fictional clinical encyclopedia** lookup (§15) — a fully invented reference (0.12 content-integrity), never a real diagnostic manual — matching collected clue tokens (1.2 vocabulary) to fictional field notes.
-- [ ] Implement **multi-session case carry-over** via structured deltas (never transcripts), persisted through the 0.9 storage seam (2.9), and reuse the **1.3 history-digest compiler** so the prompt stays budget-bound (C-7) no matter how many sessions accumulate.
+- [ ] Implement **clue collection + the fictional clinical encyclopedia** lookup (§15) — a fully invented reference whose entries **extend the 0.12 fictional-taxonomy registry** and pass the CI no-real-label lint, never a real diagnostic manual — matching collected clue tokens (1.2 vocabulary) to fictional field notes.
+- [ ] Implement **multi-session case carry-over** via structured deltas (never transcripts), persisted through the 0.9 storage seam (2.9), and reuse the **1.3 history-digest compiler** so the prompt stays budget-bound (C-7) no matter how many sessions accumulate; the digest is a **bounded structured summary of whitelisted enums + numbers** (0.12 injection isolation) and its fixed token envelope is a **tested invariant regardless of session count** (perf + integrity).
+- [ ] Keep **accumulated carry-over injection-safe**: derangement mutations (2.1) and inherited medication/dependency (2.3) persist only as the bounded, enumerated delta catalogue — never free text — so when Phase 5.2 wraps this in a *server-signed, peer-authored* history envelope the untrusted-input shape (0.12) is already correct and needs no reshaping.
 - [ ] Implement the **study → target-card acquisition path** (spend study/subspecialty points to unlock the "Bull's Eye" counter card), linking §15 to the 2.5 progression economy.
-- [ ] Implement the **"Attending Physician" clinical grading report** (§15): track card-sequence selections locally and score Therapeutic Alliance Maintenance, Diagnostic Path Efficiency, and Pharmacological Safety, gated to unlock at the config-defined advanced tier (a basic outcome line before, the full matrix after).
+- [ ] Implement the **"Attending Physician" clinical grading report** (§15): **deterministically** score the locally-tracked card-sequence on Therapeutic Alliance Maintenance, Diagnostic Path Efficiency, and Pharmacological Safety, gated to unlock at the config-defined advanced tier (a basic outcome line before, the full matrix after) — a pure function of the receipt's ordered actions, so it is unit-testable and replay-stable.
 - [ ] Enforce **`memory_class` discipline** (1.2): stateless / social-chronic cases carry no history envelope and never accumulate carry-over — the offline precursor to the §17 ledger rule.
 - [ ] **Unit-test** the siege loop (a two-session case is unsolvable in one, solvable after study), digest-envelope boundedness, and grading determinism.
 
@@ -1097,8 +1190,10 @@ reputation/pricing/study-fields.
 
 - [ ] Implement the **difficulty→XP curve** (harder cases worth proportionally more; trivial grinding diminishes), curve owned by config (C-4); the §17 trauma multiplier stays a Phase 5.3 server-side amplifier hook, not implemented offline.
 - [ ] Implement **study + subspecialty points and the field-training tree** (foundational cheap → advanced expensive), with all **field names drawn from the fictional-taxonomy registry** (0.12), feeding §10 study-field coverage and the §14 sabbatical floor.
-- [ ] Implement **event-sourced, recency-weighted reputation** (not a lifetime ratio) with decay and a credential-based floor, using the **injected clock** (0.8) for recency-weighting so it cannot be gamed by the device clock.
-- [ ] Implement the **offline multi-currency ledger** (clinic currency, study points, subspecialty points, XP, reputation, prestige) as **fixed-point** balances (0.8), each currency with its source and sink from C-4; royalties and UGC-prestige stay Phase 5/6 hooks.
+- [ ] Implement **event-sourced, recency-weighted reputation** (not a lifetime ratio) with decay and a credential-based floor, using the **injected clock** (0.8) for recency-weighting so it cannot be gamed by the device clock; the decay is computed in **fixed-point (an integer decay table, no float `exp`)** so reputation replays byte-identically (2.0).
+- [ ] Implement the **offline multi-currency ledger** (clinic currency, study points, subspecialty points, XP, reputation, prestige) as an **append-only, event-sourced log of fixed-point transactions** (0.8), each event carrying an **idempotency key** so a retried or interrupted mutation applies **exactly once**; every currency has a modelled source and sink from C-4, and a **conservation invariant** (balances == replayed events) is property-tested. Royalties and UGC-prestige stay Phase 5/6 hooks.
+- [ ] Shape the ledger as the **local precursor to the Phase 5.1 server economy + the 0.6 append-only audit trail**: because every balance is a replay of keyed events, the same event stream later feeds server-side validation and the tamper-evident audit log without reshaping — high-value payouts become server-computed in Phase 5.1 by validating this exact stream.
+- [ ] Add **ledger snapshotting + compaction**: periodically checkpoint the replayed balances and **truncate the consumed event tail** so replay time and on-disk save size stay **bounded over a long career** (not O(lifetime events)); the snapshot is checksum-guarded (2.9) and the **conservation invariant holds across every snapshot boundary** (property-tested), and the snapshot+tail shape is the local precursor to the Phase 5.1 server-side ledger checkpoint — efficiency, reliability, and a small save at once.
 - [ ] Implement the **patient-attraction vector** (§10) — reputation + price-accessibility + study-field coverage — as the local input the offline case seed (2.7) reads and the Phase 4.5 server router later subsumes; the three-factor mean is a **UI readout**, not the routing algorithm.
 - [ ] Implement the **New Clinician onboarding track** (§9): a low-consequence "safe practice" mode and teach-don't-punish early failures, so early cases build competence without death-spiralling a new player.
 - [ ] Persist all progression + currency balances via the **offline career profile** (2.9); **unit-test** the curves, reputation decay/floor/shock, and that no currency can be minted or destroyed by rounding (fixed-point integrity).
@@ -1124,8 +1219,9 @@ the injected clock.
 
 - [ ] Implement the **Discount Practice recovery** (§14): the pricing slider dropped past a critical reputation threshold floods the local seed (2.7) with casual, cooperative cases, at the config **50% XP penalty** — a high-volume path back that slows leveling.
 - [ ] Implement the **Academic Sabbatical recovery** (§14): a clinic-closed mode pauses the case router; study points restore reputation to `total_study_fields × base_competency_constant` (config), with zero currency earned during downtime.
-- [ ] Implement **visible operational pressure** (§23): accrued from session cadence + case tier, computed **locally as the client-visible precursor to the C-9 / Phase 5.5 server-derived value**, surfaced as clear healthy / strained / at-risk UI states — never a hidden well-being stat.
-- [ ] Implement **recovery windows + capacity limits** (§23) as cooldowns on the **injected clock** (0.8 authoritative-time seam) so a cooldown cannot be skipped by changing the device clock; peer-healer co-op (§23) stays a Phase 5 server hook (offline stub only).
+- [ ] Implement **visible operational pressure** (§23): accrued from session cadence + case tier, computed **locally from the same accepted-delta inputs the C-9 / Phase 5.5 server derivation will use**, so Phase 5.5 swaps the *source* (server-derived from accepted receipts) without reshaping the routing/recovery consumers; surfaced as clear healthy / strained / at-risk UI states — never a hidden well-being stat.
+- [ ] Implement **recovery windows + capacity limits** (§23) as cooldowns gated on the **injected authoritative clock** (0.8) with a **monotonic source for local elapsed time**, so a cooldown cannot be skipped by winding the device clock forward — **unit-tested with a device-clock-tamper scenario**; peer-healer co-op (§23) stays a Phase 5 server hook (offline stub only).
+- [ ] Make **recovery-mode transitions transactional and resumable**: entering or exiting Discount Practice or Academic Sabbatical is a single atomic state change (2.9) so an app kill mid-toggle relaunches in a consistent mode, never a half-applied recovery (reliability).
 - [ ] Bind every recovery constant (critical reputation threshold, XP penalty, floor constant, pressure accrual/decay, cooldown lengths) to config (C-4); **unit-test** that both recovery paths return a bankrupt profile to a playable state and that pressure is deterministic.
 
 ### 2.7 — Clinic operations, economy & the offline case router
@@ -1146,9 +1242,9 @@ the player faces; every money movement is a fixed-point, atomic transaction.
 progressive taxes, and audits apply on the authoritative-time cadence; the
 pricing slider measurably shifts the local case seed.
 
-- [ ] Implement **office rent / buy / sell + overhead upkeep** as **fixed-point, atomic** currency transactions (0.8) so an interrupted purchase can never leave a half-applied ledger (reliability); an owned clinic of sufficient tier is recorded as the asset Phase 6.3 hiring later requires.
-- [ ] Implement **progressive taxes + randomized audits** keyed to the pricing slider, with tax weeks and audit cadence advancing on the **injected clock** (0.8) and audits reading the medication/outcome history from the deltas (§22) — over-medication histories penalize reputation.
-- [ ] Implement the **deterministic offline case router** (§10 / §13 local precursor to Phase 4.5): pricing + reputation + study-field coverage seed the incoming case stream, with the **social-chronic bias** for early-career / sub-recovery players and the **tenure-gated chaos "Misfortune Roll"** (config ~5%, never fires below the tenure gate) drawn from the seeded PRNG (0.8).
+- [ ] Implement **office rent / buy / sell + overhead upkeep** as **keyed, idempotent events on the 2.5 event-sourced ledger** (fixed-point, 0.8) so an interrupted purchase applies **exactly once** — never zero, never twice, never a half-applied ledger (reliability); an owned clinic of sufficient tier is recorded as the asset Phase 6.3 hiring later requires.
+- [ ] Implement **progressive taxes + randomized audits** keyed to the pricing slider: taxes computed as **fixed-point ratios** (2.0 config→core seam, no float), tax weeks and audit cadence advancing on the **injected clock** (0.8), and audits deterministically reading the medication/outcome history from the deltas (§22) — over-medication histories penalize reputation.
+- [ ] Implement the **deterministic, resumable offline case router** (§10 / §13 local precursor to Phase 4.5): pricing + reputation + study-field coverage weight the incoming case stream in **fixed-point** (no float), drawn from the **2.0 PRNG**, with the **social-chronic bias** for early-career / sub-recovery players and the **tenure-gated chaos "Misfortune Roll"** (config ~5%, never fires below the tenure gate); the router seed + cursor persist (2.9) so an app restart **regenerates the identical stream** rather than re-rolling it.
 - [ ] Implement the **§13 strategic-exit choices** for an over-matched case (reject → returns to pool; refer → +1 XP ethical reward; force → agitation spike / walkout / reputation hit) so a player is never trapped by the chaos roll.
 - [ ] Leave **macro / environmental events** (§22 sociopolitical + meteorological) as **server-seeded Phase 6 hooks** — offline stubs only — so the offline seed stays deterministic and reproducible.
 - [ ] Bind all clinic/routing constants (rent, overhead, tax brackets, audit odds, chaos-roll %, tenure gate, social-chronic thresholds) to config (C-4); **unit-test** the atomic economy transactions and that the router seed is deterministic for a fixed profile + seed.
@@ -1173,10 +1269,13 @@ comparable metrics; the sandbox proves a case mechanically solvable with no mode
 call; balance constants load only from config; sources/sinks/inflation/
 dead-currency checks pass.
 
-- [ ] Implement the **accelerated sandbox runtime + parameter-mutation layer** on top of the **Phase 1.6 headless harness** (0.1 single-core rule — reuse, do not re-implement the core runner), running the pure core under accelerated injected-clock time (0.8).
+- [ ] Implement the **accelerated sandbox runtime + parameter-mutation layer** on the **2.0 core-only run path** — reusing the single deterministic core (0.1) but *not* the LLM / Flutter / `dart:io`-coupled Phase 1.6 app harness — running the pure core under accelerated injected-clock time (0.8), **parallelizable across isolates with zero per-run I/O** so thousands of sessions stay cheap.
 - [ ] Implement **configurable-skill bots + profile/clinic-state injection** and admin overrides, so any career / clinic / case configuration is reproducible from a seed for a scenario run.
-- [ ] Implement the **mechanical-solvability check with no LLM** (§2.2): a bot proves a manifest winnable purely against the deterministic core — the reusable check Phase 4.3 runs per generated manifest, and the offline form of the §11 "secret initial cheat sheet" best-combo baseline (the seed the Phase 6.6 oracle later grows from).
-- [ ] Implement the **scenario runner + structured diagnostics** (§3) emitting comparable metrics (win-rate by skill, currency flow, XP/session, reputation trajectory, dead-currency flags) on the 0.7 metrics contract, every result reproducible from its seed.
+- [ ] Implement the **mechanical-solvability check with no LLM and no model binary present** (§2.2): a bot proves a manifest winnable purely against the deterministic core — CI-runnable without the ~1–2 GB weights — the reusable check Phase 4.3 runs per generated manifest, and the offline form of the §11 "secret initial cheat sheet" best-combo baseline (the seed the Phase 6.6 oracle later grows from).
+- [ ] Implement the **scenario runner + structured diagnostics** (§3) emitting comparable metrics (win-rate by skill, currency flow, XP/session, reputation trajectory, dead-currency flags) as **distributions (median / p95, not single-shot)** on the 0.7 metrics contract, every result reproducible from its seed.
+- [ ] Set + record a **sandbox throughput budget** on the 0.7 metrics contract — a per-bot-session cost ceiling and a sessions/second target across isolates — so "thousands of sessions stay cheap" is a **measured, regression-guarded number** (a change that halves throughput fails the budget), not an assumption.
+- [ ] Keep the core-only run path **allocation-lean on the hot path**: prefer typed immutable state with structural sharing over per-turn full-`Map` copies (the PoC `SimState.copyWith` clones the whole `axes` map every turn), so a multi-thousand-session sweep is not allocation-bound — the efficiency contract the throughput budget above measures.
+- [ ] Maintain a **pinned regression scenario corpus** (seed-keyed golden runs) so any balance-constant change surfaces its economy / win-rate delta as a **reviewable diff** — a degenerate dominant deck, runaway inflation, or a newly dead currency fails the corpus before it ships, not after (stability of tuning).
 - [ ] **Wire all balance constants to the central config** and **tune the C-4 multi-currency spec** against sandbox output — sources-vs-sinks balance, no runaway inflation, no dead currency, no dominant/degenerate deck — recording tuned values back into [C-4](../specs/BALANCE-SPEC.md).
 - [ ] **Unit-test the sandbox itself** (deterministic scenario replay; a deliberately unsolvable manifest is flagged) so the tool that guards balance is itself trustworthy.
 
@@ -1201,12 +1300,45 @@ double-applied progress; a save written by an older schema loads under migration
 the profile carries atomic metrics only.
 
 - [ ] Implement the **offline career profile** (atomic metrics only: level/XP, study + subspecialty points, reputation, currency, prestige, owned-clinic tier) via the 0.9 storage seam, shaped as the **precursor to the Phase 3.2 primitive profile** (<0.5 KB, no logs or transcripts).
-- [ ] Persist **clinic state + owned-case state + multi-session deltas** (2.4/2.7) durably, with **atomic, crash-safe writes** (0.9 app-lifecycle) so a backgrounded / killed app relaunches into a consistent state with no half-applied economy transaction and no double-applied turn.
-- [ ] Implement the **local save-schema migration policy** (0.9): a save from an older `schema_version` migrates forward or fails loudly, never loading partially (0.7 error taxonomy).
-- [ ] Stand up the **local durable receipt-queue shape** (idempotency-key field per 0.7) as the offline stand-in for the Phase 3.4 queue — shape only, no server submission — so Phase 3.4 wraps it additively.
+- [ ] Persist **clinic state + owned-case state + multi-session deltas** (2.4/2.7) durably via **write-temp → fsync → atomic-rename** (0.9 app-lifecycle) so a backgrounded / killed app relaunches into a consistent state with no half-applied economy transaction and no double-applied turn.
+- [ ] Implement the **local save-schema migration policy** (0.9): a save from an older `schema_version` migrates forward (verified against a **golden old-schema save corpus**) or fails loudly, never loading partially; an unrecognised *additive* field is tolerated (0.8 wire-compat) and a corrupt save **falls back to the last-good backup** rather than wiping the career (0.7 error taxonomy).
+- [ ] Stand up the **local durable receipt-queue shape** as an **append-only, idempotency-keyed** log (0.7, sharing the 2.5 event keying) — the offline stand-in for the Phase 3.4 queue, shape only, no server submission — so Phase 3.4 wraps it additively and a replayed queue never double-applies.
 - [ ] Enforce **save integrity + the no-durable-transcript rule** (0.6): a content-checksum guards the save, and a test fails if any raw dialogue transcript can reach durable storage, even offline.
 - [ ] **Declare (convention only, enforced at prod per [DECISION 0017](../project/DECISION_LOG.md)):** the save-at-rest secure-storage posture (0.6 client data-at-rest) and a local backup/export policy — documented now so Phase 3/7 add custody and server-side backup/DR without a retrofit.
-- [ ] **Unit-test** the save/restore round-trip, atomic-write crash recovery (a simulated mid-write kill), schema migration, and the transcript-block gate.
+- [ ] Treat an **imported / restored backup save as untrusted input**: decode it through the same defensive path as the manifest loader (byte-size, nesting-depth, and per-field caps + checksum verify before load, 0.12) so a hand-edited or hostile save file **fails closed** instead of crashing, exhausting memory, or smuggling unvalidated state into the career — the offline precursor to the Phase 3 server trust boundary.
+- [ ] **Unit-test** the save/restore round-trip, **atomic-write crash recovery via a kill-at-every-write-offset fuzz** (each interruption leaves a loadable last-good state), schema migration against the golden corpus, rejection of an over-budget / corrupt imported save, and the transcript-block gate.
+
+### 2.10 — Offline case corpus & Phase 2 balance/solvability exit report
+
+**What.** Author the representative **offline case corpus** the phase actually
+plays on — tier-spanning, multi-session/siege cases exercising all four card
+types, fictional pharmacology, and the derangement branch — and record a **Phase
+2 exit report** (mirroring the Phase 1.6 template) stating the balance /
+solvability / economy findings and the go/revisit decision before any Phase 3
+spend.
+
+**Why.** Every other Phase 2 sub-phase builds *machinery*; without content there
+is nothing to prove "a full offline career loop is playable end-to-end" against,
+nothing for the 2.4 siege loop to layer over, and nothing for the 2.8 sandbox to
+tune the C-4 constants against. And, exactly as §1 insists for the PoC, "the
+systems compile" is not a pass: the offline game's fun / solvability / economy
+claims must be **recorded, reproducible evidence**, so a red result revisits the
+design (or the constants) *before* the server spend begins.
+
+**How.** Turns the corpus into the shared fixture the siege loop, the sandbox,
+and the content-integrity gate all consume, and converts Phase 2 from a pile of
+features into a recorded de-risking decision point — the offline analog of 1.6.
+
+**Validation.** The corpus spans the progression tiers and is authored **only**
+from the fictional-taxonomy registry (every case passes the 0.12 no-real-label
+lint); every case is proven **mechanically solvable with no LLM** by the 2.8
+oracle; the exit report records solvability, economy (sources/sinks / inflation /
+dead-currency), and win-rate-by-skill as distributions (median/p95), with the
+decision stated.
+
+- [ ] Author a **representative offline case corpus** (small but tier-spanning) exercising the four card types (2.1), the capped loadout (2.2), fictional pharmacology + the lifecycle branches (2.3), and at least one **multi-session siege** case (2.4) — each a typed, checksum-guarded manifest drawn **only** from the 0.12 fictional-taxonomy registry; authored up **alongside 2.3–2.7** and finalized here so 2.4 and 2.8 have real content to run on.
+- [ ] Run a **corpus-wide integrity + solvability pass**: every case passes the CI content-integrity lint (no real DSM/ICD label or drug brand, 0.12) and is proven **mechanically solvable on the 2.0 core-only path with no model binary present** by the 2.8 oracle — an unsolvable or non-compliant case fails the gate, not playtest.
+- [ ] Record the **Phase 2 exit report** in `docs/reports/` under the 1.6 exit-report template: the 2.8 solvability + economy distributions (sources/sinks, inflation, dead-currency, win-rate by skill, median/p95), a byte-identical replay confirmation from the golden fixture (2.0), and an explicit **go / revisit decision** before Phase 3 spend.
 
 ---
 
@@ -1814,7 +1946,7 @@ Which [`STARTER.md`](../../STARTER.md) sections each phase realizes.
 |---|---|
 | 0 — Foundations & Corrections | §1 (day-one inputs), §3 (cost model), §8 (age rating), §9 (balance spec) |
 | 1 — Runtime PoC | §1, §4, §5, §6 |
-| 2 — Deterministic Game Core | §4, §5, §9, §10, §11, §12, §13, §14, §15, §16, §22, §23 |
+| 2 — Deterministic Game Core | §4, §5, §9, §10, §11, §12, §13, §14, §15, §16, §17, §18, §22, §23 |
 | 3 — Server Control Plane | §1, §3, §12, §18 |
 | 4 — Content Pipeline | §2.1–§2.4, §3, §12, §13, §17 |
 | 5 — Social & Economy | §3, §9, §12, §17, §18, §19, §23 |
