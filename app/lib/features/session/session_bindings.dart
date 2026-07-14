@@ -25,7 +25,7 @@ class SessionBindings extends Bindings {
         inference: Get.find(),
         logger: logger,
         responsePlanner: const ResponsePlanner(),
-        clock: core.InjectedClock(0),
+        clock: const core.InjectedClock.replay(0),
         modelPath: resolvedPath,
         persistence: Get.find<SessionPersistenceService>(),
       ),

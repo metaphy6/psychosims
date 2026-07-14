@@ -96,6 +96,7 @@ lint:
 	@scripts/env_read_check.sh
 	@scripts/no_raw_print_check.sh
 	@scripts/check_hardcoded_strings.sh
+	@scripts/core_purity_gate.sh
 	@$(MAKE) --no-print-directory dart.lint
 	@$(MAKE) --no-print-directory server.lint
 

@@ -1,3 +1,5 @@
+import 'package:psychemas/psychemas.dart';
+
 /// Immutable patient simulation state.
 ///
 /// The deterministic core owns this state. It carries only bounded integers so
@@ -32,4 +34,7 @@ class SimState {
       axes: (json['axes']! as Map<String, dynamic>).cast<String, int>(),
     );
   }
+
+  /// Encodes this state to canonical UTF-8 bytes.
+  List<int> toCanonicalBytes() => CanonicalJson.encode(toJson());
 }

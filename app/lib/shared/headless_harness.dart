@@ -39,7 +39,12 @@ class HeadlessHarness {
   }) async {
     final stopwatch = Stopwatch()..start();
 
-    final resolver = core.TurnResolver(core.InjectedClock(0));
+    final resolver = core.TurnResolver(
+      const core.InjectedClock.replay(0),
+      balance: core.CardBalance(
+        postponingFreezeTurns: config.balance.postponingFreezeTurns,
+      ),
+    );
     final output = resolver.resolve(core.TurnInput(
       rulesetVersion: manifest.rulesetVersion,
       manifest: manifest,

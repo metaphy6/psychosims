@@ -29,7 +29,7 @@ void main() {
     }
 
     test('output tokens never exceed input budget and T1 is preserved', () {
-      final random = SeededPrng(12345);
+      final random = SeededPrng.forRuleset(12345, '0.1.0');
 
       for (var i = 0; i < 100; i++) {
         final manifest = buildManifest(

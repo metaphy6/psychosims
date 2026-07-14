@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
+import 'canonical_json.dart';
 import 'interaction_pattern.dart';
 import 'manifest.dart';
 import 'manifest_validation_error.dart';
@@ -131,7 +132,7 @@ class ManifestLoader {
 
     final copy = Map<String, dynamic>.of(raw);
     copy['content_checksum'] = '';
-    final canonical = jsonEncode(_sortedJson(copy));
+    final canonical = CanonicalJson.encodeString(copy);
     final expected = 'sha256:${sha256.convert(utf8.encode(canonical))}';
 
     if (expected != checksum) {
@@ -140,19 +141,6 @@ class ManifestLoader {
         'Checksum mismatch: expected $expected, got $checksum',
       );
     }
-  }
-
-  Object? _sortedJson(Object? value) {
-    if (value is Map<String, dynamic>) {
-      final sorted = Map<String, Object?>.fromEntries(
-        value.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
-      );
-      return sorted.map((k, v) => MapEntry(k, _sortedJson(v)));
-    }
-    if (value is List) {
-      return value.map(_sortedJson).toList();
-    }
-    return value;
   }
 
   void _validateLocalizationKeys(PatientManifest manifest) {

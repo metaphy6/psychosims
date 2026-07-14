@@ -95,7 +95,12 @@ class SessionController extends GetxController {
       jsonMode: logger.jsonMode,
       correlationId: _correlationId,
     );
-    _resolver = core.TurnResolver(clock);
+    _resolver = core.TurnResolver(
+      clock,
+      balance: core.CardBalance(
+        postponingFreezeTurns: config.balance.postponingFreezeTurns,
+      ),
+    );
     loadCase();
   }
 

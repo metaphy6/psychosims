@@ -31,10 +31,13 @@ void main() {
         ],
         deltaLog: [
           StructuredDelta(
-            rulesetVersion: 'poc-1.0.0',
+            rulesetVersion: '0.1.0',
             axis: 'trust',
             deltaMillis: 5,
             reasonKey: 'reason.open_question',
+            cardType: CardType.disclosing,
+            cardSignature: CardSignature.breaker,
+            contextFit: ContextFit.aligned,
           ),
         ],
       );

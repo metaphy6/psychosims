@@ -6,7 +6,7 @@ void main() {
   group('TurnResolver determinism property', () {
     final manifest = PatientManifest(
       id: 'poc-vexa-001',
-      rulesetVersion: 'poc-1.0.0',
+      rulesetVersion: '0.1.0',
       contentChecksum:
           'sha256:0000000000000000000000000000000000000000000000000000000000000000',
       nameKey: 'manifests.poc_vexa_001.name',
@@ -35,7 +35,7 @@ void main() {
 
     test('fixed state + action + clock yields identical outcome across seeds',
         () {
-      final clock = InjectedClock(123456789);
+      final clock = InjectedClock.replay(123456789);
       const actions = [
         InteractionPattern.openQuestion,
         InteractionPattern.validate,

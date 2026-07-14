@@ -11,7 +11,7 @@ import 'package:psycore/psycore.dart' as core;
 String testManifestJson() {
   const base = {
     'schema_version': '1.0.0',
-    'ruleset_version': 'poc-1.0.0',
+    'ruleset_version': '0.1.0',
     'id': 'poc-vexa-001',
     'content_checksum': '',
     'memory_class': 'stateless',
@@ -24,11 +24,11 @@ String testManifestJson() {
     'max_history_turns': 4,
     'model_facing_template': 'The patient is restless.',
   };
-  final canonical = jsonEncode(_sortedJson(base));
+  final canonical = CanonicalJson.encodeString(base);
   final checksum = 'sha256:${sha256.convert(utf8.encode(canonical))}';
   final withChecksum = Map<String, Object?>.from(base);
   withChecksum['content_checksum'] = checksum;
-  return jsonEncode(_sortedJson(withChecksum));
+  return CanonicalJson.encodeString(withChecksum);
 }
 
 /// Returns a loaded [PatientManifest] for tests.
@@ -45,17 +45,4 @@ extension TestManifestHelpers on PatientManifest {
       axes: Map<String, int>.from(initialState),
     );
   }
-}
-
-Object? _sortedJson(Object? value) {
-  if (value is Map<String, dynamic>) {
-    final sorted = Map<String, Object?>.fromEntries(
-      value.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
-    );
-    return sorted.map((k, v) => MapEntry(k, _sortedJson(v)));
-  }
-  if (value is List) {
-    return value.map(_sortedJson).toList();
-  }
-  return value;
 }

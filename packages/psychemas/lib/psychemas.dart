@@ -1,6 +1,8 @@
 /// Shared canonical schemas for Psychosims.
 library;
 
+export 'src/card.dart';
+export 'src/canonical_json.dart';
 export 'src/interaction_pattern.dart';
 export 'src/manifest.dart';
 export 'src/manifest_loader.dart';

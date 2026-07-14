@@ -6,7 +6,7 @@ void main() {
   group('TurnResolver', () {
     final manifest = PatientManifest(
       id: 'poc-vexa-001',
-      rulesetVersion: 'poc-1.0.0',
+      rulesetVersion: '0.1.0',
       contentChecksum:
           'sha256:0000000000000000000000000000000000000000000000000000000000000000',
       nameKey: 'manifests.poc_vexa_001.name',
@@ -34,7 +34,7 @@ void main() {
     }
 
     test('produces identical outcome for fixed input + clock', () {
-      final clock = InjectedClock(0);
+      final clock = InjectedClock.replay(0);
       const state = SimState(
           seed: 42, axes: {'trust': 30, 'agitation': 45, 'resistance': 25});
 
@@ -50,7 +50,7 @@ void main() {
     });
 
     test('emits required clue tokens from manifest', () {
-      final clock = InjectedClock(0);
+      final clock = InjectedClock.replay(0);
       const state = SimState(
           seed: 42, axes: {'trust': 30, 'agitation': 45, 'resistance': 25});
 
@@ -61,19 +61,19 @@ void main() {
     });
 
     test('tags deltas with ruleset_version', () {
-      final clock = InjectedClock(0);
+      final clock = InjectedClock.replay(0);
       const state = SimState(seed: 42, axes: {'trust': 30});
 
       final output = TurnResolver(clock)
           .resolve(input(InteractionPattern.openQuestion, state));
 
       for (final delta in output.deltas) {
-        expect(delta.rulesetVersion, equals('poc-1.0.0'));
+        expect(delta.rulesetVersion, equals('0.1.0'));
       }
     });
 
     test('rejects unavailable action', () {
-      final clock = InjectedClock(0);
+      final clock = InjectedClock.replay(0);
       const state = SimState(seed: 42, axes: {'trust': 30});
 
       expect(

@@ -23,4 +23,7 @@ class TurnOutput {
         'deltas': deltas.map((d) => d.toJson()).toList(),
         'required_clue_tokens': requiredClueTokens,
       };
+
+  /// Encodes this output to canonical UTF-8 bytes.
+  List<int> toCanonicalBytes() => CanonicalJson.encode(toJson());
 }

@@ -1,5 +1,5 @@
-import 'dart:convert';
-
+import 'canonical_json.dart';
+import 'card.dart';
 import 'interaction_pattern.dart';
 import 'memory_class.dart';
 import 'style_archetype.dart';
@@ -46,7 +46,18 @@ class PatientManifest {
   final Map<String, int> initialState;
 
   /// Whitelist of actions the deterministic core can resolve for this case.
+  ///
+  /// Kept for 0.8 wire-compatibility with PoC manifests; new content should
+  /// supply [cards] instead. When [cards] is empty, the core derives card
+  /// instances from this list.
   final List<InteractionPattern> interactionPatterns;
+
+  /// Production card instances for this case.
+  ///
+  /// If `null`, the loader back-maps [interactionPatterns] to card instances
+  /// additively so existing PoC content still resolves. Explicit cards are
+  /// serialized; derived cards are not, preserving PoC wire shape.
+  final List<Card>? cards;
 
   /// Mandatory clue tokens that must survive into the prompt and be honoured
   /// by the model output.
@@ -70,6 +81,7 @@ class PatientManifest {
     required this.styleArchetype,
     required this.initialState,
     required this.interactionPatterns,
+    this.cards,
     required this.clueTokens,
     required this.maxHistoryTurns,
     required this.modelFacingTemplate,
@@ -87,6 +99,7 @@ class PatientManifest {
     StyleArchetype? styleArchetype,
     Map<String, int>? initialState,
     List<InteractionPattern>? interactionPatterns,
+    List<Card>? cards,
     List<String>? clueTokens,
     int? maxHistoryTurns,
     String? modelFacingTemplate,
@@ -102,6 +115,7 @@ class PatientManifest {
       styleArchetype: styleArchetype ?? this.styleArchetype,
       initialState: initialState ?? this.initialState,
       interactionPatterns: interactionPatterns ?? this.interactionPatterns,
+      cards: cards ?? this.cards,
       clueTokens: clueTokens ?? this.clueTokens,
       maxHistoryTurns: maxHistoryTurns ?? this.maxHistoryTurns,
       modelFacingTemplate: modelFacingTemplate ?? this.modelFacingTemplate,
@@ -121,9 +135,11 @@ class PatientManifest {
         'name_key': nameKey,
         'display_name_key': displayNameKey,
         'style_archetype': styleArchetype.toJson(),
-        'initial_state': _sortedIntMap(initialState),
+        'initial_state': initialState,
         'interaction_patterns':
             interactionPatterns.map((p) => p.toJson()).toList(),
+        if (cards?.isNotEmpty ?? false)
+          'cards': cards!.map((c) => c.toJson()).toList(),
         'clue_tokens': clueTokens.toList(),
         'max_history_turns': maxHistoryTurns,
         'model_facing_template': modelFacingTemplate,
@@ -146,25 +162,35 @@ class PatientManifest {
           .cast<String>()
           .map(InteractionPatternJson.fromJson)
           .toList(),
+      cards: _parseCards(
+          json['cards'], json['interaction_patterns']! as List<dynamic>),
       clueTokens: (json['clue_tokens']! as List<dynamic>).cast<String>(),
       maxHistoryTurns: json['max_history_turns']! as int,
       modelFacingTemplate: json['model_facing_template']! as String,
     );
   }
 
-  /// Encodes this manifest to canonical JSON bytes.
-  ///
-  /// The encoding uses no unnecessary whitespace and a deterministic field
-  /// order so the same manifest always yields the same bytes.
-  List<int> toCanonicalBytes() {
-    return utf8.encode(jsonEncode(toJson()));
+  static List<Card>? _parseCards(
+    Object? cardsJson,
+    List<dynamic> interactionPatternsJson,
+  ) {
+    if (cardsJson is List && cardsJson.isNotEmpty) {
+      return cardsJson.cast<Map<String, dynamic>>().map(Card.fromJson).toList();
+    }
+    return null;
   }
 
-  static Map<String, int> _sortedIntMap(Map<String, int> source) {
-    final sorted = Map<String, int>.fromEntries(
-      source.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
-    );
-    return sorted;
+  /// Card instances for core resolution. Uses explicitly declared [cards] if
+  /// present, otherwise derives them from [interactionPatterns].
+  List<Card> get resolvedCards =>
+      cards ?? interactionPatterns.map(cardFromInteractionPattern).toList();
+
+  /// Encodes this manifest to canonical JSON bytes.
+  ///
+  /// Uses the shared [CanonicalJson] encoder so all `packages/` schemas share
+  /// one casing convention and byte-identical output.
+  List<int> toCanonicalBytes() {
+    return CanonicalJson.encode(toJson());
   }
 
   @override
@@ -180,6 +206,7 @@ class PatientManifest {
       other.styleArchetype == styleArchetype &&
       _mapEquals(other.initialState, initialState) &&
       _listEquals(other.interactionPatterns, interactionPatterns) &&
+      _nullableListEquals(other.cards, cards) &&
       _listEquals(other.clueTokens, clueTokens) &&
       other.maxHistoryTurns == maxHistoryTurns &&
       other.modelFacingTemplate == modelFacingTemplate;
@@ -196,6 +223,7 @@ class PatientManifest {
         styleArchetype,
         Object.hashAll(initialState.entries),
         Object.hashAll(interactionPatterns),
+        cards == null ? null : Object.hashAll(cards!),
         Object.hashAll(clueTokens),
         maxHistoryTurns,
         modelFacingTemplate,
@@ -215,5 +243,11 @@ class PatientManifest {
       if (a[i] != b[i]) return false;
     }
     return true;
+  }
+
+  static bool _nullableListEquals<T>(List<T>? a, List<T>? b) {
+    if (a == null) return b == null;
+    if (b == null) return false;
+    return _listEquals(a, b);
   }
 }
