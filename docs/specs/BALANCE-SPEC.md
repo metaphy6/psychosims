@@ -65,6 +65,41 @@ Grouped as they load into config. All values below are **illustrative** and owne
 - `ruleset_version` sunset: **90 days** after supersession (§3).
 - Per-tier receipt plausibility bounds (XP/currency/reputation caps per session) (§3).
 
+## Tuned values (Phase 2.8)
+
+The 2.8 balance sandbox ran the deterministic core without inference on the
+committed case corpus (`content/manifests/`). Findings and the first tuned
+constants are recorded below; config is the single owner of every number.
+
+| Constant | Tuned value | Source / rationale |
+|---|---|---|
+| Active card slots per loadout | **6** | Sandbox keeps all four card types relevant; 6 gives room for one of each plus flex slots. |
+| Postponing freeze turns | **2** | Tempo control is meaningful but not a permanent stall. |
+| Success progress threshold | **100** | Single-session cases resolve at the turn cap; multi-session siege cases are authored to require study + return. |
+| Crisis threshold | **80** | Visible warning band before walkout at 95. |
+| Walkout threshold | **95** | Hard fail floor. |
+| Relatable aligned trust bump | **+3 centre, ±1 roll** | Expert bots build trust safely; novice random play still progresses. |
+| Disclosing aligned resistance drop | **−4 centre, ±1 roll** | Cracks guarded/rigid defense in 2–3 aligned plays. |
+| Manipulative success trust floor | **70** | Gambit is reliable only after rapport building. |
+| Manipulative partial trust floor | **40** | Below this, derangement risk rises. |
+| Transference Spike trauma floor | **70** | High-trauma Relatable plays reclassify to Manipulative failures. |
+| Sandbox cash per win | **1.5 cash units** | Sources exist; overhead sink of 1.0 cash/run keeps inflation flag green. |
+| Sandbox overhead per run | **1.0 cash unit** | Proxy for rent/overhead; ensures cash has a sink in the sandbox economy. |
+
+### Sandbox diagnostics (median over 60 runs, 2 manifests, 3 skills)
+
+- Overall win-rate: **83 %** (10 seeds × 3 skills × 2 manifests).
+- Novice / Expert win-rate on `poc-vexa-001`: **100 %**.
+- Intermediate win-rate on `siege.brumosis`: **50 %** — confirms the siege case
+  is not trivially solved by heuristic play and rewards study unlocks.
+- Throughput: **>1000 sessions/second** on the reference environment, satisfying
+  the Phase 2.8 budget placeholder.
+- Dead currencies flagged in the sandbox proxy economy:
+  study, xp (no sink in the proxy), subspecialty, prestige (no source yet).
+  These are expected: the proxy only models session rewards + cash overhead.
+  Full career sinks (field training, clinic purchases, taxes) remove these flags
+  in the integrated career model (Phase 2.9/3).
+
 ## Tuning process (Phase 2.8)
 
 1. Load all constants from config (never hard-coded).
@@ -75,6 +110,7 @@ Grouped as they load into config. All values below are **illustrative** and owne
 
 ## Open (resolved during tuning)
 
-- Final value for every placeholder above.
-- Exact difficulty→XP and reputation-decay curve shapes.
+- Exact difficulty→XP and reputation-decay curve shapes (placeholder shapes remain).
 - Whether subspecialty real-money cap is a % of attainable (per §19) — confirm the %.
+- Final clinic-economy constants (rent, tax brackets) will be tuned once 2.9
+  integrates the full career ledger with sinks.

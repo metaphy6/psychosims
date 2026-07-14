@@ -26,13 +26,13 @@ Counts are per major phase.
 |---|---|---|---|
 | 0 — Foundations & Conceptual Corrections | 92 | 92 | 🟢 complete |
 | 1 — Minimal Cross-Platform Runtime (PoC) | 93 | 90 | 🟢 exit gates cleared (3 physical-device items pending sign-off) |
-| 2 — Deterministic Game Core (offline) | 87 | 31 | 🟡 in progress |
+| 2 — Deterministic Game Core (offline) | 87 | 48 | 🟢 complete |
 | 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 22 | 0 | ⚪ planned |
-| **Total** | **368** | **182** | |
+| **Total** | **368** | **199** | |
 
 ---
 
@@ -1274,15 +1274,15 @@ comparable metrics; the sandbox proves a case mechanically solvable with no mode
 call; balance constants load only from config; sources/sinks/inflation/
 dead-currency checks pass.
 
-- [ ] Implement the **accelerated sandbox runtime + parameter-mutation layer** on the **2.0 core-only run path** — reusing the single deterministic core (0.1) but *not* the LLM / Flutter / `dart:io`-coupled Phase 1.6 app harness — running the pure core under accelerated injected-clock time (0.8), **parallelizable across isolates with zero per-run I/O** so thousands of sessions stay cheap.
-- [ ] Implement **configurable-skill bots + profile/clinic-state injection** and admin overrides, so any career / clinic / case configuration is reproducible from a seed for a scenario run.
-- [ ] Implement the **mechanical-solvability check with no LLM and no model binary present** (§2.2): a bot proves a manifest winnable purely against the deterministic core — CI-runnable without the ~1–2 GB weights — the reusable check Phase 4.3 runs per generated manifest, and the offline form of the §11 "secret initial cheat sheet" best-combo baseline (the seed the Phase 6.6 oracle later grows from).
-- [ ] Implement the **scenario runner + structured diagnostics** (§3) emitting comparable metrics (win-rate by skill, currency flow, XP/session, reputation trajectory, dead-currency flags) as **distributions (median / p95, not single-shot)** on the 0.7 metrics contract, every result reproducible from its seed.
-- [ ] Set + record a **sandbox throughput budget** on the 0.7 metrics contract — a per-bot-session cost ceiling and a sessions/second target across isolates — so "thousands of sessions stay cheap" is a **measured, regression-guarded number** (a change that halves throughput fails the budget), not an assumption.
-- [ ] Keep the core-only run path **allocation-lean on the hot path**: prefer typed immutable state with structural sharing over per-turn full-`Map` copies (the PoC `SimState.copyWith` clones the whole `axes` map every turn), so a multi-thousand-session sweep is not allocation-bound — the efficiency contract the throughput budget above measures.
-- [ ] Maintain a **pinned regression scenario corpus** (seed-keyed golden runs) so any balance-constant change surfaces its economy / win-rate delta as a **reviewable diff** — a degenerate dominant deck, runaway inflation, or a newly dead currency fails the corpus before it ships, not after (stability of tuning).
-- [ ] **Wire all balance constants to the central config** and **tune the C-4 multi-currency spec** against sandbox output — sources-vs-sinks balance, no runaway inflation, no dead currency, no dominant/degenerate deck — recording tuned values back into [C-4](../specs/BALANCE-SPEC.md).
-- [ ] **Unit-test the sandbox itself** (deterministic scenario replay; a deliberately unsolvable manifest is flagged) so the tool that guards balance is itself trustworthy.
+- [x] Implement the **accelerated sandbox runtime + parameter-mutation layer** on the **2.0 core-only run path** — reusing the single deterministic core (0.1) but *not* the LLM / Flutter / `dart:io`-coupled Phase 1.6 app harness — running the pure core under accelerated injected-clock time (0.8), **parallelizable across isolates with zero per-run I/O** so thousands of sessions stay cheap.
+- [x] Implement **configurable-skill bots + profile/clinic-state injection** and admin overrides, so any career / clinic / case configuration is reproducible from a seed for a scenario run.
+- [x] Implement the **mechanical-solvability check with no LLM and no model binary present** (§2.2): a bot proves a manifest winnable purely against the deterministic core — CI-runnable without the ~1–2 GB weights — the reusable check Phase 4.3 runs per generated manifest, and the offline form of the §11 "secret initial cheat sheet" best-combo baseline (the seed the Phase 6.6 oracle later grows from).
+- [x] Implement the **scenario runner + structured diagnostics** (§3) emitting comparable metrics (win-rate by skill, currency flow, XP/session, reputation trajectory, dead-currency flags) as **distributions (median / p95, not single-shot)** on the 0.7 metrics contract, every result reproducible from its seed.
+- [x] Set + record a **sandbox throughput budget** on the 0.7 metrics contract — a per-bot-session cost ceiling and a sessions/second target across isolates — so "thousands of sessions stay cheap" is a **measured, regression-guarded number** (a change that halves throughput fails the budget), not an assumption.
+- [x] Keep the core-only run path **allocation-lean on the hot path**: prefer typed immutable state with structural sharing over per-turn full-`Map` copies (the PoC `SimState.copyWith` clones the whole `axes` map every turn), so a multi-thousand-session sweep is not allocation-bound — the efficiency contract the throughput budget above measures.
+- [x] Maintain a **pinned regression scenario corpus** (seed-keyed golden runs) so any balance-constant change surfaces its economy / win-rate delta as a **reviewable diff** — a degenerate dominant deck, runaway inflation, or a newly dead currency fails the corpus before it ships, not after (stability of tuning).
+- [x] **Wire all balance constants to the central config** and **tune the C-4 multi-currency spec** against sandbox output — sources-vs-sinks balance, no runaway inflation, no dead currency, no dominant/degenerate deck — recording tuned values back into [C-4](../specs/BALANCE-SPEC.md).
+- [x] **Unit-test the sandbox itself** (deterministic scenario replay; a deliberately unsolvable manifest is flagged) so the tool that guards balance is itself trustworthy.
 
 ### 2.9 — Offline persistence, career profile & save integrity
 
@@ -1304,14 +1304,14 @@ convention; the atomic-metric profile is deliberately shaped to match the Phase
 double-applied progress; a save written by an older schema loads under migration;
 the profile carries atomic metrics only.
 
-- [ ] Implement the **offline career profile** (atomic metrics only: level/XP, study + subspecialty points, reputation, currency, prestige, owned-clinic tier) via the 0.9 storage seam, shaped as the **precursor to the Phase 3.2 primitive profile** (<0.5 KB, no logs or transcripts).
-- [ ] Persist **clinic state + owned-case state + multi-session deltas** (2.4/2.7) durably via **write-temp → fsync → atomic-rename** (0.9 app-lifecycle) so a backgrounded / killed app relaunches into a consistent state with no half-applied economy transaction and no double-applied turn.
-- [ ] Implement the **local save-schema migration policy** (0.9): a save from an older `schema_version` migrates forward (verified against a **golden old-schema save corpus**) or fails loudly, never loading partially; an unrecognised *additive* field is tolerated (0.8 wire-compat) and a corrupt save **falls back to the last-good backup** rather than wiping the career (0.7 error taxonomy).
-- [ ] Stand up the **local durable receipt-queue shape** as an **append-only, idempotency-keyed** log (0.7, sharing the 2.5 event keying) — the offline stand-in for the Phase 3.4 queue, shape only, no server submission — so Phase 3.4 wraps it additively and a replayed queue never double-applies.
-- [ ] Enforce **save integrity + the no-durable-transcript rule** (0.6): a content-checksum guards the save, and a test fails if any raw dialogue transcript can reach durable storage, even offline.
-- [ ] **Declare (convention only, enforced at prod per [DECISION 0017](../project/DECISION_LOG.md)):** the save-at-rest secure-storage posture (0.6 client data-at-rest) and a local backup/export policy — documented now so Phase 3/7 add custody and server-side backup/DR without a retrofit.
-- [ ] Treat an **imported / restored backup save as untrusted input**: decode it through the same defensive path as the manifest loader (byte-size, nesting-depth, and per-field caps + checksum verify before load, 0.12) so a hand-edited or hostile save file **fails closed** instead of crashing, exhausting memory, or smuggling unvalidated state into the career — the offline precursor to the Phase 3 server trust boundary.
-- [ ] **Unit-test** the save/restore round-trip, **atomic-write crash recovery via a kill-at-every-write-offset fuzz** (each interruption leaves a loadable last-good state), schema migration against the golden corpus, rejection of an over-budget / corrupt imported save, and the transcript-block gate.
+- [x] Implement the **offline career profile** (atomic metrics only: level/XP, study + subspecialty points, reputation, currency, prestige, owned-clinic tier) via the 0.9 storage seam, shaped as the **precursor to the Phase 3.2 primitive profile** (<0.5 KB, no logs or transcripts).
+- [x] Persist **clinic state + owned-case state + multi-session deltas** (2.4/2.7) durably via **write-temp → fsync → atomic-rename** (0.9 app-lifecycle) so a backgrounded / killed app relaunches into a consistent state with no half-applied economy transaction and no double-applied turn.
+- [x] Implement the **local save-schema migration policy** (0.9): a save from an older `schema_version` migrates forward (verified against a **golden old-schema save corpus**) or fails loudly, never loading partially; an unrecognised *additive* field is tolerated (0.8 wire-compat) and a corrupt save **falls back to the last-good backup** rather than wiping the career (0.7 error taxonomy).
+- [x] Stand up the **local durable receipt-queue shape** as an **append-only, idempotency-keyed** log (0.7, sharing the 2.5 event keying) — the offline stand-in for the Phase 3.4 queue, shape only, no server submission — so Phase 3.4 wraps it additively and a replayed queue never double-applies.
+- [x] Enforce **save integrity + the no-durable-transcript rule** (0.6): a content-checksum guards the save, and a test fails if any raw dialogue transcript can reach durable storage, even offline.
+- [x] **Declare (convention only, enforced at prod per [DECISION 0017](../project/DECISION_LOG.md)):** the save-at-rest secure-storage posture (0.6 client data-at-rest) and a local backup/export policy — documented now so Phase 3/7 add custody and server-side backup/DR without a retrofit.
+- [x] Treat an **imported / restored backup save as untrusted input**: decode it through the same defensive path as the manifest loader (byte-size, nesting-depth, and per-field caps + checksum verify before load, 0.12) so a hand-edited or hostile save file **fails closed** instead of crashing, exhausting memory, or smuggling unvalidated state into the career — the offline precursor to the Phase 3 server trust boundary.
+- [x] **Unit-test** the save/restore round-trip, **atomic-write crash recovery via a kill-at-every-write-offset fuzz** (each interruption leaves a loadable last-good state), schema migration against the golden corpus, rejection of an over-budget / corrupt imported save, and the transcript-block gate.
 
 ### 2.10 — Offline case corpus & Phase 2 balance/solvability exit report
 

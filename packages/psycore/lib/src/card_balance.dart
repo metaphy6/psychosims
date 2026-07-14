@@ -1,8 +1,26 @@
+import 'package:psyconfig/psyconfig.dart';
+
 /// Numeric balance constants for the card taxonomy.
 ///
 /// These values are authored in [C-4](BALANCE-SPEC.md) and supplied to the core
 /// through the config→core seam. The core never holds card-number literals.
 class CardBalance {
+  /// Builds a [CardBalance] from the central config authority's [BalanceConfig].
+  ///
+  /// Percentage-like config values are converted to fixed-point integer ratios
+  /// once at this boundary, so no `double` multiplication ever enters a
+  /// deterministic rule.
+  factory CardBalance.fromConfig(BalanceConfig cfg) {
+    return CardBalance(
+      activeCardSlots: cfg.activeCardSlots,
+      postponingFreezeTurns: cfg.postponingFreezeTurns,
+      // Config trust-bump range is surfaced as a fixed midpoint; the resolver
+      // band function owns the exact distribution.
+      fitBufferTrust:
+          (cfg.relatableTrustBumpMin + cfg.relatableTrustBumpMax) ~/ 2,
+    );
+  }
+
   /// Active loadout slot cap (C-4: 5–6).
   final int activeCardSlots;
 

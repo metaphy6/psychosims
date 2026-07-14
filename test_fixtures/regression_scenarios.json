@@ -1,0 +1,87 @@
+{
+  "ruleset_version": "0.1.0",
+  "manifest_id": "siege.brumosis",
+  "scenarios": [
+    {
+      "manifest_id": "siege.brumosis",
+      "skill": "novice",
+      "seed": 1,
+      "won": true,
+      "turn_count": 100,
+      "outcome": "succeed",
+      "final_state_sha256": "ee622b679d77b7c36a48cd1fdcd79aa4e21520c6c1fd81754a85c6441961422c"
+    },
+    {
+      "manifest_id": "siege.brumosis",
+      "skill": "novice",
+      "seed": 7,
+      "won": true,
+      "turn_count": 100,
+      "outcome": "succeed",
+      "final_state_sha256": "7560342c06e43a8307457a57afaf092d727f91f4a8b28eb933067f2811d26b9c"
+    },
+    {
+      "manifest_id": "siege.brumosis",
+      "skill": "novice",
+      "seed": 42,
+      "won": true,
+      "turn_count": 100,
+      "outcome": "succeed",
+      "final_state_sha256": "ed6a4ff64706cf299c57fb27dac8a7bff172407aef3a6a36a6088c2a542b6d65"
+    },
+    {
+      "manifest_id": "siege.brumosis",
+      "skill": "intermediate",
+      "seed": 1,
+      "won": false,
+      "turn_count": 32,
+      "outcome": "fail",
+      "final_state_sha256": "095078c6f8dc3046d2d923116648163c0bbfcd802921df21df9b883bddce1a2a"
+    },
+    {
+      "manifest_id": "siege.brumosis",
+      "skill": "intermediate",
+      "seed": 7,
+      "won": false,
+      "turn_count": 41,
+      "outcome": "fail",
+      "final_state_sha256": "1aef617810da63f01c5ff8265e8a10ef91f8db826ced9ab15bd4fdb1936b71f4"
+    },
+    {
+      "manifest_id": "siege.brumosis",
+      "skill": "intermediate",
+      "seed": 42,
+      "won": false,
+      "turn_count": 29,
+      "outcome": "fail",
+      "final_state_sha256": "0f74067908e5aebb773dfca68693ca0ddb345ae606a1e3ecb04f081d75d239b5"
+    },
+    {
+      "manifest_id": "siege.brumosis",
+      "skill": "expert",
+      "seed": 1,
+      "won": true,
+      "turn_count": 100,
+      "outcome": "succeed",
+      "final_state_sha256": "af147efa7fc5f30664b6407386c45d450a7e988f5a2a507c95abe5a0416c8dd8"
+    },
+    {
+      "manifest_id": "siege.brumosis",
+      "skill": "expert",
+      "seed": 7,
+      "won": true,
+      "turn_count": 100,
+      "outcome": "succeed",
+      "final_state_sha256": "2a0cf6f1c392baf5e08038a4fee34050d3e3a25b38f5981b00abcd54829a0cb4"
+    },
+    {
+      "manifest_id": "siege.brumosis",
+      "skill": "expert",
+      "seed": 42,
+      "won": true,
+      "turn_count": 100,
+      "outcome": "succeed",
+      "final_state_sha256": "5eeb52a206481ca8ba9f3c5e357d9546cb6829fc8f2e230dc58cb610caa63be3"
+    }
+  ]
+}

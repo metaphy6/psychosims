@@ -2,6 +2,8 @@
 library;
 
 export 'src/attraction_vector.dart';
+export 'src/balance_sandbox.dart';
+export 'src/bot_player.dart';
 export 'src/card_balance.dart';
 export 'src/card_style_frame.dart';
 export 'src/chat_template.dart';
@@ -24,6 +26,8 @@ export 'src/pressure_calculator.dart';
 export 'src/prompt_assembler.dart';
 export 'src/recovery_controller.dart';
 export 'src/reputation_decay.dart';
+export 'src/scenario_result.dart';
+export 'src/scenario_runner.dart';
 export 'src/seed_derivation.dart';
 export 'src/roleplay_frame.dart';
 export 'src/ruleset_profile.dart';

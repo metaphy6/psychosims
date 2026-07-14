@@ -10,7 +10,10 @@ environment:
 dependencies:
   psychemas:
     path: ../psychemas
+  psyconfig:
+    path: ../../config
 
 dev_dependencies:
+  crypto: ^3.0.3
   lints: ^3.0.0
   test: ^1.24.0
