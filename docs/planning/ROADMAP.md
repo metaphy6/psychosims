@@ -31,8 +31,8 @@ Counts are per major phase.
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
-| 7 — Presentation, Monetization & Launch | 19 | 0 | ⚪ planned |
-| **Total** | **304** | **143** | |
+| 7 — Presentation, Monetization & Launch | 22 | 0 | ⚪ planned |
+| **Total** | **307** | **182** | |
 
 ---
 
@@ -1499,16 +1499,28 @@ disclaimers, a working moderation backdoor, and a documented release process.
 
 ### 7.1 — Ink-wash presentation layer
 
-**What.** Implement the painterly visual language (§20): layered portraits,
-Flutter fragment shaders, and the psychological-fracture effect on failure states.
+**What.** Implement the painterly **Disco-Elysium ink-wash** visual language
+(§20): layered portraits, Flutter fragment shaders, and the
+psychological-fracture effect on failure states — sourced from an **offline
+art-generation pipeline** built on **Google Gemini 2.5 Flash Image ("nano
+banana")**.
 
-**Why.** The aesthetic is core to the product's identity and immersion.
+**Why.** The aesthetic is core to the product's identity and immersion — style
+and atmosphere are a primary draw that pull players into the game's emotional
+world, not a cosmetic afterthought. A named, disciplined generation pipeline is
+what keeps the whole cast visually coherent.
 
-**How.** Turns the functional UI into the intended emotional experience.
+**How.** Turns the functional UI into the intended emotional experience, with a
+reproducible content-build asset pipeline that never becomes a runtime
+dependency.
 
 **Validation.** Calm/agitated states render distinctly; fracture effects fire on
-Manipulative failure; runtime cost stays low + offline-capable.
+Manipulative failure; runtime cost stays low + offline-capable; the app makes no
+image-API calls during play.
 
+- [ ] Establish the **offline art-generation pipeline** using **Gemini 2.5 Flash Image ("nano banana")** at *content-build time*: a shared **ink-wash style preamble** (§20 palette/brushwork/ink-contour descriptors) prepended to each per-character prompt so the whole cast shares one visual language, producing the transparent portrait + background layers. No image model runs on-device and there are **no runtime image-API calls** — the app ships baked layers (offline-first §1, fixed footprint §5).
+- [ ] Resolve the **nano-banana API key through the config authority / secrets reference** (0.2/0.6) — used only by the offline tooling, never committed and never shipped in the client.
+- [ ] Store each asset's **prompt + generation params (model version, seed)** alongside the asset for reproducible regeneration and provenance (the visual analog of the 0.12 content-integrity discipline).
 - [ ] Implement the layered asset pipeline (static portrait + animated paint background).
 - [ ] Implement Flutter fragment shaders for the ink-wash motion.
 - [ ] Implement the chromatic-fracture overlay triggered by high-agitation/derangement events.

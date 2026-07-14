@@ -751,14 +751,41 @@ Example scene framing:
 
 ### Production Prompting for the Style
 
-To achieve the intended painterly look, the art pipeline should rely on highly specific prompt language rather than generic AI image terms.
+The ink-wash direction is the game's authoritative visual identity — style and
+atmosphere are a primary draw, not decoration — so asset generation is a
+named, disciplined pipeline rather than an ad-hoc effort.
+
+* Generation Tool (named): Portrait and background layers are authored **offline,
+  at content-build time**, with **Google Gemini 2.5 Flash Image ("nano banana")**.
+  This is a *content-authoring* tool, not a runtime dependency: the app ships the
+  baked image layers and makes **no image-API calls during play**, preserving the
+  offline-first loop (§1) and the fixed on-device footprint (§5). No image model
+  runs on the device.
+* Prompt Language: The pipeline relies on highly specific prompt language rather
+  than generic AI image terms. A shared **ink-wash style preamble** (the palette,
+  brushwork, canvas-grain, and ink-contour descriptors below) is prepended to
+  every per-character prompt so the entire cast shares one coherent visual
+  language instead of drifting per asset.
+* Reproducibility & Provenance: Each asset's full prompt plus its generation
+  parameters (model version, seed where supported) are stored alongside the asset
+  in the content pipeline, so a layer can be regenerated consistently and its
+  origin is auditable — the visual analog of the content-integrity discipline
+  applied elsewhere.
+* Key Handling: The nano-banana API key is resolved through the centralized
+  config/secrets reference (never committed, never shipped in the client) and is
+  used only by the offline tooling — consistent with the secrets-by-reference
+  rule for every other credential.
+
+Example per-character prompt (the shared style preamble in action):
 
 > “A gritty, high-contrast digital oil painting portrait of a stressed 40-year-old male scuba diving instructor, chest-up view. Rough, asymmetric brushstrokes, heavily layered impasto oil paint texture, visible canvas grain, running watercolor drips. Dark, moody color palette dominated by murky sea-green, ocean-shadow grays, and anxious splashes of neon indigo. Expressionism art style, raw and emotional, thick black charcoal ink contours, and a completely abstract background of bleeding paint splatters.”
 
 
 ### Layering the Asset for Motion
 
-To keep the presentation lightweight and efficient, the visual asset should be separated into transparent layers during the content pipeline:
+To keep the presentation lightweight and efficient, each generated asset is
+separated into transparent layers during the content pipeline (the nano-banana
+tooling produces the portrait and background as distinct layers):
 
 * Layer 1: Foreground patient portrait as a static cutout.
 * Layer 2: Abstract oil-paint background, animated through Flutter fragment shaders.
