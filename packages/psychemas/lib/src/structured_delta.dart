@@ -1,5 +1,6 @@
 import 'canonical_json.dart';
 import 'card.dart';
+import 'state_axis.dart';
 
 /// Context-fit band for a card play (§16).
 ///
@@ -28,7 +29,7 @@ extension ContextFitJson on ContextFit {
 /// receipts are machine-checkable (2.1).
 class StructuredDelta {
   final String rulesetVersion;
-  final String axis;
+  final StateAxis axis;
   final int deltaMillis;
   final String reasonKey;
 
@@ -53,7 +54,7 @@ class StructuredDelta {
 
   Map<String, Object?> toJson() => {
         'ruleset_version': rulesetVersion,
-        'axis': axis,
+        'axis': axis.toJson(),
         'delta_millis': deltaMillis,
         'reason_key': reasonKey,
         'card_type': cardType.toJson(),
@@ -64,7 +65,7 @@ class StructuredDelta {
   factory StructuredDelta.fromJson(Map<String, Object?> json) {
     return StructuredDelta(
       rulesetVersion: json['ruleset_version']! as String,
-      axis: json['axis']! as String,
+      axis: _parseAxis(json['axis']! as String),
       deltaMillis: (json['delta_millis'] ?? json['deltaMillis'])! as int,
       reasonKey: (json['reason_key'] ?? json['reasonKey'])! as String,
       cardType: CardTypeJson.fromJson(json['card_type']! as String),
@@ -72,6 +73,25 @@ class StructuredDelta {
           CardSignatureJson.fromJson(json['card_signature']! as String),
       contextFit: ContextFitJson.fromJson(json['context_fit']! as String),
     );
+  }
+
+  static StateAxis _parseAxis(String value) {
+    try {
+      return StateAxisJson.fromJson(value);
+    } on ArgumentError {
+      // 0.8 wire-compat: PoC deltas used free-text axis names.
+      return switch (value) {
+        'trust' => StateAxis.trust,
+        'agitation' => StateAxis.agitation,
+        'resistance' => StateAxis.activeDefense,
+        'trauma' => StateAxis.trauma,
+        'freeze_turns' => StateAxis.freezeTurns,
+        'session_progress' => StateAxis.sessionProgress,
+        'medication_tolerance' => StateAxis.medicationTolerance,
+        'medication_dependency' => StateAxis.medicationDependency,
+        _ => StateAxis.trust,
+      };
+    }
   }
 
   /// Encodes this delta to canonical UTF-8 bytes.

@@ -29,7 +29,7 @@ void main() {
 
       final delta = StructuredDelta(
         rulesetVersion: '0.1.0',
-        axis: 'trust',
+        axis: StateAxis.trust,
         deltaMillis: 5,
         reasonKey: 'reason.open_question',
         cardType: CardType.disclosing,
@@ -41,7 +41,7 @@ void main() {
           CanonicalJson.decode(deltaBytes) as Map<String, Object?>);
       expect(deltaRoundTrip.toCanonicalBytes(), equals(deltaBytes));
 
-      final state = core.SimState(seed: 42, axes: const {'trust': 30});
+      final state = core.SimState(seed: 42, trustScore: 30);
       final stateBytes = state.toCanonicalBytes();
       final stateRoundTrip = core.SimState.fromJson(
           CanonicalJson.decode(stateBytes) as Map<String, Object?>);

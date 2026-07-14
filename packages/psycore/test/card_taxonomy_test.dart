@@ -25,6 +25,24 @@ void main() {
     );
 
     const resolver = TurnResolver(InjectedClock.replay(0));
+    const loadout = Loadout(
+      cardIds: ['open_question', 'validate', 'reframe', 'set_boundary'],
+      slotCap: 6,
+    );
+    const library = CardLibrary(
+      ownedCardIds: {'open_question', 'validate', 'reframe', 'set_boundary'},
+    );
+
+    TurnInput input(InteractionPattern action, SimState state) {
+      return TurnInput(
+        rulesetVersion: '0.1.0',
+        manifest: manifest,
+        state: state,
+        action: action,
+        loadout: loadout,
+        library: library,
+      );
+    }
 
     test('maps PoC interaction patterns to production card types', () {
       final cards = manifest.resolvedCards;
@@ -35,12 +53,13 @@ void main() {
     });
 
     test('records card type, signature and context-fit in deltas', () {
-      final output = resolver.resolve(const TurnInput(
-        rulesetVersion: '0.1.0',
-        manifest: manifest,
-        state: SimState(
-            seed: 1, axes: {'trust': 30, 'agitation': 45, 'resistance': 25}),
-        action: InteractionPattern.openQuestion,
+      final output = resolver.resolve(input(
+        InteractionPattern.openQuestion,
+        const SimState(
+            seed: 1,
+            trustScore: 30,
+            agitationLevel: 45,
+            activeDefense: DefenseState.guarded),
       ));
       expect(output.deltas, isNotEmpty);
       for (final delta in output.deltas) {
@@ -50,67 +69,74 @@ void main() {
       }
     });
 
-    test('Disclosing aligned reduces resistance more than mismatched', () {
+    test('Disclosing aligned cracks defense; mismatched does not', () {
       // Aligned: resistance is high (defense crackable).
-      final aligned = resolver.resolve(const TurnInput(
-        rulesetVersion: '0.1.0',
-        manifest: manifest,
-        state: SimState(
-            seed: 7, axes: {'trust': 30, 'agitation': 45, 'resistance': 80}),
-        action: InteractionPattern.openQuestion,
+      final aligned = resolver.resolve(input(
+        InteractionPattern.openQuestion,
+        const SimState(
+            seed: 7,
+            trustScore: 30,
+            agitationLevel: 45,
+            activeDefense: DefenseState.rigid),
       ));
-      final alignedDelta =
-          aligned.deltas.firstWhere((d) => d.axis == 'resistance').deltaMillis;
+      final alignedDefenseDelta = aligned.deltas
+          .where((d) => d.axis == StateAxis.activeDefense)
+          .fold(0, (sum, d) => sum + d.deltaMillis);
 
-      // Mismatched: resistance is low.
-      final mismatched = resolver.resolve(const TurnInput(
-        rulesetVersion: '0.1.0',
-        manifest: manifest,
-        state: SimState(
-            seed: 7, axes: {'trust': 30, 'agitation': 45, 'resistance': 10}),
-        action: InteractionPattern.openQuestion,
+      // Mismatched: resistance is already low; no defense change should occur.
+      final mismatched = resolver.resolve(input(
+        InteractionPattern.openQuestion,
+        const SimState(
+            seed: 7,
+            trustScore: 30,
+            agitationLevel: 45,
+            activeDefense: DefenseState.none),
       ));
-      final mismatchedDelta = mismatched.deltas
-          .firstWhere((d) => d.axis == 'resistance')
-          .deltaMillis;
+      final mismatchedDefenseDelta = mismatched.deltas
+          .where((d) => d.axis == StateAxis.activeDefense)
+          .fold(0, (sum, d) => sum + d.deltaMillis);
 
-      // Aligned disclosing should crack defense more (more negative delta).
-      expect(alignedDelta, lessThan(mismatchedDelta));
+      expect(alignedDefenseDelta, lessThan(0));
+      expect(mismatchedDefenseDelta, equals(0));
     });
 
     test('Manipulative partitions by trust state', () {
       // Low trust -> derangement: trauma rises.
-      final lowTrust = resolver.resolve(const TurnInput(
-        rulesetVersion: '0.1.0',
-        manifest: manifest,
-        state: SimState(
-            seed: 3, axes: {'trust': 20, 'agitation': 45, 'resistance': 25}),
-        action: InteractionPattern.reframe,
+      final lowTrust = resolver.resolve(input(
+        InteractionPattern.reframe,
+        const SimState(
+            seed: 3,
+            trustScore: 20,
+            agitationLevel: 45,
+            activeDefense: DefenseState.guarded),
       ));
-      expect(lowTrust.nextState.axes['trauma'], greaterThan(0));
+      expect(lowTrust.nextState.trauma, greaterThan(0));
 
       // High trust -> success: resistance drops and trust rises.
-      final highTrust = resolver.resolve(const TurnInput(
-        rulesetVersion: '0.1.0',
-        manifest: manifest,
-        state: SimState(
-            seed: 3, axes: {'trust': 80, 'agitation': 45, 'resistance': 60}),
-        action: InteractionPattern.reframe,
+      final highTrust = resolver.resolve(input(
+        InteractionPattern.reframe,
+        const SimState(
+            seed: 3,
+            trustScore: 80,
+            agitationLevel: 45,
+            activeDefense: DefenseState.rigid),
       ));
-      expect(highTrust.nextState.axes['resistance'], lessThan(60));
-      expect(highTrust.nextState.axes['trust'], greaterThan(80));
+      expect(highTrust.nextState.activeDefense.index,
+          lessThan(DefenseState.rigid.index));
+      expect(highTrust.nextState.trustScore, greaterThan(80));
     });
 
     test('Transference Spike reclassifies Relatable as Manipulative failure',
         () {
-      final output = resolver.resolve(const TurnInput(
-        rulesetVersion: '0.1.0',
-        manifest: manifest,
-        state: SimState(
+      final output = resolver.resolve(input(
+        InteractionPattern.validate,
+        const SimState(
           seed: 5,
-          axes: {'trust': 30, 'agitation': 80, 'resistance': 25, 'trauma': 75},
+          trustScore: 30,
+          agitationLevel: 80,
+          activeDefense: DefenseState.guarded,
+          trauma: 75,
         ),
-        action: InteractionPattern.validate,
       ));
       // The Relatable play should resolve as Manipulative under high trauma.
       expect(output.deltas.first.cardType, CardType.manipulative);
@@ -118,19 +144,21 @@ void main() {
     });
 
     test('is byte-identical for fixed state + action + seed', () {
-      final a = resolver.resolve(const TurnInput(
-        rulesetVersion: '0.1.0',
-        manifest: manifest,
-        state: SimState(
-            seed: 9, axes: {'trust': 30, 'agitation': 45, 'resistance': 25}),
-        action: InteractionPattern.setBoundary,
+      final a = resolver.resolve(input(
+        InteractionPattern.setBoundary,
+        const SimState(
+            seed: 9,
+            trustScore: 30,
+            agitationLevel: 45,
+            activeDefense: DefenseState.guarded),
       ));
-      final b = resolver.resolve(const TurnInput(
-        rulesetVersion: '0.1.0',
-        manifest: manifest,
-        state: SimState(
-            seed: 9, axes: {'trust': 30, 'agitation': 45, 'resistance': 25}),
-        action: InteractionPattern.setBoundary,
+      final b = resolver.resolve(input(
+        InteractionPattern.setBoundary,
+        const SimState(
+            seed: 9,
+            trustScore: 30,
+            agitationLevel: 45,
+            activeDefense: DefenseState.guarded),
       ));
       expect(a.toCanonicalBytes(), equals(b.toCanonicalBytes()));
     });

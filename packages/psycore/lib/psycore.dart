@@ -8,6 +8,7 @@ export 'src/clock.dart';
 export 'src/conversation_turn.dart';
 export 'src/core_run_path.dart';
 export 'src/fixed_point.dart';
+export 'src/loadout_analyzer.dart';
 export 'src/prng.dart';
 export 'src/prompt_assembler.dart';
 export 'src/roleplay_frame.dart';

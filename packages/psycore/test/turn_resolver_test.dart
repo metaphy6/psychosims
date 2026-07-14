@@ -24,19 +24,37 @@ void main() {
       modelFacingTemplate: 'Test template.',
     );
 
+    final loadout = Loadout(
+      cardIds: manifest.interactionPatterns
+          .map((p) => cardFromInteractionPattern(p).id)
+          .toList(),
+      slotCap: 6,
+    );
+    final library = CardLibrary(
+      ownedCardIds: manifest.interactionPatterns
+          .map((p) => cardFromInteractionPattern(p).id)
+          .toSet(),
+    );
+
     TurnInput input(InteractionPattern action, SimState state) {
       return TurnInput(
         rulesetVersion: manifest.rulesetVersion,
         manifest: manifest,
         state: state,
         action: action,
+        loadout: loadout,
+        library: library,
       );
     }
 
     test('produces identical outcome for fixed input + clock', () {
       final clock = InjectedClock.replay(0);
       const state = SimState(
-          seed: 42, axes: {'trust': 30, 'agitation': 45, 'resistance': 25});
+        seed: 42,
+        trustScore: 30,
+        agitationLevel: 45,
+        activeDefense: DefenseState.guarded,
+      );
 
       final resolver = TurnResolver(clock);
       final first =
@@ -45,14 +63,18 @@ void main() {
           .resolve(input(InteractionPattern.openQuestion, state));
 
       expect(first.nextState.turn, equals(second.nextState.turn));
-      expect(first.nextState.axes, equals(second.nextState.axes));
+      expect(first.nextState, equals(second.nextState));
       expect(first.deltas, equals(second.deltas));
     });
 
     test('emits required clue tokens from manifest', () {
       final clock = InjectedClock.replay(0);
       const state = SimState(
-          seed: 42, axes: {'trust': 30, 'agitation': 45, 'resistance': 25});
+        seed: 42,
+        trustScore: 30,
+        agitationLevel: 45,
+        activeDefense: DefenseState.guarded,
+      );
 
       final output = TurnResolver(clock)
           .resolve(input(InteractionPattern.validate, state));
@@ -62,7 +84,7 @@ void main() {
 
     test('tags deltas with ruleset_version', () {
       final clock = InjectedClock.replay(0);
-      const state = SimState(seed: 42, axes: {'trust': 30});
+      const state = SimState(seed: 42, trustScore: 30);
 
       final output = TurnResolver(clock)
           .resolve(input(InteractionPattern.openQuestion, state));
@@ -74,7 +96,7 @@ void main() {
 
     test('rejects unavailable action', () {
       final clock = InjectedClock.replay(0);
-      const state = SimState(seed: 42, axes: {'trust': 30});
+      const state = SimState(seed: 42, trustScore: 30);
 
       expect(
         () => TurnResolver(clock).resolve(

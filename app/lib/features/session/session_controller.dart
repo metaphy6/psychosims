@@ -51,7 +51,12 @@ class SessionController extends GetxController {
     required this.clock,
     this.persistence,
     this.modelPath,
-  });
+    Loadout? initialLoadout,
+    CardLibrary? initialLibrary,
+    TherapyControllerSettings? initialControllers,
+  })  : _initialLoadout = initialLoadout,
+        _initialLibrary = initialLibrary,
+        _initialControllers = initialControllers;
 
   final Config config;
   final InferenceService inference;
@@ -68,6 +73,11 @@ class SessionController extends GetxController {
   /// falls back to the PoC stub path so first-run development/CI still works.
   final String? modelPath;
 
+  final Loadout? _initialLoadout;
+  final CardLibrary? _initialLibrary;
+  final TherapyControllerSettings? _initialControllers;
+  late TherapyControllerSettings _controllers;
+
   final status = SessionStatus.loading.obs;
   final errorMessage = ''.obs;
   final manifest = Rxn<PatientManifest>();
@@ -78,6 +88,8 @@ class SessionController extends GetxController {
   final List<core.ConversationTurn> _conversationWindow = [];
   final List<StructuredDelta> _deltaLog = [];
   late final core.TurnResolver _resolver;
+  late Loadout _loadout;
+  late CardLibrary _library;
   final _cancelToken = CancelToken();
   Future<void>? _loadCaseFuture;
 
@@ -149,10 +161,19 @@ class SessionController extends GetxController {
       );
       final loaded = loader.load(data);
       manifest.value = loaded;
-      _currentState = core.SimState(
-        seed: config.inference.seed,
-        axes: Map<String, int>.from(loaded.initialState),
+      _currentState = core.SimState.fromInitialState(
+        config.inference.seed,
+        loaded.initialState,
       );
+      final resolvedCardIds = loaded.resolvedCards.map((c) => c.id).toList();
+      _loadout = _initialLoadout ??
+          Loadout(
+            cardIds: resolvedCardIds,
+            slotCap: config.balance.activeCardSlots,
+          );
+      _library =
+          _initialLibrary ?? CardLibrary(ownedCardIds: resolvedCardIds.toSet());
+      _controllers = _initialControllers ?? const TherapyControllerSettings();
       _conversationWindow.clear();
       _deltaLog.clear();
       displayTurns.clear();
@@ -218,6 +239,9 @@ class SessionController extends GetxController {
         manifest: loaded,
         state: _currentState,
         action: action,
+        loadout: _loadout,
+        library: _library,
+        controllers: _controllers,
       ));
 
       // 2. Append player action to the conversation window.

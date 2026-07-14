@@ -34,6 +34,15 @@ void main() {
       InteractionPattern.setBoundary,
     ];
 
+    final loadout = Loadout(
+      cardIds: actions.map((a) => cardFromInteractionPattern(a).id).toList(),
+      slotCap: 6,
+    );
+    final library = CardLibrary(
+      ownedCardIds:
+          actions.map((a) => cardFromInteractionPattern(a).id).toSet(),
+    );
+
     test('matches the committed golden outcome vector', () {
       const path = '../../test_fixtures/golden_replay.json';
       final fixture = File(path);
@@ -43,6 +52,8 @@ void main() {
         actions: actions,
         rootSeed: 42,
         clock: InjectedClock.replay(123456789),
+        loadout: loadout,
+        library: library,
       );
 
       final vector =

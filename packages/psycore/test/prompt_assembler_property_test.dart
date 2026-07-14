@@ -45,11 +45,10 @@ void main() {
         ];
         final state = SimState(
           seed: random.nextInt(0x7fffffff),
-          axes: {
-            'trust': random.nextInt(100),
-            'agitation': random.nextInt(100),
-            'resistance': random.nextInt(100),
-          },
+          trustScore: random.nextInt(100),
+          agitationLevel: random.nextInt(100),
+          activeDefense:
+              DefenseState.values[random.nextInt(DefenseState.values.length)],
         );
         final inputBudget = 32 + random.nextInt(128);
         final outputReserve = 4 + random.nextInt(16);

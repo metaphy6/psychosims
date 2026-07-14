@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
+import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart' as core;
 import 'package:psyconfig/psyconfig.dart';
 
@@ -19,6 +20,11 @@ class SessionBindings extends Bindings {
     final logger = Get.find<PsyLog>();
     final resolvedPath = _resolveModelPath(config, logger);
 
+    final args = Get.arguments as Map<String, dynamic>?;
+    final loadout = args?['loadout'] as Loadout?;
+    final library = args?['library'] as CardLibrary?;
+    final controllers = args?['controllers'] as TherapyControllerSettings?;
+
     Get.put<SessionController>(
       SessionController(
         config: config,
@@ -28,6 +34,9 @@ class SessionBindings extends Bindings {
         clock: const core.InjectedClock.replay(0),
         modelPath: resolvedPath,
         persistence: Get.find<SessionPersistenceService>(),
+        initialLoadout: loadout,
+        initialLibrary: library,
+        initialControllers: controllers,
       ),
     );
   }

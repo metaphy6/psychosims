@@ -26,7 +26,7 @@ void main() {
       modelFacingTemplate: 'The patient is restless.',
     );
 
-    const state = SimState(seed: 42, axes: {'trust': 30, 'agitation': 45});
+    const state = SimState(seed: 42, trustScore: 30, agitationLevel: 45);
 
     test('emits byte-stable Tier-1 prefix', () {
       final prompt = assembler.assemble(

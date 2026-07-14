@@ -22,12 +22,14 @@ class HeadlessHarness {
     required this.inference,
     required this.metrics,
     required this.logger,
+    this.roleplayFrame = const core.PatientRoleplayFrame(),
   });
 
   final Config config;
   final InferenceService inference;
   final MetricsService metrics;
   final PsyLog logger;
+  final core.RoleplayFrame roleplayFrame;
 
   /// Runs one deterministic turn and returns the model output plus metrics.
   Future<HarnessResult> runTurn({
@@ -45,17 +47,26 @@ class HeadlessHarness {
         postponingFreezeTurns: config.balance.postponingFreezeTurns,
       ),
     );
+    final resolvedCardIds = manifest.resolvedCards.map((c) => c.id).toList();
+    final loadout = Loadout(
+      cardIds: resolvedCardIds,
+      slotCap: config.balance.activeCardSlots,
+    );
+    final library = CardLibrary(ownedCardIds: resolvedCardIds.toSet());
     final output = resolver.resolve(core.TurnInput(
       rulesetVersion: manifest.rulesetVersion,
       manifest: manifest,
       state: state,
       action: action,
+      loadout: loadout,
+      library: library,
+      controllers: const TherapyControllerSettings(),
     ));
 
     final assembler = core.PromptAssembler(
       tokenCounter: inference,
       chatTemplate: inference,
-      roleplayFrame: const core.PatientRoleplayFrame(),
+      roleplayFrame: roleplayFrame,
     );
     final prompt = assembler.assemble(
       rulesetVersion: manifest.rulesetVersion,

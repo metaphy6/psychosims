@@ -153,24 +153,12 @@ class PatientRoleplayFrame extends RoleplayFrame {
   /// Maps bounded sim-state axes to natural-language feeling words so no raw
   /// number is ever shown to the model. Deterministic for a fixed state.
   static String _stateInWords(SimState state) {
-    final parts = <String>[];
-    final agitation = state.axes['agitation'];
-    final resistance = state.axes['resistance'];
-    final trust = state.axes['trust'];
+    final parts = <String>[
+      '${_level(state.agitationLevel)} agitated',
+      '${_level(state.resistance)} guarded',
+      '${_level(state.trustScore)} trusting of the person across from you',
+    ];
 
-    if (agitation != null) {
-      parts.add('${_level(agitation)} agitated');
-    }
-    if (resistance != null) {
-      parts.add('${_level(resistance)} guarded');
-    }
-    if (trust != null) {
-      parts.add('${_level(trust)} trusting of the person across from you');
-    }
-
-    if (parts.isEmpty) {
-      return 'uneasy';
-    }
     if (parts.length == 1) {
       return parts.first;
     }

@@ -17,7 +17,7 @@ class HomeScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ElevatedButton(
-              onPressed: () => Get.toNamed(AppRoutes.session),
+              onPressed: () => Get.toNamed(AppRoutes.loadout),
               child: const Text(L10n.homeStartPocSession),
             ),
             const SizedBox(height: 16),

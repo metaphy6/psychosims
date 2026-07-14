@@ -126,7 +126,7 @@ void main() {
         final manifest = variant.manifest();
         final result = await harness.runTurn(
           manifest: manifest,
-          state: core.SimState(seed: 42, axes: variant.axes),
+          state: core.SimState.fromInitialState(42, variant.axes),
           action: manifest.interactionPatterns.first,
           modelPath: _modelPath(modelFile),
         );

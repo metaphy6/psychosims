@@ -1,4 +1,6 @@
 import 'canonical_json.dart';
+import 'interaction_pattern.dart';
+import 'structured_delta.dart';
 
 /// Server-validated session receipt schema.
 class SessionReceipt {
@@ -10,10 +12,10 @@ class SessionReceipt {
   final String correlationId;
   final int turnCount;
   final Map<String, Object?> startState;
-  final List<Map<String, Object?>> actions;
-  final List<Map<String, Object?>> deltas;
+  final List<InteractionPattern> actions;
+  final List<StructuredDelta> deltas;
 
-  static const String currentSchemaVersion = '0.2.0';
+  static const String currentSchemaVersion = '0.3.0';
 
   const SessionReceipt({
     required this.id,
@@ -37,8 +39,8 @@ class SessionReceipt {
         'correlation_id': correlationId,
         'turn_count': turnCount,
         'start_state': startState,
-        'actions': actions,
-        'deltas': deltas,
+        'actions': actions.map((a) => a.toJson()).toList(),
+        'deltas': deltas.map((d) => d.toJson()).toList(),
       };
 
   factory SessionReceipt.fromJson(Map<String, Object?> json) {
@@ -57,14 +59,60 @@ class SessionReceipt {
       startState:
           (json['start_state'] ?? json['startState'])! as Map<String, Object?>,
       actions: ((json['actions'] ?? json['orderedActions'])! as List<dynamic>)
-          .cast<Map<String, Object?>>()
+          .cast<String>()
+          .map(InteractionPatternJson.fromJson)
           .toList(),
       deltas: (json['deltas']! as List<dynamic>)
           .cast<Map<String, Object?>>()
+          .map(StructuredDelta.fromJson)
           .toList(),
     );
   }
 
   /// Encodes this receipt to canonical UTF-8 bytes.
   List<int> toCanonicalBytes() => CanonicalJson.encode(toJson());
+
+  @override
+  bool operator ==(Object other) =>
+      other is SessionReceipt &&
+      other.id == id &&
+      other.schemaVersion == schemaVersion &&
+      other.rulesetVersion == rulesetVersion &&
+      other.patientId == patientId &&
+      other.idempotencyKey == idempotencyKey &&
+      other.correlationId == correlationId &&
+      other.turnCount == turnCount &&
+      _mapEq(other.startState, startState) &&
+      _listEq(other.actions, actions) &&
+      _listEq(other.deltas, deltas);
+
+  @override
+  int get hashCode => Object.hash(
+        id,
+        schemaVersion,
+        rulesetVersion,
+        patientId,
+        idempotencyKey,
+        correlationId,
+        turnCount,
+        Object.hashAll(startState.entries),
+        Object.hashAll(actions),
+        Object.hashAll(deltas),
+      );
+
+  static bool _mapEq(Map<String, Object?> a, Map<String, Object?> b) {
+    if (a.length != b.length) return false;
+    for (final entry in a.entries) {
+      if (b[entry.key] != entry.value) return false;
+    }
+    return true;
+  }
+
+  static bool _listEq<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 }

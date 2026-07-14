@@ -35,6 +35,7 @@ void main() {
         inference: inference,
         metrics: MetricsService(),
         logger: logger,
+        roleplayFrame: const core.NoRoleplayFrame(),
       );
 
       final manifest = testManifest();

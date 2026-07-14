@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app/app_routes.dart';
+import 'features/loadout/loadout_bindings.dart';
+import 'features/loadout/loadout_screen.dart';
 import 'features/model_fetch/model_fetch_bindings.dart';
 import 'features/model_fetch/model_fetch_screen.dart';
 import 'features/session/session_bindings.dart';
@@ -44,6 +46,11 @@ class PsychosimsApp extends StatelessWidget {
           name: AppRoutes.session,
           page: () => const SessionScreen(),
           binding: SessionBindings(),
+        ),
+        GetPage(
+          name: AppRoutes.loadout,
+          page: () => const LoadoutScreen(),
+          binding: LoadoutBindings(),
         ),
         GetPage(
           name: AppRoutes.modelFetch,

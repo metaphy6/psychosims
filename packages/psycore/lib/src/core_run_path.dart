@@ -18,18 +18,20 @@ class CoreRunPath {
   /// Resolves [actions] against [manifest] starting from [rootSeed].
   ///
   /// [clock] is fully injected; for a pure replay use [InjectedClock.replay].
-  /// [rulesetVersion] selects the pinned PRNG constants.
+  /// [rulesetVersion] selects the pinned PRNG constants. The [loadout] and
+  /// [library] enforce which cards may be played.
   List<TurnOutput> resolveScripted({
     required String rulesetVersion,
     required PatientManifest manifest,
     required List<InteractionPattern> actions,
     required int rootSeed,
     required Clock clock,
+    required Loadout loadout,
+    required CardLibrary library,
   }) {
     final resolver = TurnResolver(clock);
     final outputs = <TurnOutput>[];
-    var state = SimState(
-        seed: rootSeed, axes: Map<String, int>.from(manifest.initialState));
+    var state = SimState.fromInitialState(rootSeed, manifest.initialState);
 
     for (final action in actions) {
       final input = TurnInput(
@@ -37,6 +39,8 @@ class CoreRunPath {
         manifest: manifest,
         state: state,
         action: action,
+        loadout: loadout,
+        library: library,
       );
       final output = resolver.resolve(input);
       outputs.add(output);

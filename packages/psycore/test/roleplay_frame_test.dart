@@ -43,7 +43,9 @@ void main() {
 
   const state = SimState(
     seed: 42,
-    axes: {'trust': 30, 'agitation': 90, 'resistance': 20},
+    trustScore: 30,
+    agitationLevel: 90,
+    activeDefense: DefenseState.guarded,
   );
 
   group('PatientRoleplayFrame', () {
@@ -171,7 +173,7 @@ void main() {
       test('agitation=${entry.key} reads as "${entry.value}"', () {
         final text = frame.instruction(
           manifest: _manifest(),
-          state: SimState(seed: 1, axes: {'agitation': entry.key}),
+          state: SimState(seed: 1, agitationLevel: entry.key),
         );
         expect(text, contains(entry.value));
         expect(text, isNot(contains('agitation=${entry.key}')));
@@ -204,12 +206,13 @@ void main() {
       expect(text, isNot(contains('surface in your own')));
     });
 
-    test('falls back to "uneasy" when no known axes are present', () {
+    test('falls back to levelled words when axes are at default zero', () {
       final text = frame.instruction(
         manifest: _manifest(),
-        state: const SimState(seed: 1, axes: {}),
+        state: const SimState(seed: 1),
       );
-      expect(text, contains('Right now you feel uneasy'));
+      expect(text, contains('only slightly agitated'));
+      expect(text, contains('only slightly guarded'));
     });
 
     test('embeds the persona text verbatim as data', () {

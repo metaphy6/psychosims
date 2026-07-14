@@ -40,9 +40,6 @@ PatientManifest testManifest() {
 
 extension TestManifestHelpers on PatientManifest {
   core.SimState initialSimState() {
-    return core.SimState(
-      seed: 42,
-      axes: Map<String, int>.from(initialState),
-    );
+    return core.SimState.fromInitialState(42, initialState);
   }
 }

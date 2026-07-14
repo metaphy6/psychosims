@@ -24,12 +24,26 @@ void main() {
       modelFacingTemplate: 'Test template.',
     );
 
+    final loadout = Loadout(
+      cardIds: manifest.interactionPatterns
+          .map((p) => cardFromInteractionPattern(p).id)
+          .toList(),
+      slotCap: 6,
+    );
+    final library = CardLibrary(
+      ownedCardIds: manifest.interactionPatterns
+          .map((p) => cardFromInteractionPattern(p).id)
+          .toSet(),
+    );
+
     TurnInput input(InteractionPattern action, SimState state) {
       return TurnInput(
         rulesetVersion: manifest.rulesetVersion,
         manifest: manifest,
         state: state,
         action: action,
+        loadout: loadout,
+        library: library,
       );
     }
 
@@ -45,7 +59,11 @@ void main() {
 
       for (var seed = 0; seed < 50; seed++) {
         const state = SimState(
-            seed: 42, axes: {'trust': 50, 'agitation': 40, 'resistance': 25});
+          seed: 42,
+          trustScore: 50,
+          agitationLevel: 40,
+          activeDefense: DefenseState.guarded,
+        );
         final resolver = TurnResolver(clock);
 
         SimState current = state;
@@ -66,7 +84,7 @@ void main() {
         }
 
         expect(replay.turn, equals(current.turn));
-        expect(replay.axes, equals(current.axes));
+        expect(replay, equals(current));
         expect(
           replayOutputs.map((o) => o.deltas),
           equals(outputs.map((o) => o.deltas)),

@@ -21,6 +21,36 @@ class L10n implements StringCatalog {
       'Defer until unmetered connection';
   static const String modelFetchComplete = 'Download complete.';
 
+  static const String loadoutTitle = 'Prepare Session';
+  static const String loadoutStyleLabel = 'Style';
+  static const String loadoutInitialStateLabel = 'Initial state';
+  static const String loadoutActiveCardsLabel = 'Active cards';
+  static const String loadoutMissingTacticsLabel = 'Missing tactics';
+
+  static String loadoutStyle(String archetype) =>
+      '$loadoutStyleLabel: $archetype';
+  static String loadoutInitialState(String state) =>
+      '$loadoutInitialStateLabel: $state';
+  static String loadoutActiveCards(int active, int cap) =>
+      '$loadoutActiveCardsLabel: $active / $cap';
+  static String loadoutMissingTactics(List<String> tactics) =>
+      '$loadoutMissingTacticsLabel: ${tactics.join(', ')}';
+  static const String loadoutOwnedCardsSemanticLabel =
+      'Owned cards, toggle to equip or unequip';
+  static const String loadoutEquipped = 'Equipped';
+  static const String loadoutOwned = 'Owned';
+  static const String loadoutRemoveTooltip = 'Remove from loadout';
+  static const String loadoutAddTooltip = 'Add to loadout';
+  static const String loadoutFocusLabel = 'Focus';
+  static const String loadoutEmotionalDeliveryLabel = 'Emotional Delivery';
+  static const String loadoutFocusChildhood = 'Childhood';
+  static const String loadoutFocusBalanced = 'Balanced';
+  static const String loadoutFocusWorkspace = 'Workspace';
+  static const String loadoutDeliveryWarm = 'Warm';
+  static const String loadoutDeliveryObjective = 'Objective';
+  static const String loadoutDeliveryBalanced = 'Balanced';
+  static const String loadoutStartSession = 'Start Session';
+
   static const _catalog = <String, String>{
     'manifests.poc_vexa_001.name': 'The Restless Hour',
     'manifests.poc_vexa_001.display_name': 'Restless Hour',

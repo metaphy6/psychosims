@@ -25,14 +25,14 @@ void main() {
       const checkpoint = SessionCheckpoint(
         correlationId: 'corr-1',
         manifestId: 'manifest-1',
-        state: core.SimState(seed: 42, axes: {'trust': 30}),
+        state: core.SimState(seed: 42, trustScore: 30),
         conversationWindow: [
           core.ConversationTurn(role: 'user', text: 'hello'),
         ],
         deltaLog: [
           StructuredDelta(
             rulesetVersion: '0.1.0',
-            axis: 'trust',
+            axis: StateAxis.trust,
             deltaMillis: 5,
             reasonKey: 'reason.open_question',
             cardType: CardType.disclosing,
@@ -49,9 +49,9 @@ void main() {
       expect(loaded!.correlationId, 'corr-1');
       expect(loaded.manifestId, 'manifest-1');
       expect(loaded.state.seed, 42);
-      expect(loaded.state.axes['trust'], 30);
+      expect(loaded.state.trustScore, 30);
       expect(loaded.conversationWindow.first.text, 'hello');
-      expect(loaded.deltaLog.first.axis, 'trust');
+      expect(loaded.deltaLog.first.axis, StateAxis.trust);
     });
 
     test('returns null when no checkpoint exists', () async {
@@ -63,7 +63,7 @@ void main() {
       const checkpoint = SessionCheckpoint(
         correlationId: 'corr-2',
         manifestId: 'manifest-2',
-        state: core.SimState(seed: 1, axes: {}),
+        state: core.SimState(seed: 1),
         conversationWindow: [],
         deltaLog: [],
       );
@@ -78,7 +78,7 @@ void main() {
       const checkpoint = SessionCheckpoint(
         correlationId: 'corr-3',
         manifestId: 'manifest-3',
-        state: core.SimState(seed: 3, axes: {}),
+        state: core.SimState(seed: 3),
         conversationWindow: [],
         deltaLog: [],
       );

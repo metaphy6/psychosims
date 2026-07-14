@@ -163,14 +163,12 @@ class PromptAssembler {
   /// Emitted as plain prose (never `HISTORY_DIGEST`/`axis=value`) so the model
   /// reads it as scene context to voice, not a data table to analyse.
   String _buildHistoryDigest(SimState state) {
-    final agitation = state.axes['agitation'];
-    final resistance = state.axes['resistance'];
-    final trust = state.axes['trust'];
-    final parts = <String>[];
-    if (agitation != null) parts.add('${_axisWord(agitation)} agitated');
-    if (resistance != null) parts.add('${_axisWord(resistance)} guarded');
-    if (trust != null) parts.add('${_axisWord(trust)} trusting');
-    final summary = parts.isEmpty ? 'unsettled' : parts.join(', ');
+    final parts = <String>[
+      '${_axisWord(state.agitationLevel)} agitated',
+      '${_axisWord(state.resistance)} guarded',
+      '${_axisWord(state.trustScore)} trusting',
+    ];
+    final summary = parts.join(', ');
     return 'So far this session you have felt $summary.';
   }
 
