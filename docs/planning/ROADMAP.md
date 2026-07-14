@@ -26,13 +26,13 @@ Counts are per major phase.
 |---|---|---|---|
 | 0 — Foundations & Conceptual Corrections | 92 | 92 | 🟢 complete |
 | 1 — Minimal Cross-Platform Runtime (PoC) | 93 | 90 | 🟢 exit gates cleared (3 physical-device items pending sign-off) |
-| 2 — Deterministic Game Core (offline) | 85 | 0 | ⚪ planned |
+| 2 — Deterministic Game Core (offline) | 87 | 0 | ⚪ planned |
 | 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 22 | 0 | ⚪ planned |
-| **Total** | **366** | **182** | |
+| **Total** | **368** | **182** | |
 
 ---
 
@@ -99,9 +99,9 @@ systems that depend on them are built. Each item names the phase that closes it.
 Nothing here requires new design exploration — these are commissioned artifacts
 and bounded edits, not open research.
 
-**All ten artifacts now exist under [`docs/specs/`](../specs/README.md)** (see the
+**All eleven artifacts now exist under [`docs/specs/`](../specs/README.md)** (see the
 Artifact column). C-1…C-6 (the Phase 0.3 documentation deliverables) are complete;
-C-7…C-10 have authoritative specs their implementation phases build against.
+C-7…C-11 have authoritative specs their implementation phases build against.
 
 | # | Item | Ref | Artifact | Closed in |
 |---|---|---|---|---|
@@ -115,6 +115,7 @@ C-7…C-10 have authoritative specs their implementation phases build against.
 | C-8 | **Case lifecycle state machine** (corrected §18 states) | §18 (GM-1) | [PATIENT-LIFECYCLE](../specs/PATIENT-LIFECYCLE.md) | Phase 3.6 (implemented) |
 | C-9 | **Server-derived hidden quantities** (Doubt, pressure, Trauma Severity) | §12/§17/§23 (GM-2) | [SERVER-DERIVED-QUANTITIES](../specs/SERVER-DERIVED-QUANTITIES.md) | Phase 5.3 / 5.5 (implemented) |
 | C-10 | **UGC moderation staffing & SLA** before the portal opens | §2.4 (G-6) | [UGC-MODERATION-SLA](../specs/UGC-MODERATION-SLA.md) | Phase 6.4 (before open) |
+| C-11 | **Session rule model** — card resolution, outcome engine, pharmacology, curve *shapes* (the rule-design owner; numbers stay in C-4) | §4/§11/§16 | [GAME-RULES](../specs/GAME-RULES.md) | Phase 2.1 / 2.3 (implemented against) |
 
 > When an item is closed, tick it in its owning phase and add a
 > [`DECISION_LOG`](../project/DECISION_LOG.md) row if it settled a meta-decision.
@@ -906,8 +907,10 @@ spend. This is also the **first heavy exercise of the Phase 0 integrity
 foundations under real game logic**: deterministic fixed-point economy math
 (0.8), the seeded-RNG + injected-clock seam (0.8), the config authority as the
 single owner of every balance constant (0.2 + [C-4](../specs/BALANCE-SPEC.md)),
-the local-persistence seam (0.9), the module-boundary map (Principle 2), and the
-content-integrity gate over a much larger case pool (0.12).
+the local-persistence seam (0.9), the module-boundary map (Principle 2), the
+content-integrity gate over a much larger case pool (0.12), and the **session
+rule model** ([C-11](../specs/GAME-RULES.md)) authored up front so the mechanics
+are a reviewable design before they become `psycore` code.
 
 > 🧩 **Build order & dependencies (read before picking up a sub-phase).** The
 > sub-phases are numbered by topic, not by strict build order (as in Phase 1).
@@ -1075,6 +1078,7 @@ deterministic state; the four types are the vocabulary every later mechanic
 measurably weaker/less-stable effect out-of-context; Manipulative resolves
 three-way by trust state; a fixed state + card + seed replays byte-identically.
 
+- [ ] **Design the card-resolution rule model in [C-11 GAME-RULES](../specs/GAME-RULES.md) before implementing** — pin the context-fit inputs, the signature-biased band-function *shape*, and the Manipulative three-way partition (all numbers deferred to C-4), so the taxonomy is reviewed as a written design, not reverse-engineered from `psycore` code (documentation-first).
 - [ ] **Reconcile the PoC `InteractionPattern` enum with the four card types**: define the production card model in `psychemas`/`psycore` so the six PoC patterns (1.2/1.4) become card *instances* tagged with their type + signature, and evolve the manifest `interactionPatterns` contract **additively** (0.8 wire-compat) so PoC content still loads and the transition is not a schema break.
 - [ ] Implement the four card types and their **context-bias resolution** in pure `packages/psycore` using the **2.0 portable PRNG (integer draws only, no float)**: a signature-aligned play resolves strongly and predictably; a mismatched play still functions but with a wider, less favourable outcome band drawn deterministically from the seed.
 - [ ] Implement **Manipulative three-outcome resolution** (success / partial / derangement) keyed to trust state, thresholds from config (C-4); a low-trust failure proposes the **derangement mutation as a bounded, *enumerated/whitelisted* structured delta** (§16) — a selection from a fixed catalogue of secondary-pathology states, **never free text and never an in-place manifest rewrite** — so it stays injection-safe (0.12) and the Phase 3.3 receipt / Phase 5.3 trauma multiplier can bound-check it later.
@@ -1132,6 +1136,7 @@ fixed-point contract.
 architectures; unit tests cover success/fail/stabilize/crisis and each lifecycle
 transition; no float or transcript touches `core/`.
 
+- [ ] **Design the state model, outcome engine, and pharmacology model in [C-11 GAME-RULES](../specs/GAME-RULES.md) before implementing** — pin `SimState`'s typed variables + ranges, the succeed/fail/stabilize/crisis threshold *shape*, and the tolerance/dependency/side-effect model (all numbers deferred to C-4), so the authoritative outcome owner is a reviewable design before it becomes code (documentation-first).
 - [ ] **Evolve `SimState` from the PoC generic `Map<String,int> axes` to the typed model** (trustScore, agitationLevel, activeDefense, session progress, plus a **typed medication state** — prescribed fictional-drug tokens, dosage, accrued tolerance, dependency) while preserving the 0.8 determinism contract (bounded integers / fixed-point, the 2.0 PRNG, injected clock) and byte-stable canonical serialization; evolve the manifest's `initialState` map into the same typed shape **additively** (0.8 wire-compat) so PoC content still loads. The state is consumed by the 2.9 save and the Phase 3 receipt.
 - [ ] Implement **outcome resolution** (succeed / fail / stabilize / crisis) with structured deltas, using the **2.0 deterministic seed derivation + portable PRNG**; each delta carries `ruleset_version` and fixed-point values (0.8) and is applied **transactionally** — a cancelled or failed generation rolls the turn back with no half-applied state (carried from 1.4).
 - [ ] Implement the **local case lifecycle** (open → in-treatment → cured / abandoned / hard-failed → archived, plus crisis, walkout, and the §16 derangement branch) as the **offline, single-owner precursor to the [C-8](../specs/PATIENT-LIFECYCLE.md) / Phase 3.6 server-arbitrated state machine** — the same transitions, locally trusted for now.

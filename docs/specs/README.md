@@ -3,7 +3,7 @@
 Standing reference specifications the [`ROADMAP.md`](../planning/ROADMAP.md)
 commissions as entry gates. These are the concrete artifacts behind the
 [Conceptual corrections register](../planning/ROADMAP.md#-conceptual-corrections-register)
-(C-1…C-10). Unlike a `design/` proposal (a change to be reviewed then built) or
+(C-1…C-11). Unlike a `design/` proposal (a change to be reviewed then built) or
 a `reports/` snapshot (a point-in-time audit), a spec here is a **living
 reference** that later phases implement and tune against.
 
@@ -21,6 +21,7 @@ Section refs (§N) point at [`STARTER.md`](../../STARTER.md).
 | C-8 | [Patient lifecycle state machine](PATIENT-LIFECYCLE.md) | Phase 3.6 (implemented) | spec complete |
 | C-9 | [Server-derived quantities](SERVER-DERIVED-QUANTITIES.md) | Phase 5.3 / 5.5 (implemented) | spec complete |
 | C-10 | [UGC moderation staffing & SLA](UGC-MODERATION-SLA.md) | Phase 6.4 (before portal opens) | policy set |
+| C-11 | [Session rule model](GAME-RULES.md) | Phase 2.1 / 2.3 (implemented against) | spec complete |
 
 ## Status meanings
 
