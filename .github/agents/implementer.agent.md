@@ -48,9 +48,17 @@ phase, run the two read-only gates and act on them as implementer:
    inline via [`verification-before-completion`](../../.agents/skills/verification-before-completion/SKILL.md));
    it runs `make verify` cold and the invariant checks, returning PASS / FAIL.
    On **FAIL**, fix and re-run both gates.
+3. **Capability showcase** — refresh (or create) the phase's headless showcase
+   so it ships human-readable evidence of what the phase does: scripts under
+   `tools/showcase/`, a runner (`scripts/showcase.sh`), reports under
+   `docs/reports/showcase/`. It runs with no Flutter and no model, and
+   **demonstrates** capabilities — it never substitutes for `make verify`
+   (see [`phase-showcase`](../../.agents/skills/phase-showcase/SKILL.md);
+   Phase 2 is the reference example).
 
-Advance only when the reviewer has zero open blockers **and** the verifier
-returns PASS. This gate runs for every phase — no exemptions.
+Advance only when the reviewer has zero open blockers, the verifier
+returns PASS, and the capability showcase is refreshed. This gate runs for
+every phase — no exemptions.
 
 ## Hard stops (real blockers)
 

@@ -43,12 +43,19 @@ class CaseHistoryEnvelope {
   /// Count of completed prior sessions.
   final int priorSessionCount;
 
+  /// Accumulated baseline agitation climb from repeated Postponing plays (§16).
+  ///
+  /// Added to the patient's starting agitation in subsequent sessions; bounded
+  /// so the carry-over stays budget-safe. Zero for cases that never postponed.
+  final int postponingDecay;
+
   const CaseHistoryEnvelope({
     this.carryOverDeltas = const [],
     this.inheritedMedication = const MedicationState.empty(),
     this.derangements = const [],
     this.collectedClues = const [],
     this.priorSessionCount = 0,
+    this.postponingDecay = 0,
   });
 
   /// The canonical empty envelope used by stateless cases.
@@ -60,6 +67,7 @@ class CaseHistoryEnvelope {
     List<DerangementMutation>? derangements,
     List<String>? collectedClues,
     int? priorSessionCount,
+    int? postponingDecay,
   }) {
     return CaseHistoryEnvelope(
       carryOverDeltas: carryOverDeltas ?? this.carryOverDeltas,
@@ -67,6 +75,7 @@ class CaseHistoryEnvelope {
       derangements: derangements ?? this.derangements,
       collectedClues: collectedClues ?? this.collectedClues,
       priorSessionCount: priorSessionCount ?? this.priorSessionCount,
+      postponingDecay: postponingDecay ?? this.postponingDecay,
     );
   }
 
@@ -92,6 +101,7 @@ class CaseHistoryEnvelope {
         'derangements': derangements.map((d) => d.toJson()).toList(),
         'collected_clues': collectedClues.toList(),
         'prior_session_count': priorSessionCount,
+        'postponing_decay': postponingDecay,
       };
 
   factory CaseHistoryEnvelope.fromJson(Map<String, Object?> json) {
@@ -109,6 +119,8 @@ class CaseHistoryEnvelope {
       collectedClues:
           (json['collected_clues']! as List<dynamic>).cast<String>().toList(),
       priorSessionCount: json['prior_session_count']! as int,
+      // Wire-compat: envelopes serialized before this field default to zero.
+      postponingDecay: (json['postponing_decay'] as int?) ?? 0,
     );
   }
 
@@ -121,7 +133,8 @@ class CaseHistoryEnvelope {
       other.inheritedMedication == inheritedMedication &&
       _listEq(other.derangements, derangements) &&
       _listEq(other.collectedClues, collectedClues) &&
-      other.priorSessionCount == priorSessionCount;
+      other.priorSessionCount == priorSessionCount &&
+      other.postponingDecay == postponingDecay;
 
   @override
   int get hashCode => Object.hash(
@@ -130,6 +143,7 @@ class CaseHistoryEnvelope {
         Object.hashAll(derangements),
         Object.hashAll(collectedClues),
         priorSessionCount,
+        postponingDecay,
       );
 
   static bool _listEq<T>(List<T> a, List<T> b) {

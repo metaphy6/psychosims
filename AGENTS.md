@@ -273,6 +273,7 @@ Especially load before the matching work:
 - [`phase-persistence`](.agents/skills/phase-persistence/SKILL.md) — when implementing a multi-bullet phase.
 - [`non-zero-exit-recovery`](.agents/skills/non-zero-exit-recovery/SKILL.md) — on any command failure.
 - [`parallel-subagents`](.agents/skills/parallel-subagents/SKILL.md) — when fanning out reads / searches.
+- [`phase-showcase`](.agents/skills/phase-showcase/SKILL.md) — when a phase completes, ship a headless capability showcase (Phase 2 is the reference example).
 - **ROADMAP discipline**: read [`.agents/instructions/ROADMAP_DISCIPLINE.md`](.agents/instructions/ROADMAP_DISCIPLINE.md) — tick boxes immediately as each deliverable completes; do not leave incomplete sub-phases unchecked.
 
 ---

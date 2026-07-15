@@ -164,6 +164,103 @@ void main() {
       expect(next.derangements, [DerangementMutation.trustCollapse]);
     });
 
+    test('postponing plays accrue multi-session agitation decay (§16)', () {
+      const postponing = TurnOutput(
+        nextState: SimState(seed: 1, turn: 1),
+        deltas: [
+          StructuredDelta(
+            rulesetVersion: '0.1.0',
+            axis: StateAxis.agitation,
+            deltaMillis: -3,
+            reasonKey: 'deltas.set_boundary.agitation',
+            cardType: CardType.postponing,
+            cardSignature: CardSignature.freeze,
+            contextFit: ContextFit.aligned,
+          ),
+        ],
+        requiredClueTokens: [],
+        outcome: SessionOutcome.ongoing,
+      );
+
+      // Two Postponing plays in session one → 2 × 3 baseline agitation.
+      final afterOne = resolver.buildNextEnvelope(
+        memoryClass: MemoryClass.persistent,
+        previous: const CaseHistoryEnvelope(),
+        sessionOutputs: const [postponing, postponing],
+        manifestClueTokens: const [],
+      );
+      expect(afterOne.postponingDecay, 6);
+
+      // A further play in session two accumulates on top of the prior decay.
+      final afterTwo = resolver.buildNextEnvelope(
+        memoryClass: MemoryClass.persistent,
+        previous: afterOne,
+        sessionOutputs: const [postponing],
+        manifestClueTokens: const [],
+      );
+      expect(afterTwo.postponingDecay, 9);
+
+      // The accrued decay raises the next session's starting agitation baseline.
+      final start = resolver.startingState(
+        initialState: const {'agitation': 30},
+        rootSeed: 1,
+        envelope: afterTwo,
+      );
+      expect(start.agitationLevel, 39);
+    });
+
+    test('postponing decay is capped so cases stay winnable', () {
+      const postponing = TurnOutput(
+        nextState: SimState(seed: 1, turn: 1),
+        deltas: [
+          StructuredDelta(
+            rulesetVersion: '0.1.0',
+            axis: StateAxis.agitation,
+            deltaMillis: -3,
+            reasonKey: 'deltas.set_boundary.agitation',
+            cardType: CardType.postponing,
+            cardSignature: CardSignature.freeze,
+            contextFit: ContextFit.aligned,
+          ),
+        ],
+        requiredClueTokens: [],
+        outcome: SessionOutcome.ongoing,
+      );
+
+      // 20 plays × 3 = 60, clamped to the default maxPostponingDecay of 40.
+      final env = resolver.buildNextEnvelope(
+        memoryClass: MemoryClass.persistent,
+        previous: const CaseHistoryEnvelope(),
+        sessionOutputs: List<TurnOutput>.filled(20, postponing),
+        manifestClueTokens: const [],
+      );
+      expect(env.postponingDecay, 40);
+    });
+
+    test('carries over trauma as whole state units', () {
+      // Regression: carry-over deltas store whole units, not fixed-point millis.
+      // A trauma delta of 8 must raise starting trauma by 8, not by 8 ~/ 10000.
+      const envelope = CaseHistoryEnvelope(
+        carryOverDeltas: [
+          StructuredDelta(
+            rulesetVersion: '0.1.0',
+            axis: StateAxis.trauma,
+            deltaMillis: 8,
+            reasonKey: 'deltas.reframe.trauma',
+            cardType: CardType.manipulative,
+            cardSignature: CardSignature.gambit,
+            contextFit: ContextFit.mismatched,
+          ),
+        ],
+      );
+      final state = resolver.startingState(
+        initialState: const {'trauma': 10},
+        rootSeed: 1,
+        envelope: envelope,
+      );
+      expect(state.trauma, 18);
+    });
+
     test('stateless cases carry no history envelope', () {
       expect(
         resolver.envelopeForCase(MemoryClass.stateless),
@@ -386,7 +483,8 @@ void main() {
           StructuredDelta(
             rulesetVersion: '0.1.0',
             axis: StateAxis.trust,
-            deltaMillis: 30000,
+            // Whole state units, as the resolver emits (not fixed-point millis).
+            deltaMillis: 8,
             reasonKey: 'deltas.validate.trust',
             cardType: CardType.relatable,
             cardSignature: CardSignature.buffer,
@@ -395,7 +493,36 @@ void main() {
         ],
       );
       final report = const ClinicalGradingCalculator().calculate(receipt);
-      expect(report.alliance.score, greaterThan(50));
+      // 50 base + 8 net trust + 5 rapport bonus (one Relatable play).
+      expect(report.alliance.score, 63);
+    });
+
+    test('alliance credits whole-unit trust gains (regression: no ÷10000)', () {
+      final receipt = SessionReceipt(
+        id: 'r-trust',
+        rulesetVersion: '0.1.0',
+        patientId: 'p1',
+        idempotencyKey: 'k1',
+        correlationId: 'c1',
+        turnCount: 1,
+        startState: {},
+        actions: [InteractionPattern.validate],
+        deltas: [
+          StructuredDelta(
+            rulesetVersion: '0.1.0',
+            axis: StateAxis.trust,
+            deltaMillis: 40,
+            reasonKey: 'deltas.validate.trust',
+            cardType: CardType.relatable,
+            cardSignature: CardSignature.buffer,
+            contextFit: ContextFit.aligned,
+          ),
+        ],
+      );
+      final report = const ClinicalGradingCalculator().calculate(receipt);
+      // 50 + 40 net trust + 5 rapport = 95. Under the old ÷10000 bug the trust
+      // term collapsed to 0 and this would have scored 55.
+      expect(report.alliance.score, 95);
     });
 
     test('penalises pharmacological safety for dependency deltas', () {
@@ -412,7 +539,8 @@ void main() {
           StructuredDelta(
             rulesetVersion: '0.1.0',
             axis: StateAxis.medicationDependency,
-            deltaMillis: 10000,
+            // Whole units: four accumulated dependency points.
+            deltaMillis: 4,
             reasonKey: 'deltas.medication.dependency',
             cardType: CardType.disclosing,
             cardSignature: CardSignature.breaker,
@@ -421,7 +549,8 @@ void main() {
         ],
       );
       final report = const ClinicalGradingCalculator().calculate(receipt);
-      expect(report.pharmacologicalSafety.score, lessThan(100));
+      // 100 - 4 dependency × 10 = 60. Under the old ÷10000 bug this scored 90.
+      expect(report.pharmacologicalSafety.score, 60);
     });
   });
 }

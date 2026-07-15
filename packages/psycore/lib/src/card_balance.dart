@@ -27,6 +27,12 @@ class CardBalance {
   /// Turn count for the Postponing freeze effect.
   final int postponingFreezeTurns;
 
+  /// Baseline agitation added per Postponing play, accrued across sessions (§16).
+  final int postponingDecayPerSession;
+
+  /// Cap on accumulated Postponing decay so the carry-over stays bounded.
+  final int postponingDecayMax;
+
   /// Trust floor for Manipulative success.
   final int manipulativeSuccessTrust;
 
@@ -59,6 +65,8 @@ class CardBalance {
   const CardBalance({
     this.activeCardSlots = 6,
     this.postponingFreezeTurns = 2,
+    this.postponingDecayPerSession = 3,
+    this.postponingDecayMax = 40,
     this.manipulativeSuccessTrust = 70,
     this.manipulativePartialTrust = 40,
     this.transferenceSpikeTrauma = 70,

@@ -26,13 +26,13 @@ Counts are per major phase.
 |---|---|---|---|
 | 0 — Foundations & Conceptual Corrections | 92 | 92 | 🟢 complete |
 | 1 — Minimal Cross-Platform Runtime (PoC) | 93 | 90 | 🟢 exit gates cleared (3 physical-device items pending sign-off) |
-| 2 — Deterministic Game Core (offline) | 87 | 48 | 🟢 complete |
+| 2 — Deterministic Game Core (offline) | 87 | 87 | 🟢 complete |
 | 3 — Server Control Plane & Authoritative State | 22 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 22 | 0 | ⚪ planned |
-| **Total** | **368** | **199** | |
+| **Total** | **368** | **269** | |
 
 ---
 
@@ -1083,7 +1083,7 @@ three-way by trust state; a fixed state + card + seed replays byte-identically.
 - [x] Implement the four card types and their **context-bias resolution** in pure `packages/psycore` using the **2.0 portable PRNG (integer draws only, no float)**: a signature-aligned play resolves strongly and predictably; a mismatched play still functions but with a wider, less favourable outcome band drawn deterministically from the seed.
 - [x] Implement **Manipulative three-outcome resolution** (success / partial / derangement) keyed to trust state, thresholds from config (C-4); a low-trust failure proposes the **derangement mutation as a bounded, *enumerated/whitelisted* structured delta** (§16) — a selection from a fixed catalogue of secondary-pathology states, **never free text and never an in-place manifest rewrite** — so it stays injection-safe (0.12) and the Phase 3.3 receipt / Phase 5.3 trauma multiplier can bound-check it later.
 - [x] **Type each resolved play into the structured delta** (2.3): record the card type, signature, and computed context-fit as enumerated fields so the receipt's ordered-action list is machine-checkable by the Phase 3.3 validator and readable by the 2.4 grading report — never a free-text move log.
-- [x] Implement **Postponing tempo control**: the config-tuned 1–2 turn freeze, plus the **multi-session decay modifier** (§16) that raises baseline starting agitation across sessions via the injected-clock seam (0.8) — a stalling player pays a growing, deterministic price.
+- [x] Implement **Postponing tempo control**: the config-tuned 1–2 turn freeze, plus the **multi-session decay modifier** (§16) that raises baseline starting agitation across sessions — **accrued per Postponing play and carried in the case-history envelope** (bounded by a config cap so cases stay winnable), not clock-driven — so a stalling player pays a growing, deterministic price.
 - [x] Implement the **Transference Spike** reclassification (§16): in high-trauma states, Relatable plays resolve programmatically as Manipulative failures, flipping the required tactic — driven by core state, never the model.
 - [x] Expose the **Linguistic Vector / style-filter hook** (§16 AI-fatigue countermeasure): the resolved card + patient `styleArchetype` shift the prompt-assembler frame (1.3) so identical mechanics sound distinct, without letting the dialogue layer change any outcome (§4 boundary).
 - [x] Implement the **card aesthetic-variety presentation hook** (§16): a card's surface form (full-sentence prompt, compact phrase, symbolic/coded cue) is resolved in the presentation layer from its type token and honours the 0.11 a11y contract — the deterministic core resolves on **type + signature only**, so visual variety never shifts an outcome (§4 boundary).
@@ -1942,6 +1942,18 @@ A phase is **done** when:
    move with the code in the same commit.
 6. The phase's run produced one or more `commit` tracking rows whose
    `[run-id]` trailers all appear in `git log`.
+7. A **capability showcase** ships for the phase: headless scripts (no Flutter,
+   no model, no network) that demonstrate the phase's features and emit
+   human-readable Markdown a non-technical reader can follow. It **demonstrates**
+   capabilities and never substitutes for `make verify`, which stays the
+   verification of record. See the
+   [`phase-showcase`](../../.agents/skills/phase-showcase/SKILL.md) skill.
+   **Reference example (Phase 2):** scripts in
+   [`tools/showcase/`](../../tools/showcase/), runner
+   [`scripts/showcase.sh`](../../scripts/showcase.sh), reports under
+   [`docs/reports/showcase/`](../reports/showcase/) (start at
+   [`INDEX.md`](../reports/showcase/INDEX.md)); run `bash scripts/showcase.sh`
+   to regenerate.
 
 ## Appendix C — Blueprint cross-reference map
 

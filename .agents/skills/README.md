@@ -38,6 +38,7 @@ saves whole rewrites.
 - [`/documentation-first`](documentation-first/SKILL.md) — Write the README before the code when ambiguity is high.
 - [`/adr-writing`](adr-writing/SKILL.md) — How to capture an architectural decision.
 - [`/changelog-discipline`](changelog-discipline/SKILL.md) — One CHANGELOG entry per user-visible change.
+- [`/phase-showcase`](phase-showcase/SKILL.md) — When a phase completes, ship headless scripts that demonstrate its capabilities as human-readable Markdown (Phase 2 is the reference example).
 
 ### Collaboration
 

@@ -73,7 +73,9 @@ class ClinicalGradingCalculator {
 
     for (final delta in deltas) {
       if (delta.axis == StateAxis.trust) {
-        trustSum += delta.deltaMillis ~/ 10000;
+        // Deltas store whole state units (the resolver emits whole-unit deltas);
+        // the `deltaMillis` name is historical, not a fixed-point scale.
+        trustSum += delta.deltaMillis;
       }
       if (delta.cardType == CardType.relatable) {
         relatableCount++;
@@ -166,10 +168,10 @@ class ClinicalGradingCalculator {
 
     final dependencyTotal = medicationDeltas
         .where((d) => d.axis == StateAxis.medicationDependency)
-        .fold<int>(0, (sum, d) => sum + d.deltaMillis ~/ 10000);
+        .fold<int>(0, (sum, d) => sum + d.deltaMillis);
     final toleranceTotal = medicationDeltas
         .where((d) => d.axis == StateAxis.medicationTolerance)
-        .fold<int>(0, (sum, d) => sum + d.deltaMillis ~/ 10000);
+        .fold<int>(0, (sum, d) => sum + d.deltaMillis);
 
     // Higher dependency/tolerance lowers the safety score.
     var score = 100 - dependencyTotal * 10 - toleranceTotal * 3;

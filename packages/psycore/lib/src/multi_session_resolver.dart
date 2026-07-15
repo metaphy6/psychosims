@@ -45,6 +45,16 @@ class MultiSessionResolver {
       state = _applyDelta(state, delta);
     }
 
+    // Apply accumulated Postponing decay to the starting agitation baseline
+    // (§16): repeated Postponing across sessions makes the patient increasingly
+    // impatient at daily check-ups.
+    if (envelope.postponingDecay != 0) {
+      state = state.copyWith(
+        agitationLevel:
+            (state.agitationLevel + envelope.postponingDecay).clamp(0, 100),
+      );
+    }
+
     return state;
   }
 
@@ -78,6 +88,8 @@ class MultiSessionResolver {
     required List<TurnOutput> sessionOutputs,
     required List<String> manifestClueTokens,
     int manipulativePartialTrust = 40,
+    int postponingDecayPerSession = 3,
+    int maxPostponingDecay = 40,
   }) {
     if (memoryClass == MemoryClass.stateless) {
       return CaseHistoryEnvelope.empty;
@@ -135,6 +147,19 @@ class MultiSessionResolver {
       }
     }
 
+    // Accrue Postponing multi-session decay (§16): each Postponing play this
+    // session raises the patient's baseline starting agitation for subsequent
+    // sessions, bounded by [maxPostponingDecay] so cases stay winnable.
+    final postponingPlays = sessionOutputs
+        .where((o) => o.deltas.any((d) => d.cardType == CardType.postponing))
+        .length;
+    if (postponingPlays > 0) {
+      final accrued = (envelope.postponingDecay +
+              postponingPlays * postponingDecayPerSession)
+          .clamp(0, maxPostponingDecay);
+      envelope = envelope.copyWith(postponingDecay: accrued);
+    }
+
     return envelope.copyWith(
       priorSessionCount: nextSessionCount,
     );
@@ -163,7 +188,9 @@ class MultiSessionResolver {
   }
 
   SimState _applyDelta(SimState state, StructuredDelta delta) {
-    final value = delta.deltaMillis ~/ 10000;
+    // Carry-over deltas store whole state units (the resolver emits whole-unit
+    // deltas); the `deltaMillis` name is historical, not a fixed-point scale.
+    final value = delta.deltaMillis;
     return switch (delta.axis) {
       StateAxis.trust => state.copyWith(
           trustScore: (state.trustScore + value).clamp(0, 100),

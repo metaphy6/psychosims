@@ -57,7 +57,12 @@ with a new file at a different path.
 | `verifier` | Final mechanical gate per phase: `make verify` cold + invariant checks | [`agents/verifier.agent.md`](agents/verifier.agent.md) |
 
 Each `/implement` phase runs the **`implementer → reviewer → verifier`** gate
-before the next phase starts — no exceptions.
+before the next phase starts — no exceptions. On phase completion, also refresh
+the phase's **capability showcase** ([`phase-showcase`](../.agents/skills/phase-showcase/SKILL.md))
+— headless scripts under [`tools/showcase/`](../tools/showcase/) that emit
+human-readable Markdown to [`docs/reports/showcase/`](../docs/reports/showcase/)
+(Phase 2 is the reference example). The showcase demonstrates; `make verify`
+verifies.
 
 ## ⚡ Slash commands
 
@@ -83,6 +88,7 @@ Load the relevant one before the matching kind of work. Especially:
 - [`self-review`](../.agents/skills/self-review/SKILL.md)
 - [`phase-persistence`](../.agents/skills/phase-persistence/SKILL.md)
 - [`parallel-subagents`](../.agents/skills/parallel-subagents/SKILL.md)
+- [`phase-showcase`](../.agents/skills/phase-showcase/SKILL.md)
 
 ## 💬 Communication discipline
 
