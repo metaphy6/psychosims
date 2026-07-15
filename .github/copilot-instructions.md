@@ -59,8 +59,9 @@ with a new file at a different path.
 Each `/implement` phase runs the **`implementer → reviewer → verifier`** gate
 before the next phase starts — no exceptions. On phase completion, also refresh
 the phase's **capability showcase** ([`phase-showcase`](../.agents/skills/phase-showcase/SKILL.md))
-— headless scripts under [`tools/showcase/`](../tools/showcase/) that emit
-human-readable Markdown to [`docs/reports/showcase/`](../docs/reports/showcase/)
+— headless scripts under [`tools/showcase/`](../tools/showcase/) (organised per
+phase, e.g. `tools/showcase/phase2/`) that emit human-readable Markdown to
+[`docs/reports/showcase/`](../docs/reports/showcase/) under a per-phase folder
 (Phase 2 is the reference example). The showcase demonstrates; `make verify`
 verifies.
 

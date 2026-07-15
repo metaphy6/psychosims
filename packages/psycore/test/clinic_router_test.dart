@@ -45,6 +45,33 @@ void main() {
       expect(economy.taxOwedMicros(120000000), greaterThan(1000000));
     });
 
+    test('default brackets stay progressive and tax the top band', () {
+      // Regression: the shipped default must keep an open-ended top bracket so
+      // income above the top threshold is taxed, not left untaxed.
+      const defaultEconomy = ClinicEconomy(ClinicEconomyConfig());
+      // 0–20M tax-free allowance.
+      expect(defaultEconomy.taxOwedMicros(10000000), 0);
+      // 50M: (50-20)M @ 10% = 3M.
+      expect(defaultEconomy.taxOwedMicros(50000000), 3000000);
+      // 150M: 80M @ 10% + 50M @ 20% = 8M + 10M = 18M.
+      expect(defaultEconomy.taxOwedMicros(150000000), 18000000);
+      // 250M: 80M @ 10% + 150M @ 20% = 8M + 30M = 38M — the top bracket is
+      // open-ended, so income above 100M does not escape tax.
+      expect(defaultEconomy.taxOwedMicros(250000000), 38000000);
+      // Effective rate is monotonically non-decreasing (genuinely progressive).
+      final r50 = defaultEconomy.taxOwedMicros(50000000) / 50000000;
+      final r150 = defaultEconomy.taxOwedMicros(150000000) / 150000000;
+      final r250 = defaultEconomy.taxOwedMicros(250000000) / 250000000;
+      expect(r150, greaterThan(r50));
+      expect(r250, greaterThan(r150));
+      // Income above the top threshold is taxed (would be equal under the old
+      // capped top bracket that let it escape).
+      expect(
+        defaultEconomy.taxOwedMicros(200000000),
+        greaterThan(defaultEconomy.taxOwedMicros(100000000)),
+      );
+    });
+
     test('audit triggers deterministically from roll', () {
       final (audited, penalty) = economy.audit(
         rollMillis: 10,

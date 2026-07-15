@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart';
 
-import 'report.dart';
+import '../report.dart';
 
 /// Showcase 4 — Multi-session siege, clue ownership & clinical grading (2.4).
 ///
@@ -256,7 +256,7 @@ void main() {
       '(bounded, enumerated, injection-safe)');
   r.endBullets();
 
-  r.writeTo('$showcaseOutputDir/04-multisession.md');
+  r.writeTo('$showcaseOutputDir/phase2/04-multisession.md');
 }
 
 List<InteractionPattern> _cycle(List<InteractionPattern> src, int n) =>

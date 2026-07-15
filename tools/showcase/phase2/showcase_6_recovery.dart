@@ -1,7 +1,7 @@
 import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart';
 
-import 'report.dart';
+import '../report.dart';
 
 /// Showcase 6 — Financial stabilizers, operational pressure & recovery (2.6).
 ///
@@ -115,5 +115,5 @@ void main() {
       'winding the untrusted device clock forward cannot skip it (0.8 '
       'authoritative-time seam).');
 
-  r.writeTo('$showcaseOutputDir/06-recovery.md');
+  r.writeTo('$showcaseOutputDir/phase2/06-recovery.md');
 }

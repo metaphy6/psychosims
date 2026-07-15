@@ -1,7 +1,7 @@
 import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart';
 
-import 'report.dart';
+import '../report.dart';
 
 /// Showcase 5 — Progression, multi-currency economy & attraction (2.5).
 ///
@@ -154,5 +154,5 @@ void main() {
       '${MarkdownReport.ok(onboarding.shouldGraduate(3))}');
   r.endBullets();
 
-  r.writeTo('$showcaseOutputDir/05-progression.md');
+  r.writeTo('$showcaseOutputDir/phase2/05-progression.md');
 }

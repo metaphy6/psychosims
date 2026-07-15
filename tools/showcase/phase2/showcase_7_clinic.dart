@@ -1,7 +1,7 @@
 import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart';
 
-import 'report.dart';
+import '../report.dart';
 
 /// Showcase 7 — Clinic operations, economy & the offline case router (2.7).
 ///
@@ -130,7 +130,7 @@ void main() {
       'small ethical XP reward; force risks an agitation spike and reputation '
       'hit — so a player is never trapped by the chaos roll (§13).');
 
-  r.writeTo('$showcaseOutputDir/07-clinic.md');
+  r.writeTo('$showcaseOutputDir/phase2/07-clinic.md');
 }
 
 const int day = 24 * 60 * 60;

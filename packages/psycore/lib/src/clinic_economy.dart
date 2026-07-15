@@ -15,10 +15,14 @@ class ClinicEconomyConfig {
     this.officePurchaseMicros = 50000000,
     this.officeResaleMultiplierMillis = 700,
     this.monthlyOverheadMicros = 1000000,
+    // Progressive brackets as (upper_limit_micros, rate_millis); each band is
+    // taxed only at its own rate. The final bracket uses the int-max ceiling so
+    // it is open-ended — income above the top threshold is still taxed at the
+    // top rate rather than escaping tax entirely.
     this.taxBrackets = const [
-      (0, 0),
-      (20000000, 100),
-      (100000000, 200),
+      (20000000, 0),
+      (100000000, 100),
+      (9223372036854775807, 200),
     ],
     this.auditProbabilityMillis = 50,
     this.auditOvermedicationPenalty = 10,

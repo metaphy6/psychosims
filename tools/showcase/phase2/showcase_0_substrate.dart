@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart';
 
-import 'report.dart';
+import '../report.dart';
 
 /// Showcase 0 — Deterministic core substrate (Phase 2.0).
 ///
@@ -186,7 +186,7 @@ void main() {
       'byte-identical across architectures (float matmul) — that is expected, '
       'not a defect.');
 
-  r.writeTo('$showcaseOutputDir/00-substrate.md');
+  r.writeTo('$showcaseOutputDir/phase2/00-substrate.md');
 }
 
 PatientManifest _loadManifest(String path) =>

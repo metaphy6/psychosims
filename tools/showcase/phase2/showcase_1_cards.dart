@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart';
 
-import 'report.dart';
+import '../report.dart';
 
 /// Showcase 1 — Card taxonomy & signature principle (Phase 2.1).
 ///
@@ -104,7 +104,7 @@ void main() {
       'as a bounded, enumerated structured delta — never free text, never an '
       'in-place manifest rewrite (injection-safe, 0.12).');
 
-  r.writeTo('$showcaseOutputDir/01-cards.md');
+  r.writeTo('$showcaseOutputDir/phase2/01-cards.md');
 }
 
 SimState _state({

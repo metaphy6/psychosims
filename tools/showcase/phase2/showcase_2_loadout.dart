@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart';
 
-import 'report.dart';
+import '../report.dart';
 
 /// Showcase 2 — Therapy deck & loadout system (Phase 2.2).
 ///
@@ -141,7 +141,7 @@ void main() {
   r.callout('Controllers are typed core inputs — never free text — so the '
       'direct prompt-injection channel stays closed (0.12).');
 
-  r.writeTo('$showcaseOutputDir/02-loadout.md');
+  r.writeTo('$showcaseOutputDir/phase2/02-loadout.md');
 }
 
 String _sigs(List<CardSignature> s) =>

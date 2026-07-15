@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart';
 
-import 'report.dart';
+import '../report.dart';
 
 /// Showcase 8 — Balance sandbox, solvability oracle & bot simulation (2.8).
 ///
@@ -132,7 +132,7 @@ void main() {
       'no Flutter, and no model binary — the reusable solvability check Phase 4.3 '
       'runs per generated manifest.');
 
-  r.writeTo('$showcaseOutputDir/08-sandbox.md');
+  r.writeTo('$showcaseOutputDir/phase2/08-sandbox.md');
 }
 
 String _bp(int basisPoints) => '${(basisPoints / 100).toStringAsFixed(1)}%';

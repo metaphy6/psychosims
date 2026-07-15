@@ -27,10 +27,12 @@ refresh) its capability showcase. This is a per-phase Definition-of-Done step
    (no Flutter, no model). They drive the pure core / library APIs directly so
    they run in seconds in CI and on any dev machine.
 2. **One script per capability area**, named and numbered to match the phase's
-   sub-phases, under `tools/showcase/`. A shared report helper keeps output
-   format consistent.
-3. **A runner** (`scripts/showcase.sh`) runs them all, writes each report to
-   `docs/reports/showcase/`, and regenerates an `INDEX.md`.
+   sub-phases, under `tools/showcase/<phase>/` (e.g. `tools/showcase/phase2/`).
+   A shared `tools/showcase/report.dart` helper keeps output format consistent
+   across phases.
+3. **A runner** (`scripts/showcase.sh`) discovers every `tools/showcase/phase*/`
+   folder, writes each phase's reports to `docs/reports/showcase/<phase>/`, and
+   regenerates a per-phase `INDEX.md` plus a root `INDEX.md`.
 4. **Every report is self-explaining:** a title, a one-line subtitle, and — for
    each demonstrated claim — a table or a ✅/❌ line a non-technical reader can
    read. Prefer showing real values (state trajectories, distributions) over

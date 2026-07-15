@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart';
 
-import 'report.dart';
+import '../report.dart';
 
 /// Showcase 9 — Offline persistence, career profile & save integrity (2.9).
 ///
@@ -103,7 +103,7 @@ void main() {
   r.callout('No raw dialogue transcript is ever persisted (0.6) — the durable '
       'save is structured, checksum-guarded deltas only, even offline.');
 
-  r.writeTo('$showcaseOutputDir/09-persistence.md');
+  r.writeTo('$showcaseOutputDir/phase2/09-persistence.md');
 }
 
 bool _eq(List<int> a, List<int> b) {

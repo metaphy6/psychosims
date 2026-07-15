@@ -50,8 +50,9 @@ phase, run the two read-only gates and act on them as implementer:
    On **FAIL**, fix and re-run both gates.
 3. **Capability showcase** — refresh (or create) the phase's headless showcase
    so it ships human-readable evidence of what the phase does: scripts under
-   `tools/showcase/`, a runner (`scripts/showcase.sh`), reports under
-   `docs/reports/showcase/`. It runs with no Flutter and no model, and
+   `tools/showcase/<phase>/` (shared helper `tools/showcase/report.dart`), a
+   runner (`scripts/showcase.sh`), reports under `docs/reports/showcase/<phase>/`.
+   It runs with no Flutter and no model, and
    **demonstrates** capabilities — it never substitutes for `make verify`
    (see [`phase-showcase`](../../.agents/skills/phase-showcase/SKILL.md);
    Phase 2 is the reference example).

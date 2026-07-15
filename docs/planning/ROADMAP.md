@@ -1949,9 +1949,10 @@ A phase is **done** when:
    verification of record. See the
    [`phase-showcase`](../../.agents/skills/phase-showcase/SKILL.md) skill.
    **Reference example (Phase 2):** scripts in
-   [`tools/showcase/`](../../tools/showcase/), runner
+   [`tools/showcase/phase2/`](../../tools/showcase/phase2/) (shared helper
+   [`report.dart`](../../tools/showcase/report.dart)), runner
    [`scripts/showcase.sh`](../../scripts/showcase.sh), reports under
-   [`docs/reports/showcase/`](../reports/showcase/) (start at
+   [`docs/reports/showcase/phase2/`](../reports/showcase/phase2/) (start at
    [`INDEX.md`](../reports/showcase/INDEX.md)); run `bash scripts/showcase.sh`
    to regenerate.
 
