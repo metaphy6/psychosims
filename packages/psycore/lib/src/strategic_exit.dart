@@ -1,4 +1,3 @@
-import 'package:psychemas/psychemas.dart';
 
 /// Outcome of a strategic exit choice for an over-matched case (§13).
 enum StrategicExitChoice {

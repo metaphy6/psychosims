@@ -1,6 +1,5 @@
 import 'canonical_json.dart';
 import 'medication_state.dart';
-import 'state_axis.dart';
 import 'structured_delta.dart';
 
 /// A bounded, enumerated mutation from the derangement catalogue (§16).

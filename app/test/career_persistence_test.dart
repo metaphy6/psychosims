@@ -25,9 +25,9 @@ void main() {
       if (await dir.exists()) await dir.delete(recursive: true);
     });
 
-    CareerSave _sampleSave() {
-      return CareerSave(
-        profile: const CareerProfile(
+    CareerSave sampleSave() {
+      return const CareerSave(
+        profile: CareerProfile(
           profileId: 'profile-1',
           rulesetVersion: '0.5.0',
           snapshotBalancesMicros: {'cash': 12345000000},
@@ -45,7 +45,7 @@ void main() {
           unlockedFields: ['general_psychiatry'],
           isOnboarding: false,
         ),
-        clinic: const ClinicAsset(
+        clinic: ClinicAsset(
           officeId: 'office-1',
           tier: 2,
           isOwned: true,
@@ -64,9 +64,9 @@ void main() {
                 contextFit: ContextFit.aligned,
               ),
             ],
-            inheritedMedication: const MedicationState.empty(),
-            derangements: const [DerangementMutation.somaticFixation],
-            collectedClues: const ['clue-1'],
+            inheritedMedication: MedicationState.empty(),
+            derangements: [DerangementMutation.somaticFixation],
+            collectedClues: ['clue-1'],
             priorSessionCount: 1,
           ),
         },
@@ -78,16 +78,16 @@ void main() {
             idempotencyKey: 'receipt-ik-1',
             correlationId: 'corr-1',
             turnCount: 3,
-            startState: const {},
-            actions: const [InteractionPattern.openQuestion],
-            deltas: const [],
+            startState: {},
+            actions: [InteractionPattern.openQuestion],
+            deltas: [],
           ),
         ],
       );
     }
 
     test('round-trips a career save', () async {
-      final save = _sampleSave();
+      final save = sampleSave();
       await service.save(save);
       final loaded = await service.load();
 
@@ -115,7 +115,7 @@ void main() {
     });
 
     test('falls back to backup when main save is corrupt', () async {
-      final save = _sampleSave();
+      final save = sampleSave();
       await service.save(save);
 
       // Corrupt the main file; backup should still be valid.
@@ -129,7 +129,7 @@ void main() {
 
     test('atomic write interruption at every offset leaves loadable backup',
         () async {
-      final save = _sampleSave();
+      final save = sampleSave();
       await service.save(save);
 
       final mainFile = File(p.join(dir.path, 'career_save.json'));
@@ -178,7 +178,7 @@ void main() {
       final envelope = <String, Object?>{
         'schema_version': 999,
         'ruleset_version': '0.5.0',
-        'save': _sampleSave().toJson(),
+        'save': sampleSave().toJson(),
       };
       final temp = File(p.join(dir.path, 'future.json'));
       await _writeEnvelope(temp, envelope);
@@ -193,7 +193,7 @@ void main() {
       final envelope = <String, Object?>{
         'schema_version': 1,
         'ruleset_version': '0.5.0',
-        'save': _sampleSave().toJson(),
+        'save': sampleSave().toJson(),
         'checksum': 'deadbeef',
       };
       final temp = File(p.join(dir.path, 'bad-checksum.json'));
@@ -223,7 +223,7 @@ void main() {
     });
 
     test('rejects save containing a transcript key', () async {
-      final save = _sampleSave();
+      final save = sampleSave();
       await service.save(save);
 
       final mainFile = File(p.join(dir.path, 'career_save.json'));
@@ -244,16 +244,16 @@ void main() {
     });
 
     test('receipt queue appends and drains idempotently', () async {
-      final receipt = SessionReceipt(
+      const receipt = SessionReceipt(
         id: 'r1',
         rulesetVersion: '0.5.0',
         patientId: 'p1',
         idempotencyKey: 'ik-r1',
         correlationId: 'c1',
         turnCount: 1,
-        startState: const {},
-        actions: const [InteractionPattern.validate],
-        deltas: const [],
+        startState: {},
+        actions: [InteractionPattern.validate],
+        deltas: [],
       );
 
       await service.appendReceipt(receipt);
@@ -266,7 +266,7 @@ void main() {
     });
 
     test('export and import round-trip', () async {
-      final save = _sampleSave();
+      final save = sampleSave();
       await service.save(save);
 
       final exportFile = File(p.join(dir.path, 'exported.json'));
@@ -279,19 +279,19 @@ void main() {
     });
 
     test('appended receipts survive a crash before next full save', () async {
-      final save = _sampleSave();
+      final save = sampleSave();
       await service.save(save);
 
-      final appended = SessionReceipt(
+      const appended = SessionReceipt(
         id: 'r2',
         rulesetVersion: '0.5.0',
         patientId: 'p2',
         idempotencyKey: 'ik-r2',
         correlationId: 'c2',
         turnCount: 2,
-        startState: const {},
-        actions: const [InteractionPattern.validate],
-        deltas: const [],
+        startState: {},
+        actions: [InteractionPattern.validate],
+        deltas: [],
       );
       await service.appendReceipt(appended);
       // No save() called: simulate crash / kill.
