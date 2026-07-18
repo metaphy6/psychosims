@@ -114,3 +114,4 @@ ts_utc,run_id,agent,scope,action,status,summary,refs,commit_sha
 2026-07-18T11:29:27Z,run-20260718112927-40372,copilot,server,commit,completed,chore(server): remove stale python venv/caches and dead .pydeps reference,scripts/no_raw_print_check.sh,pending
 2026-07-18T11:50:08Z,run-20260718115008-48130,copilot,phase-3,commit,completed,docs(roadmap): revise and enrich Phase 3 server control plane for Go runtime and verify-in-place,docs/planning/ROADMAP.md,pending
 2026-07-18T12:11:50Z,run-20260718121150-60838,copilot,phase-3,commit,completed,"docs(roadmap): deepen Phase 3 plan — fix economy-ledger & Go-mirror contract assumptions, enrich for integrity/reliability/perf",docs/planning/ROADMAP.md,pending
+2026-07-18T12:35:01Z,run-20260718123501-72609,copilot,phase-3,commit,completed,"docs(roadmap): revise & enrich Phase 3 — signed-envelope, lifecycle mapping, anti-replay, retention",docs/planning/ROADMAP.md,pending
