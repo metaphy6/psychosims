@@ -27,12 +27,12 @@ Counts are per major phase.
 | 0 — Foundations & Conceptual Corrections | 92 | 92 | 🟢 complete |
 | 1 — Minimal Cross-Platform Runtime (PoC) | 93 | 90 | 🟢 exit gates cleared (3 physical-device items pending sign-off) |
 | 2 — Deterministic Game Core (offline) | 87 | 87 | 🟢 complete |
-| 3 — Server Control Plane & Authoritative State | 64 | 0 | ⚪ planned |
+| 3 — Server Control Plane & Authoritative State | 84 | 0 | ⚪ planned |
 | 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
 | 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
 | 7 — Presentation, Monetization & Launch | 22 | 0 | ⚪ planned |
-| **Total** | **410** | **269** | |
+| **Total** | **430** | **269** | |
 
 ---
 
@@ -1396,14 +1396,47 @@ decision before Phase 4 spend.
 
 > 🔗 **Everything wraps a Phase 2 precursor *additively* — do not reshape it.**
 > The receipt validated here is the **2.3 `SessionReceipt`** (start state +
-> ordered typed actions + typed `StructuredDelta`s + `ruleset_version` +
-> idempotency key + correlation id); 3.3 adds *only* signature verification,
-> plausibility bounds, and anomaly detection — never a new schema (0.8
-> wire-compat). The authoritative profile (3.2) promotes the **2.9 offline career
-> profile** (<0.5 KB atomic metrics). The offline queue (3.4) wraps the **2.9
-> durable receipt-queue shape**. The ownership state machine (3.6) makes the
-> **2.3 local case lifecycle** server-arbitrated per [C-8](../specs/PATIENT-LIFECYCLE.md).
-> The server-side ledger validates the **2.5 event-sourced stream** as-is.
+> ordered typed `InteractionPattern` actions + typed `StructuredDelta`s — the
+> state-axis movements — + `ruleset_version` + idempotency key + correlation id);
+> 3.3 adds *only* signature verification, plausibility bounds, and anomaly
+> detection — never a new schema (0.8 wire-compat). The authoritative profile
+> (3.2) promotes the **2.9 offline career profile** (<0.5 KB atomic metrics). The
+> offline queue (3.4) wraps the **2.9 durable receipt-queue shape**. The ownership
+> state machine (3.6) makes the **2.3 local case lifecycle** server-arbitrated per
+> [C-8](../specs/PATIENT-LIFECYCLE.md).
+
+> 🧮 **Economy correction — the ledger is a *separate stream*, not a delta
+> variant.** An audit of the shipped Phase 2 code corrected an assumption the
+> earlier plan carried: economy mutations are **`LedgerEvent`s** on the 2.5
+> append-only, idempotency-keyed, fixed-point-micros ledger (`packages/psycore`
+> `Ledger`) — **not** a currency variant of `StructuredDelta` (which stays
+> state-axis-only: trust / agitation / defense / trauma / medication). Today those
+> events live **only client-side** in the career profile / save and are **never
+> submitted**, so the server has nothing to validate. Phase 3 therefore
+> **additively extends the receipt to carry the session's `LedgerEvent` list**
+> (0.8 wire-compat, same canonical bytes) and stands up the **authoritative
+> server-side ledger store** (3.2) that ingests that exact stream and enforces
+> conservation (3.3); Phase 5.1 then computes high-value payouts *on this store*
+> without reshaping it.
+
+> 🔌 **Contract-fork correction — reconcile the Go schema mirror first.** The Go
+> mirror ([`server/internal/schemas/schemas.go`](../../server/internal/schemas/schemas.go))
+> currently emits **camelCase** JSON tags (`schemaVersion`, `deltaMillis`) while
+> the 2.0 Dart `CanonicalJson` emits **snake_case** (`schema_version`,
+> `delta_millis`), and its `SessionReceipt` is **stale** (untyped
+> `[]map[string]any` deltas; missing `idempotency_key`, `correlation_id`,
+> `start_state`, the ordered actions, and the ledger-event list). The Dart↔Go
+> boundary is therefore **already forked for the receipt** — only the manifest
+> round-trips today. 3.0 reconciles the mirror to the exact snake_case 2.3 shape
+> and makes the contract test fail on any divergence — a prerequisite, not a
+> nice-to-have.
+
+> 💸 **Cost scope (C-3).** The C-3 model ranks **CDN egress the dominant driver**
+> (the ~1–2 GB model + manifest fetches) — that is **Phase 4**, not Phase 3.
+> Phase 3's cost budget is scoped to the **#2 driver (receipt write + bounded
+> anomaly compute), request/DB concurrency (#3), auth MAU (#4), and cold-start**;
+> storage is the *smallest* driver. Every validation path here carries a **bounded
+> per-receipt compute budget** so the #2 driver cannot blow the 10k-MAU ship gate.
 
 > ⏱ **Authoritative time & no-drift determinism (0.8).** Every TTL, lease, sunset
 > window, and cadence uses the **server clock** as the authoritative source (the
@@ -1452,15 +1485,19 @@ answers readiness/liveness, verifies a signed sample payload over its exact
 bytes, and round-trips the 2.3 receipt schema byte-identically against the Dart
 contract test; a cold start stays within the C-3 scale-to-zero budget.
 
-- [ ] **Record the server data-store choice in an ADR** (e.g. managed Postgres vs the BaaS-managed store the cost model assumed), sized to the C-3 profile (~0.5 KB profiles, an append-only ledger + audit trail, scale-to-zero) — **superseding the roadmap's earlier "BaaS ecosystem" assumption**, which predates the Go runtime decision (ADR-0006).
-- [ ] Define the **versioned API/transport contract** (route namespace, request/response envelope, error taxonomy on the 0.7 shape, explicit API version header) as the single seam the typed client (0.10) binds to — **additive-only evolution** (0.8 wire-compat) so an older client degrades safely against a newer server and vice-versa.
-- [ ] Implement **schema migrations + a rollback path** as first-class, ordered, reviewable steps run at deploy, so the authoritative store evolves without a manual mutation and a bad migration is revertible (reliability).
-- [ ] Wire the **config authority server-side** (0.2): endpoints, the store DSN (by secret *reference*), rate-limit constants, and feature flags/kill-switches resolve through one validated config, never raw env. *(⏭ hardened later: production secret resolution/custody → 3.7 / the 0.6 implementation; here the reference + interface exist, values come from the local dev environment.)*
-- [ ] Implement the **idempotency + request-context middleware**: every mutating request carries the 0.7 idempotency key + correlation/session id, deduped at the store boundary, so a retried request applies **exactly once** (the server half of the 2.9 / 3.4 contract).
+- [ ] **Record the server data-store choice in an ADR** — a **Go service fronting a managed relational store** (e.g. managed Postgres) sized to the C-3 profile (~0.5 KB profiles, an append-only economy ledger, the audit trail, the ownership record, and the idempotency/dedupe table; scale-to-zero) — **superseding the roadmap's earlier "BaaS ecosystem" assumption**, which predates the Go-runtime + no-BaaS-identity decisions (ADR-0006 / 3.1). Record the transactional + connection-pooling model the store must support.
+- [ ] Define the **versioned API/transport contract** (route namespace, request/response envelope, an explicit API-version header) as the single seam the **0.10 typed Dart client** binds to — **additive-only evolution** (0.8 wire-compat) so an older client degrades safely against a newer server and vice-versa.
+- [ ] Define the **structured error taxonomy + response shape** (a stable, machine-readable error body on the 0.7 classification: user / system / external, offline as first-class) so every endpoint fails with one shape the client maps to actionable, localized states (0.11) — never an ad-hoc string per route.
+- [ ] **Reconcile the Go schema mirror to the exact 2.3 shape (contract-fork fix).** Migrate [`server/internal/schemas`](../../server/internal/schemas/schemas.go) from its stale camelCase `SessionReceipt` (untyped `[]map[string]any` deltas) to the **snake_case** canonical shape — typed `StructuredDelta`s, `idempotency_key`, `correlation_id`, `start_state`, the ordered `InteractionPattern` actions, and the additive `LedgerEvent` list — matching the 2.0 `CanonicalJson` bytes. **A divergence must fail the contract test**, not surface in production.
+- [ ] Implement **schema migrations + a rollback path** as first-class, ordered, reviewable steps run at deploy, using **backward-compatible / online migrations** (expand-then-contract) so a rolling deploy never breaks an in-flight older instance and a bad migration is revertible (reliability).
+- [ ] Wire the **config authority server-side** (0.2): endpoints, the store DSN (by secret *reference*), rate-limit constants, per-tier plausibility bounds, and feature flags/kill-switches resolve through one validated config, never raw env. *(⏭ hardened later: production secret resolution/custody → 3.7 / the 0.6 implementation; here the reference + interface exist, values come from the local dev environment.)*
+- [ ] Implement the **idempotency + request-context middleware**: every mutating request carries the 0.7 idempotency key + correlation/session id, deduped at the store boundary, so a retried request applies **exactly once** (the server half of the 2.9 / 3.4 contract) — with a **bounded dedupe-key retention + GC policy** so the dedupe table cannot grow without limit.
+- [ ] Implement a **transactional multi-entity write primitive**: the profile + ledger + ownership + audit-trail mutations for one accepted receipt commit in a **single atomic transaction** (or a durable outbox), so a crash mid-write can never half-apply an outcome or lose an audit row (reliability + integrity).
+- [ ] Implement **defensive request decoding at the trust boundary** (the server analog of the 0.12 / 2.9 untrusted-input rule): a hard request-body size cap, JSON nesting-depth + per-field length caps, bounded array counts, a decompression-bomb guard, and **reject-before-parse** so a hostile or malformed payload fails closed rather than exhausting memory or CPU (integrity + stability).
 - [ ] Implement the **verify-in-place signature seam** (ADR-0006): a helper that verifies the envelope signature over the **exact received bytes** and only *parses* the enforced fields — never re-serializing or re-simulating to check — with a **crypto-agility hook** (suite id carried in the envelope) so the algorithm can rotate.
-- [ ] Implement the **authoritative server-time seam** (0.8): one injected clock is the source of truth for TTLs / leases / sunsets / cadence, the device clock is untrusted, and a monotonic source measures server-side durations.
-- [ ] Implement **graceful lifecycle**: readiness vs liveness probes, connection-pool warmup, in-flight-request draining on shutdown, and a **cold-start budget measured against the C-3 scale-to-zero target** — the Go static-binary advantage from ADR-0006 made real, not assumed.
-- [ ] **Extend the Dart↔Go contract test** (0.5 / 0.8) to the full 2.3 `SessionReceipt` (typed deltas, the economy-delta variant, idempotency key, correlation id) and the profile payload — not just the manifest — so the boundary cannot silently fork; a schema change breaks the contract test, not production.
+- [ ] Implement the **authoritative server-time seam + a time-sync endpoint** (0.8): one injected clock is the source of truth for TTLs / leases / sunsets / cadence, a monotonic source measures server-side durations, and a lightweight **server-time endpoint lets the client reconcile its untrusted device clock** (feeding the 3.4 lease + cooldown logic) rather than trusting local time.
+- [ ] Implement **graceful lifecycle + connection pooling**: readiness vs liveness probes, a warmed store connection pool with prepared statements, in-flight-request draining on shutdown, and a **cold-start budget measured against the C-3 scale-to-zero target** — the Go static-binary advantage from ADR-0006 made real, not assumed.
+- [ ] **Extend the Dart↔Go contract test** (0.5 / 0.8) to the full reconciled 2.3 `SessionReceipt` (typed deltas, the `LedgerEvent` list, idempotency key, correlation id, start state, ordered actions) **and** the profile payload — not just the manifest — so the boundary cannot silently fork; a schema change breaks the contract test, not production.
 
 ### 3.1 — Identity, authentication & session tokens
 
@@ -1484,21 +1521,25 @@ later endpoint one authenticated request context to authorize against.
 verified server-side, refreshed, and revocable; an unauthenticated or over-quota
 request is rejected; profile rows are inaccessible across accounts.
 
-- [ ] Implement **OAuth sign-in (Google + Apple)** producing one server-authoritative account across iOS / Android / Windows / macOS / Linux (ADR-0002), with **server-side token/JWT verification in Go** (issuer, audience, signature, expiry) — the trust decision lives in our service, not in a BaaS identity SDK.
-- [ ] Implement the **session-token lifecycle**: short-lived access token + refresh, server-side **revocation / logout**, and reissue on reinstall / device-switch (ties to the 3.5 key-recovery path) — so a lost device or a ban takes effect on authoritative state.
+- [ ] Implement **OAuth sign-in (Google + Apple)** producing one server-authoritative account across iOS / Android / Windows / macOS / Linux (ADR-0002), with **server-side token/JWT verification in Go** (issuer, audience, signature, expiry, nonce) — the trust decision lives in our service, not in a BaaS identity SDK.
+- [ ] Harden the **desktop deep-link OAuth flow** (0.9 / 1.5 callback) with **PKCE + a signed `state` / nonce** so the browser→app redirect cannot be intercepted, replayed, or CSRF'd — the desktop channel's specific attack surface (ADR-0002).
+- [ ] Implement **account linking**: multiple providers (Google *and* Apple) resolving to **one** account, so a player who signs in with a different provider on a new platform is not forked into a second profile (ADR-0002 portability).
+- [ ] Implement the **session-token lifecycle**: short-lived access token + **refresh-token rotation** (a replayed / rotated-out refresh token is rejected), server-side **revocation / logout**, and reissue on reinstall / device-switch (ties to the 3.5 key-recovery path) — so a lost device or a ban takes effect on authoritative state.
 - [ ] Implement the **authorization model + row-level security**: a request can only read or mutate its own account's profile, ledger, owned cases, and receipts — the enforcement, not just a schema note.
-- [ ] Bind the **desktop distribution channels** from ADR-0002 (Steam for Windows/macOS; signed direct download for Linux) to the OAuth flow, including the **deep-link OAuth callback** stubbed in 0.9 / 1.5.
-- [ ] Implement the **0.6 abuse-prevention enforcement**: authenticated-requests-only, per-account / per-endpoint **rate limiting + throttling**, and request quotas — the shared seam anti-farming / anomaly detection (§3, §17, §21) builds on — emitting **429 / `Retry-After`** honoured by the 0.10 client resilience policy.
+- [ ] Stand up the **operator/admin authorization seam** — a distinct role claim + separate auth path, no player token can assume it — so the Phase 7.3 moderation backdoor and the 3.7 kill-switches ride a real privilege boundary from day one. *(⏭ hardened later: full admin custody / MFA / audited-access controls are 7.3 / the 0.6 implementation; here the role boundary + rejection exist.)*
+- [ ] Bind the **desktop distribution channels** from ADR-0002 (Steam for Windows/macOS; signed direct download for Linux) to the OAuth flow.
+- [ ] Implement the **0.6 abuse-prevention enforcement**: authenticated-requests-only, **per-account + per-endpoint + per-IP (pre-auth)** rate limiting + throttling, and request quotas — the shared seam anti-farming / anomaly detection (§3, §17, §21) builds on — emitting **429 / `Retry-After`** honoured by the 0.10 client resilience policy.
 - [ ] Tie client-held tokens to **platform secure storage** (0.6 / 0.9 data-at-rest): Keychain / Keystore / OS credential store, never plaintext. *(⏭ hardened later: full token-custody + rotation review → the 0.6 implementation / 3.7 hardening pass.)*
-- [ ] **Test:** five-platform sign-in resolves to one account; a tampered / expired token is rejected; a revoked session cannot mutate state; cross-account access is denied; rate-limit + quota trip and then recover.
+- [ ] **Test:** five-platform sign-in resolves to one account; a tampered / expired / wrong-audience token is rejected; a rotated-out refresh token is rejected; a revoked session cannot mutate state; cross-account access is denied; an admin-only route rejects a player token; rate-limit + quota trip and then recover.
 
 ### 3.2 — Profile store & session handshake
 
 **What.** Implement the primitive-payload authoritative profile (<0.5 KB atomic
-metrics — the promoted 2.9 offline career profile), the boot handshake that
-hydrates the local game brain, server-accepted-only writes with
-optimistic-concurrency versioning, the server-side migration path, and the
-data-lifecycle / erasure hook.
+metrics — the promoted 2.9 offline career profile), the **authoritative
+server-side economy ledger** (the promoted 2.5 event stream), the boot handshake
+that hydrates the local game brain, server-accepted-only writes with
+optimistic-concurrency versioning under one atomic transaction, the server-side
+migration path, and the data-lifecycle / erasure hook.
 
 **Why.** The profile is the authoritative player state the client only caches
 (ADR-0001); keeping it a tiny primitive payload is what keeps the C-3 cost model
@@ -1513,18 +1554,20 @@ an erasure request removes PII-linked data while preserving pseudonymous ledger
 integrity.
 
 - [ ] Implement the **primitive profile schema** (level / XP, study + subspecialty points, reputation, currency, prestige, owned-clinic tier — atomic metrics only, **no transcripts or logs**), promoting the 2.9 profile to authoritative and keeping the <0.5 KB payload the C-3 model assumes.
+- [ ] Stand up the **authoritative server-side economy ledger** (the promoted 2.5 stream): an **append-only, idempotency-keyed, fixed-point-micros `LedgerEvent` log** with **server-side snapshot + compaction** (the 2.5 checkpoint-and-truncate shape) so replay time and row count stay **bounded over a long career** — the store Phase 5.1 computes high-value payouts on, and the source the C-9 Phase 5 quantities later derive from.
 - [ ] Implement the **session handshake**: boot authenticates (3.1), pulls the authoritative profile, and hydrates the local game brain — a small, cacheable payload with an **ETag / version** so an unchanged profile is a cheap conditional fetch (0.10 efficiency).
-- [ ] Enforce **server-accepted-only writes**: the client never writes the profile directly; only a validated receipt (3.3) or an arbitrated transition (3.6) mutates it — with **optimistic concurrency (version / compare-and-set)** so concurrent mutations cannot silently clobber (the reliability half of the double-spend guard).
-- [ ] Implement the **server-side profile schema-migration path** (mirrors the 2.9 local migration) so a stored profile evolves forward or fails loudly, never partially.
-- [ ] Implement the **data-lifecycle & erasure hook** (0.6): a right-to-erasure path that removes account-linked PII while the ledger retains only pseudonymous IDs (§17) — designed in now, feeding the §17 revocation path and the C-6 consent data.
-- [ ] **Stand up backup + point-in-time recovery** for the profile / ledger store and run a **documented restore drill** proving "ironclad progress preservation" (§3). *(⏭ hardened later: production backup cadence, the PITR target, and the automated DR drill are the 0.6 posture's server implementation — the interface + a manual drill land here; full ops automation in the hardening pass / Phase 7.6.)*
-- [ ] **Test:** the boot handshake hydrates a known profile; a direct client write is rejected; a concurrent double-write resolves without a lost update; migration loads an older stored profile; an erasure request leaves the ledger conservation-valid.
+- [ ] Enforce **server-accepted-only writes** through the 3.0 **atomic transaction**: the client never writes the profile or ledger directly; only a validated receipt (3.3) or an arbitrated transition (3.6) mutates them — with **optimistic concurrency (version / compare-and-set)** so concurrent mutations cannot silently clobber (the reliability half of the double-spend guard).
+- [ ] Implement the **server-side profile + ledger schema-migration path** (mirrors the 2.9 local migration, on the 3.0 online-migration discipline) so stored state evolves forward or fails loudly, never partially.
+- [ ] Implement the **data-lifecycle & erasure hook** (0.6): a right-to-erasure path that removes account-linked PII while the **ledger retains only pseudonymous IDs and stays conservation-valid** (§17) — designed in now, feeding the §17 revocation path and the C-6 consent data.
+- [ ] **Stand up backup + point-in-time recovery** for the profile / ledger store against the **0.6 RPO ≤ 1 h / RTO ≤ 4 h** targets, and run a **documented restore drill** proving "ironclad progress preservation" (§3). *(⏭ hardened later: production backup cadence, automated DR drill, and PITR automation are the 0.6 posture's server implementation — the interface + a manual drill land here.)*
+- [ ] **Test:** the boot handshake hydrates a known profile; a direct client write is rejected; a concurrent double-write resolves without a lost update; a profile + ledger mutation commits atomically or not at all; migration loads an older stored profile; an erasure request leaves the ledger conservation-valid; a compacted ledger replays to the same balances.
 
 ### 3.3 — Session receipt validation (verify-in-place)
 
 **What.** Implement receipt submission + validation: signature verification over
 the exact received bytes, per-tier plausibility bounds, statistical anomaly
-detection, `ruleset_version` pinning + sunset, idempotent dedupe, and the
+detection, **`LedgerEvent` ingestion + ledger-conservation enforcement**,
+`ruleset_version` pinning + sunset, idempotent dedupe, and the hash-chained
 append-only audit trail — enforcing "a client number is a claim, not a fact"
 **without** re-implementing the rules (ADR-0006 verify-in-place).
 
@@ -1543,16 +1586,20 @@ unknown/sunset-`ruleset_version` receipts are rejected; accepted receipts mutate
 state exactly once; every decision is on the audit trail; a farming pattern trips
 anomaly detection.
 
-- [ ] Validate the **2.3 receipt schema as-is** (start state + ordered typed actions + typed `StructuredDelta`s + `ruleset_version` + idempotency key + correlation id) — 3.3 adds *only* validation, **not a new schema** (0.8).
+- [ ] Validate the **reconciled 2.3 receipt as-is** (start state + ordered typed actions + typed `StructuredDelta`s + the additive `LedgerEvent` list + `ruleset_version` + idempotency key + correlation id) — 3.3 adds *only* validation, **not a new schema** (0.8).
 - [ ] **Verify the signature over the exact received bytes** (the 3.0 seam) *before* parsing enforced fields — never re-canonicalize or re-simulate to check (ADR-0006).
-- [ ] Implement **per-tier plausibility bounds** (claimed deltas within the tier's possible range from C-4) + **statistical anomaly detection** (payout outliers, impossible cadence) — the cheap, language-neutral invariants the minimal-server model relies on.
-- [ ] Enforce the **ledger-conservation invariant** on every accepted economy delta (the sum of fixed-point micros balances) — a trivial integer check that catches a whole class of tampering with no sim engine.
-- [ ] Compute the **bounded high-value outputs the server can derive without the sim engine** (fee / payout ledger postings, cure retirement, and the ownership-affecting transitions arbitrated in 3.6) server-side; **explicitly defer** the derived-quantity math — Trauma Severity, Doubt, operational pressure — to Phase 5 per [C-9](../specs/SERVER-DERIVED-QUANTITIES.md) (building them here is the wrong-assumption the old plan carried).
+- [ ] **Decode defensively before validating** (the 3.0 boundary rule): size / depth / field caps and bounded action + delta + ledger-event counts, so a hostile receipt cannot exhaust the validator (integrity + stability).
+- [ ] Implement **per-tier plausibility bounds** (claimed state-axis deltas within the tier's possible range from C-4) + **statistical anomaly detection** (payout outliers, impossible cadence, illegal action sequences), under a **bounded per-receipt compute budget** so the C-3 #2 cost driver stays inside the 10k-MAU gate — the cheap, language-neutral invariants the minimal-server model relies on.
+- [ ] **Ingest the session's `LedgerEvent` stream into the authoritative ledger (3.2) and enforce conservation**: dedupe on each event's idempotency key, reject any event whose fixed-point micros fall outside the tier bounds, and verify the accepted events **balance** (no currency minted or destroyed) — a trivial integer check that catches a whole class of economy tampering **with no sim engine**. This **replaces the old "economy-delta variant" assumption** (economy is the 2.5 `LedgerEvent` stream, not a `StructuredDelta`).
+- [ ] Reject a receipt whose **ordered actions reference cards not in the recorded start-state loadout** (the 2.2 guard) — a receipt-forgery vector closed cheaply at the boundary.
+- [ ] Compute **only the bounded high-value outputs derivable without the sim engine** (fee / payout ledger postings, cure retirement, and the ownership-affecting transitions arbitrated in 3.6) server-side; **explicitly defer** the derived-quantity math — Trauma Severity (5.3), Doubt + operational pressure (5.5) — to Phase 5 per [C-9](../specs/SERVER-DERIVED-QUANTITIES.md) (building them here is the wrong assumption the old plan carried), while making the **accepted-receipt + ledger stream** they will read available now.
+- [ ] Commit profile + ledger + ownership + audit **in the 3.0 atomic transaction**, so an accepted receipt applies **exactly once and completely** — or not at all (reliability + integrity).
 - [ ] Implement **idempotent dedupe + replay protection** on the receipt idempotency key (3.0) so a re-submitted or replayed receipt never double-applies (the server half of 3.4 / 2.9).
-- [ ] Implement **`ruleset_version` pinning + the sunset schedule** (reject unknown or sunset versions, on the server clock, 0.8) — the authoritative counterpart to the 2.3 local ruleset-change policy.
-- [ ] Implement the **append-only audit trail** (0.6 schema): every receipt acceptance / rejection and every high-value authoritative action, tamper-evident, correlation-id-stamped, **transcript-free** — the forensic record Phase 7.3 moderation reads.
+- [ ] Implement **`ruleset_version` pinning + the sunset schedule** (reject unknown or sunset versions, on the server clock, 0.8) — the authoritative counterpart to the 2.3 local ruleset-change policy — with the 3.7 kill-switch able to extend or close a window without a deploy.
+- [ ] Implement the **append-only, hash-chained audit trail** (0.6 schema): every receipt acceptance / rejection and every high-value authoritative action, **tamper-evident (each row chains the prior row's hash)**, correlation-id-stamped, **transcript-free** — the forensic record Phase 7.3 moderation reads.
+- [ ] Route an **un-processable receipt to a dead-letter path** (rejected-with-reason on the 0.7 taxonomy, recorded in the audit trail) rather than silently dropping or infinitely retrying it (reliability).
 - [ ] Add **backpressure / load-shedding** on the validation path (a bounded queue, fast-reject over quota) so a submission spike degrades gracefully rather than collapsing the service (stability).
-- [ ] **Test:** a golden accepted receipt mutates state once; bad-signature / out-of-bounds / replayed / sunset-version receipts are each rejected with the right taxonomy code; the audit trail records every decision; an A→B→A-style anomaly is flagged.
+- [ ] **Test:** a golden accepted receipt mutates profile + ledger + ownership exactly once and atomically; bad-signature / out-of-bounds / replayed / sunset-version / non-conserving-ledger / un-owned-card receipts are each rejected with the right taxonomy code; the hash-chained audit trail records every decision and detects a tampered row; an A→B→A-style anomaly is flagged.
 
 ### 3.4 — Offline receipt protocol & reconciliation
 
@@ -1573,12 +1620,14 @@ layer, binding additively to the 2.9 queue shape and the 0.10 resilience policy.
 an expired lease behaves per spec; a conflicting offline cure/transfer resolves
 to a single deterministic outcome with the loser reconciled, not dropped.
 
-- [ ] Implement **durable, in-order queue submission** on the 2.9 receipt-queue shape (append-only, idempotency-keyed), draining through the 0.10 resilience policy (bounded backoff, `Retry-After`) when connectivity returns.
-- [ ] Implement **client idempotency keys + server dedupe** (3.0 / 3.3) so exactly-once holds across retries, app kills, and duplicate delivery.
-- [ ] Implement the **ownership lease TTL** on the **server clock** (0.8): a client holds a case under a lease; an expired lease is reclaimable, and offline actions past expiry are **reconciled, not blindly applied** (ties to 3.6).
+- [ ] Implement **durable, in-order queue submission** on the 2.9 receipt-queue shape (append-only, idempotency-keyed), draining through the 0.10 resilience policy (bounded backoff + jitter, `Retry-After`) when connectivity returns.
+- [ ] Implement a **batched drain endpoint**: the queue submits multiple receipts in one authenticated request (each still individually idempotent + atomically applied) so a client reconnecting after a long offline stretch does not pay per-receipt round-trip overhead — directly serving the C-3 #2/#3 cost drivers.
+- [ ] Implement **client idempotency keys + server dedupe** (3.0 / 3.3) so exactly-once holds across retries, app kills, batched delivery, and duplicate delivery.
+- [ ] Implement a **reconciliation cursor / checkpoint**: the client tracks the last server-acknowledged receipt so a resumed drain continues from the cursor rather than re-sending the whole queue (efficiency + reliability).
+- [ ] Implement the **ownership lease TTL** on the **server clock** (0.8, reconciled via the 3.0 time-sync endpoint): a client holds a case under a lease; an expired lease is reclaimable, and offline actions past expiry are **reconciled, not blindly applied** (ties to 3.6), with a **bounded clock-skew tolerance window** so a small honest drift is not punished while a large one cannot extend a lease.
 - [ ] Implement the **offline cure/transfer race resolution**: a deterministic, server-arbitrated winner when two clients act on the same case offline, with the losing side reconciled to a consistent state and surfaced on the 0.7 taxonomy — never a silent drop.
-- [ ] Implement **reconciliation feedback to the client**: an accepted / rejected / superseded status per queued receipt so the client converges its cached state and rolls back a provisionally-rendered outcome (the 0.9 crash-recovery + the C-9 client-proposes / server-decides contract).
-- [ ] **Test (property-based):** a queue replayed after N interruptions applies each receipt exactly once; an expired lease is reclaimed; a simulated two-client offline race resolves to one deterministic outcome with the loser reconciled; a device-clock advance cannot extend a lease.
+- [ ] Implement **reconciliation feedback to the client**: an accepted / rejected / superseded status per queued receipt (plus a server queue-depth / backpressure hint) so the client converges its cached state and rolls back a provisionally-rendered outcome (the 0.9 crash-recovery + the C-9 client-proposes / server-decides contract).
+- [ ] **Test (property-based):** a queue replayed after N interruptions applies each receipt exactly once; a batched drain of the same queue yields the identical state as one-by-one; an expired lease is reclaimed; a simulated two-client offline race resolves to one deterministic outcome with the loser reconciled; a device-clock advance beyond the skew window cannot extend a lease.
 
 ### 3.5 — Managed PKI (presence & signing)
 
@@ -1599,12 +1648,13 @@ reinstall re-provisions without orphaning the account; a revoked key is rejected
 and its revocation propagates; the signature suite can rotate without breaking
 older records.
 
-- [ ] Implement **key provisioning + server-signed presence records**, with the **signature suite pinned in the envelope** (crypto-agility) so the algorithm can rotate without a flag day.
-- [ ] Implement the **revocation list + public-key publication** with a **cacheable, versioned distribution** (ETag / TTL) so clients drop revoked entries cheaply (0.10) — the seam §17 revocation and Phase 7.3 moderation consume.
+- [ ] Implement **key provisioning + server-signed presence records**, with the **signature suite pinned in the envelope** (crypto-agility) so the algorithm can rotate without a flag day, and **rate-limited provisioning** (0.6) so key issuance cannot be abused.
+- [ ] Stand up the **presence store + query seam** — who is signable / present, the inputs matchmaking + referrals read — because signing alone is not enough: 4.5 routing and the 5.x social systems need to *read* signed presence, so the store + query path exists here even though its consumers land later.
+- [ ] Implement the **revocation list + public-key publication** with a **cacheable, versioned distribution** (ETag / TTL) and a **documented propagation-latency budget** so clients drop revoked entries cheaply and predictably (0.10) — the seam §17 revocation and Phase 7.3 moderation consume.
 - [ ] Implement **key recovery on reinstall / device-switch** against the server-authoritative identity (3.1) so a returning player re-provisions rather than orphaning presence / ownership.
 - [ ] Implement **key-rotation readiness**: overlapping validity windows and re-signing of long-lived records, so rotation never invalidates an in-flight signed artifact.
 - [ ] *(⏭ hardened later)* **Signing-key custody + rotation cadence** (HSM/KMS locations, access control, rotation schedule) is the 0.6 key-custody plan's server implementation — the **interface + rotation mechanism** land here; production custody lands in the hardening pass / Phase 7.6. **No private key in-repo.**
-- [ ] **Test:** a valid presence record verifies; a tampered one fails; a revoked key is rejected and revocation propagates to a client; a reinstall re-provisions; a record signed under the previous suite still verifies during the rotation window.
+- [ ] **Test:** a valid presence record verifies; a tampered one fails; a revoked key is rejected and revocation propagates to a client within the budget; a reinstall re-provisions; a record signed under the previous suite still verifies during the rotation window; provisioning is rate-limited.
 
 ### 3.6 — Patient ownership arbitration & lifecycle (C-8)
 
@@ -1626,11 +1676,12 @@ transition (esp. `hospitalized → archived`, double-owner, client-initiated
 transfer) is rejected; concurrent transfer attempts resolve to exactly one owner.
 
 - [ ] Implement the **authoritative owner record + single-owner lock** (the double-spend analog) with **optimistic concurrency** so two simultaneous `pool → owned` claims resolve to exactly one owner, the other cleanly rejected.
-- [ ] Implement the **full C-8 lifecycle state machine** with every legal transition and its server-enforced guard (routing eligibility, referral compatibility, freeze-trigger recording, cure computed / accepted server-side).
-- [ ] Make every transition **idempotent + audited**: a retried transfer / referral applies once (3.0 idempotency), and every transition writes to the append-only audit trail (3.3) with its trigger recorded (in-fiction derangement vs bug-recovery, per C-8).
+- [ ] Implement the **full C-8 lifecycle state machine** — `pool ⇄ owned`, `owned → owned′`, `owned ⇄ hospitalized`, `owned → cured → archived`, `owned → archived` — each transition with its **server-enforced guard** (routing eligibility; **referral compatibility: receiver free + compatible + similar-tier** per C-8; freeze-trigger recording; cure computed / accepted server-side).
+- [ ] Make every transition **transactional, idempotent + audited**: ownership changes commit in the 3.0 atomic transaction alongside any profile/ledger effect, a retried transfer / referral applies once (3.0 idempotency), and every transition writes to the hash-chained audit trail (3.3) with its trigger recorded (in-fiction derangement vs bug-recovery, per C-8).
+- [ ] Integrate the **3.4 ownership lease**: a transition proposed against an expired or reclaimed lease is reconciled, not applied — ownership and the offline protocol share **one** authoritative lock.
 - [ ] Enforce the **illegal-transition rejections by construction**: `hospitalized → archived` direct, double-owner, and any client-initiated ownership change without a server round-trip.
 - [ ] Enforce **`memory_class` discipline**: stateless / social-chronic patients follow the states minus a persistent history envelope (§17 / C-8), matching the 2.4 local rule.
-- [ ] **Test:** every legal transition passes; re-pool on walkout / transfer, referral hand-off, and temporary hospitalization are covered; every illegal transition is rejected; a concurrent double-claim yields one owner; a retried transition does not double-apply.
+- [ ] **Test (incl. concurrency):** every legal transition passes; re-pool on walkout / transfer, referral hand-off, and temporary hospitalization are covered; every illegal transition is rejected; **many concurrent double-claims yield exactly one owner** under load; a retried transition does not double-apply.
 
 ### 3.7 — Server observability, resilience & deployment
 
@@ -1654,13 +1705,16 @@ disables a subsystem without a deploy; a bad deploy rolls back; cold start meets
 the scale-to-zero budget.
 
 - [ ] Implement **server-side structured logging** on the 0.7 schema (the same rendered line + JSON payload, secrets redacted, **never a raw transcript** §17) via the Go `psylog` package, with **correlation / session-id propagation across the trust boundary** so one session's client + server lines share an id.
-- [ ] Implement the **0.7 metrics contract** server-side (counters / timers / gauges: receipt accept/reject rate, validation latency, auth failures, store latency, queue depth) — the minimal signal set the C-3 cost model and the Phase 6.6 balance oracle consume.
+- [ ] Implement the **0.7 metrics contract** server-side (counters / timers / gauges: receipt accept/reject rate, validation latency, per-receipt compute cost, auth failures, store latency + pool saturation, queue depth) — the minimal signal set the C-3 cost model and the Phase 6.6 balance oracle consume — and define **SLOs + alert thresholds** (accept-latency p95, error rate, store saturation) so a regression pages rather than silently degrades.
+- [ ] Add **request tracing spans** across the request lifecycle (auth → decode → verify → validate → commit) keyed to the correlation id, so a slow or failing receipt is diagnosable without a transcript.
 - [ ] Implement **health / readiness / liveness + graceful degradation**: dependency health checks, a circuit-breaker / degrade path when the store is slow, and the 3.3 load-shedding tie-in so partial failure never cascades.
 - [ ] Implement the **server-side feature-flag + kill-switch surface** (0.2): receipt validation, matchmaking, and the economy have a documented off-switch, and the `ruleset_version` sunset has a runtime toggle, so a bad release degrades safely without an app-store push.
-- [ ] Implement the **deployment shape + cold-start budget** for C-3 **scale-to-zero** (the Go static-binary advantage from ADR-0006), with a recorded cold-start / warm-latency baseline against the cost model.
+- [ ] Implement the **deployment shape + cold-start budget** for C-3 **scale-to-zero** (the Go static-binary advantage from ADR-0006) with a **canary / rollback-capable rollout**, and a recorded cold-start / warm-latency baseline against the cost model.
+- [ ] Run a **load / soak test against the C-3 concurrency cap** (the #3 cost driver): sustained receipt-submission + handshake load holds p95 latency and the per-receipt compute budget, and back-pressure / load-shedding engages instead of collapsing — "it compiles" is not a scale proof.
+- [ ] Define the **audit-trail + metrics/log retention + redaction policy** (0.7 / 0.6 data-lifecycle): how long forensic and observability data live, redacted of PII, so retention is a decision, not an accident (integrity).
 - [ ] Write the **migration + rollback runbook** (3.0 migrations) so a schema change is deployable and revertible under a documented procedure.
 - [ ] *(⏭ hardened later)* **Secret management**: the config authority resolves secrets **by reference** (0.2 / 0.6) and the interface exists here; the production secret store / rotation (KMS / Vault) is the 0.6 secret-handling implementation, landing in the hardening pass / Phase 7.6. **No secret value committed.**
-- [ ] **Test:** a correlation id threads client → server for one flow; a kill-switch disables a subsystem in a test; a simulated store outage degrades rather than crashes; the cold-start budget is measured and recorded.
+- [ ] **Test:** a correlation id + trace threads client → server for one flow; a kill-switch disables a subsystem in a test; a simulated store outage degrades rather than crashes; the cold-start + load baselines are measured and recorded.
 
 ### 3.8 — Phase 3 integration harness & exit report
 
@@ -1684,11 +1738,12 @@ injection (timeouts, duplicate / partial submissions, reconnect) is survivable;
 the exit report records auth, receipt-validation, offline-reconciliation, and
 ownership results with the decision stated.
 
-- [ ] Stand up the **client↔local-server integration harness** (headless where possible) — the reduced precursor to the Phase 5.6 sandbox — exercising boot handshake → receipt submission → offline queue drain → ownership transition end-to-end.
-- [ ] **Expand the Dart↔Go contract + integration tests** (0.5): the full receipt / profile / presence schemas round-trip byte-identically and the auth / validation / ownership flows pass against the running service.
-- [ ] Implement **failure injection** (timeouts, duplicate + partial submissions, disconnect / reconnect, expired lease) proving exactly-once + reconciliation hold under adverse networks (0.10 / 3.4).
-- [ ] Ship the **Phase 3 capability showcase** (Appendix B): headless scripts under `tools/showcase/phase3/` emitting human-readable Markdown to `docs/reports/showcase/phase3/` demonstrating auth, receipt validation, offline reconciliation, and the ownership state machine — it **demonstrates**, never substitutes for `make verify`.
-- [ ] Record the **Phase 3 exit report** in `docs/reports/` under the 1.6 / 2.10 template: auth coverage, receipt accept/reject behaviour, offline-reconciliation results, C-8 transition coverage, and cost / cold-start baselines (C-3), with an explicit **go / revisit decision** before Phase 4 spend.
+- [ ] Stand up the **client↔local-server integration harness** (headless where possible) — the reduced precursor to the Phase 5.6 sandbox — exercising boot handshake → receipt submission (single + batched) → offline queue drain → ownership transition end-to-end.
+- [ ] **Expand the Dart↔Go contract + integration tests** (0.5): the full **reconciled** receipt / ledger-event / profile / presence schemas round-trip **byte-identically** — a **regression test that fails on any camelCase/snake_case or missing-field drift**, closing the 3.0 fork permanently — and the auth / validation / ownership flows pass against the running service.
+- [ ] Implement **failure injection** (timeouts, duplicate + partial + batched submissions, disconnect / reconnect, expired lease, store slowness) proving exactly-once + reconciliation + graceful degradation hold under adverse conditions (0.10 / 3.4 / 3.7).
+- [ ] Include a **lightweight load pass** in the harness (a burst of concurrent receipts + claims) that reproduces the 3.6 concurrency and 3.7 backpressure behaviour, so the exit report cites measured numbers, not assertions.
+- [ ] Ship the **Phase 3 capability showcase** (Appendix B): headless scripts under `tools/showcase/phase3/` emitting human-readable Markdown to `docs/reports/showcase/phase3/` demonstrating auth, receipt + ledger validation, offline reconciliation, and the ownership state machine — it **demonstrates**, never substitutes for `make verify`.
+- [ ] Record the **Phase 3 exit report** in `docs/reports/` under the 1.6 / 2.10 template: auth coverage, receipt accept/reject + ledger-conservation behaviour, offline-reconciliation results, C-8 transition coverage, and cost / cold-start / load baselines (C-3), with an explicit **go / revisit decision** before Phase 4 spend.
 
 ---
 
