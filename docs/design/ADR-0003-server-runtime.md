@@ -1,8 +1,13 @@
 # ADR-0003 — Server Runtime
 
-- **Status**: accepted
+- **Status**: superseded by [ADR-0006](ADR-0006-server-runtime-go.md) (2026-07-18)
 - **Date**: 2026-07-12
 - **Deciders**: @maintainer
+
+> **Superseded.** This record chose Python/FastAPI for the authoritative server.
+> [ADR-0006](ADR-0006-server-runtime-go.md) revisits the decision — before any
+> server sim logic was written — and adopts **Go** instead. The context and
+> rationale below are retained for history; the decision no longer holds.
 
 ## Context
 

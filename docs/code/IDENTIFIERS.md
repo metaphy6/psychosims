@@ -50,7 +50,7 @@ schemas. See [`DATA-LIFECYCLE.md`](../project/DATA-LIFECYCLE.md) for erasure.
 | Stack | Location |
 |-------|----------|
 | Dart | `packages/psycore/lib/src/identifiers.dart` (planned) / `app/lib/shared/` |
-| Python | `server/src/psychosims_server/identifiers.py` (planned) |
+| Go | `server/internal/schemas/identifiers.go` (planned) |
 
 For Phase 0 the scheme is documented here; generators are implemented when the
 first receipt/entity flow is built in Phase 3.

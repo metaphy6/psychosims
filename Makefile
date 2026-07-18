@@ -126,19 +126,19 @@ dart.format.check:
 dart.format:
 	@scripts/dart_format.sh
 
-## server.test       Run Python server tests
+## server.test       Run Go server tests
 server.test:
 	@scripts/server_test.sh
 
-## server.lint       Lint Python server code
+## server.lint       Lint Go server code
 server.lint:
 	@scripts/server_lint.sh
 
-## server.format.check Check Python formatting
+## server.format.check Check Go formatting
 server.format.check:
 	@scripts/server_format.sh --check
 
-## server.format     Format Python code
+## server.format     Format Go code
 server.format:
 	@scripts/server_format.sh
 

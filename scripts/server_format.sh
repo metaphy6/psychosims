@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
-
-if [[ ! -d ".pydeps" ]]; then
-  scripts/server_build.sh
-fi
+cd "$(dirname "$0")/../server"
 
 if [[ "${1:-}" == "--check" ]]; then
   echo "▶️  Server format check"
-  PYTHONPATH=".pydeps:$(pwd)/server/src" python3 -m ruff format --check server/src server/tests
+  unformatted="$(gofmt -l .)"
+  if [[ -n "$unformatted" ]]; then
+    echo "❌ gofmt found unformatted files:" >&2
+    echo "$unformatted" >&2
+    exit 1
+  fi
 else
   echo "▶️  Server format"
-  PYTHONPATH=".pydeps:$(pwd)/server/src" python3 -m ruff format server/src server/tests
+  gofmt -w .
 fi
 
 echo "✅ Server format done"

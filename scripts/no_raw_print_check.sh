@@ -10,7 +10,7 @@ echo "▶️  Checking for raw print/stdout writes outside allowed zones"
 #   - xops/    (ops/debug scripts)
 #   - native/test/ (test harnesses)
 #   - native/include/psychosims_log.h (the canonical logger implementation)
-# We forbid raw writes in app/lib, native/src, server/src, packages/*.
+# We forbid raw writes in app/lib, native/src, server/, packages/*.
 
 VIOLATIONS=0
 
@@ -20,14 +20,14 @@ scan() {
     while IFS= read -r -d '' file; do
       # Skip generated files.
       case "$file" in
-        */generated_*|*/Flutter/*|*/ephemeral/*|*/.dart_tool/*|*/.pydeps/*) continue ;;
+        */generated_*|*/Flutter/*|*/ephemeral/*|*/.dart_tool/*) continue ;;
       esac
       if grep -E -n "$pattern" "$file" >/dev/null 2>&1; then
         echo "  ❌ $desc in $file:"
         grep -E -n "$pattern" "$file" | head -n 5 | sed 's/^/     /'
         VIOLATIONS=$((VIOLATIONS + 1))
       fi
-    done < <(find "$dir" "$@" -type f \( -name '*.dart' -o -name '*.py' -o -name '*.cpp' -o -name '*.c' -o -name '*.h' -o -name '*.hpp' \) -print0)
+    done < <(find "$dir" "$@" -type f \( -name '*.dart' -o -name '*.py' -o -name '*.go' -o -name '*.cpp' -o -name '*.c' -o -name '*.h' -o -name '*.hpp' \) -print0)
   fi
 }
 
@@ -35,9 +35,9 @@ scan() {
 scan app/lib 'print\(' 'raw print()'
 scan packages 'print\(' 'raw print()'
 
-# Python: bare stdout.write / print outside __main__ guards in server/src or packages.
-scan server/src 'sys\.stdout\.write|print\(' 'raw stdout write/print'
-scan packages 'sys\.stdout\.write|print\(' 'raw stdout write/print'
+# Go: bare fmt.Print / fmt.Printf / fmt.Println in the server module.
+# The canonical logger writes via fmt.Fprintln(os.Stderr, ...), which is allowed.
+scan server 'fmt\.Print' 'raw stdout write (use psylog)'
 
 # C/C++: std::cout / printf / NSLog in native src/include.
 scan native/src 'std::cout|printf\(|NSLog\(' 'raw stdout/log write'

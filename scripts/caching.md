@@ -3,14 +3,14 @@
 ## CI caching
 
 - `~/.pub-cache` — Dart/Flutter package cache.
-- `.pydeps` — Python project-local deps (recreated if missing).
+- `~/.cache/go-build` + Go module cache — Go build/dependency cache.
 - `native/build` — native compile artifacts.
 - `test_fixtures/` — golden fixtures are committed, not generated.
 
 ## Local caching
 
 - Dart `.dart_tool/` is gitignored and reused across builds.
-- Python `.pydeps/` is gitignored and reused across verify runs.
+- Go build cache (`~/.cache/go-build`) is reused across verify runs.
 
 ## Budget
 

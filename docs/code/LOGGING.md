@@ -1,7 +1,7 @@
 # Cross-stack logging convention
 
 Every layer of Psychosims emits **one structured log line shape**, whether the
-line originates in the Dart client, the C/C++ llama.cpp FFI shim, or the Python
+line originates in the Dart client, the C/C++ llama.cpp FFI shim, or the Go
 server. The convention prioritizes:
 
 1. **Readability in dev** — balanced emoji + aligned columns so a human can scan.
@@ -60,7 +60,7 @@ Both modes carry the **identical field set**; only rendering differs.
 |-------|-------------|-------|
 | Dart / Flutter | `app/lib/shared/logger.dart` | Uses the config authority for mode/level. |
 | C/C++ FFI | `native/include/psychosims_log.h` | Thin shim that renders the same line and forwards to Dart/stdout. |
-| Python server | `server/src/psychosims_server/logger.py` | Same schema; redacts secrets and never logs request bodies. |
+| Go server | `server/internal/psylog/psylog.go` | Same schema; redacts secrets and never logs request bodies. |
 
 ## Forbidden outputs
 

@@ -22,10 +22,10 @@ jobs:
         with:
           flutter-version: '3.22.0'
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          python-version: '3.12'
+          go-version: '1.26'
 
       - name: Install native toolchain
         run: sudo apt-get update && sudo apt-get install -y g++

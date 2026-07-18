@@ -42,7 +42,7 @@ deterministic rules never mix with UI or I/O.
 | — App adapter | `app/lib/core/` | Thin adapter that re-exports `packages/psycore/` for the Flutter app and wires DI. |
 | — Features | `app/lib/features/` | One directory per domain: `session/`, `cards/`, `clinic/`, `progression/`, `recovery/`, `content/`, `presentation/`. |
 | — Shared | `app/lib/shared/` | Reusable utilities, models, services (inference service, config access, networking, logging). |
-| Server | `server/` | Authoritative control plane (auth, receipts, ownership, matchmaking, signing, moderation, royalties). Python/FastAPI. |
+| Server | `server/` | Authoritative control plane (auth, receipts, ownership, matchmaking, signing, moderation, royalties). Go. |
 | Native / FFI | `native/` | C/C++ shim to llama.cpp and generated Dart FFI bindings. |
 | Shared packages | `packages/` | Cross-cutting Dart packages reused by app + tools (`psychemas/`, `psycore/`). |
 | Content pipeline | `content/` | Nine-axis manifest generation, validation gate, signing inputs. |
@@ -80,7 +80,7 @@ or `packages/`. Nothing reads configuration except through `config/` (§4).
   caches but never owns it (§3). Apple/Google on mobile; desktop channels decided
   in roadmap C-5.
 - **Logging:** one cross-stack structured log-line schema, rendered identically
-  by Dart, the C++ FFI shim, and the Python server. See
+  by Dart, the C++ FFI shim, and the Go server. See
   [LOGGING.md](LOGGING.md). Direct `print`/`std::cout`/`stdout` writes fail CI.
 - **Errors:** classify user / system / external; offline is a first-class state
   (durable receipt queue, idempotency keys) not an error. See

@@ -5,11 +5,16 @@ cd "$(dirname "$0")/.."
 
 echo "▶️  Server lint"
 
-if [[ ! -d ".pydeps" ]]; then
-  scripts/server_build.sh
-fi
+cd server
 
-PYTHONPATH=".pydeps:$(pwd)/server/src" python3 -m ruff check server/src server/tests
-PYTHONPATH=".pydeps:$(pwd)/server/src" python3 -m mypy server/src
+go vet ./...
+
+unformatted="$(gofmt -l .)"
+if [[ -n "$unformatted" ]]; then
+  echo "❌ gofmt found unformatted files:" >&2
+  echo "$unformatted" >&2
+  echo "   run 'make server.format' to fix" >&2
+  exit 1
+fi
 
 echo "✅ Server lint passed"

@@ -15,11 +15,11 @@ mkdir -p reports
     (cd "$pkg" && cat pubspec.yaml)
   done
 
-  echo "=== Python packages ==="
-  if [[ -d ".pydeps" ]]; then
-    PYTHONPATH=".pydeps:$(pwd)/server/src" python3 -m pip freeze --path .pydeps
+  echo "=== Go modules ==="
+  if [[ -f "server/go.mod" ]]; then
+    (cd server && go list -m all 2>/dev/null || cat go.mod)
   else
-    echo "(run scripts/server_build.sh first)"
+    echo "(no server/go.mod found)"
   fi
 } > reports/sbom.txt
 

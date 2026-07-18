@@ -21,7 +21,7 @@ make doctor       # sanity-check framework wiring and toolchains
 ## Module scripts
 
 - `scripts/dart_*.sh` — Dart packages and Flutter app.
-- `scripts/server_*.sh` — Python server (uses project-local `.pydeps`).
+- `scripts/server_*.sh` — Go server (uses the module-local Go build cache).
 - `scripts/native_*.sh` — C/C++ native stub.
 
 ## CI

@@ -50,10 +50,15 @@ else
   echo "⚠️  cmake not found; needed for native/ builds" >&2
 fi
 
-# Install Python server dependencies
-if [[ -d "server" ]]; then
-  echo "▶️  Installing server dependencies..."
-  python3 -m pip install -e "./server[dev]" --quiet || true
+# Install Go server dependencies
+if [[ -f "server/go.mod" ]]; then
+  if command -v go &>/dev/null; then
+    echo "ℹ️  Go: $(go version | awk '{print $3}')"
+    echo "▶️  Building server module..."
+    (cd server && go build ./...) || true
+  else
+    echo "⚠️  go not found; install Go 1.26+ to build server/" >&2
+  fi
 fi
 
 # Fetch Dart dependencies

@@ -96,4 +96,4 @@ retrofit. Every subsequent phase consumes `Config` via DI from the start.
 
 - Whether server + client share one schema package or two aligned ones under
   `packages/` — decided when the server language/runtime is finalized (Phase 3).
-  (Resolved: Python server mirrors Dart schemas via JSON Schema / OpenAPI.)
+  (Resolved: Go server mirrors Dart schemas via shared JSON payloads validated by golden fixtures.)

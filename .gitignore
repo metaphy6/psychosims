@@ -39,15 +39,11 @@ linux/flutter/
 windows/flutter/
 web/flutter/
 
-# Python server
-.venv/
-.pydeps/
-__pycache__/
-*.pyc
-.pytest_cache/
-*.egg-info/
-dist/
-.uv/
+# Go server
+server/psy-server
+server/**/*.test
+*.out
+vendor/
 
 # Native build artifacts
 *.so

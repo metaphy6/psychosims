@@ -194,6 +194,7 @@ def _check_toolchains(failures: list[str]) -> None:
         "dart": "dart --version",
         "flutter": "flutter --version",
         "python3": "python3 --version",
+        "go": "go version",
         "g++": "g++ --version",
     }
     for name, cmd in required.items():

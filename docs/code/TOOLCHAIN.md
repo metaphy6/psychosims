@@ -7,9 +7,7 @@
 | Tool | Version | Used by | Validation |
 |---|---|---|---|
 | Flutter / Dart | 3.22.x / 3.4.x | `app/`, `packages/`, `config/`, `tools/` | Linux desktop + x86 Android emulator (Phase 1) |
-| Python | 3.12+ | `server/` | Linux desktop + CI |
-| FastAPI | 0.111.x | `server/` | Linux desktop + CI |
-| Pydantic | 2.7.x | `server/` | Linux desktop + CI |
+| Go | 1.26.x | `server/` | Linux desktop + CI |
 | clang / CMake | system latest stable | `native/` | Linux desktop + CI |
 | Android NDK | 26.x | `native/` Android build | x86 Android emulator (Phase 1) |
 | ffigen | 12.x | Dart FFI bindings | Linux desktop + CI |
@@ -28,7 +26,7 @@
 ## Reproducibility
 
 - Dependency lockfiles are committed (`pubspec.lock` for Dart when stable,
-  `uv.lock` for Python, `CMakeLists.txt` for native).
+  `go.sum` for Go, `CMakeLists.txt` for native).
 - Build inputs (toolchain versions, llama.cpp commit, GGUF quantization) are
   recorded in this file and in [`ARCHITECTURE.md`](ARCHITECTURE.md).
 - The bootstrap script installs pinned SDKs where possible and prints the

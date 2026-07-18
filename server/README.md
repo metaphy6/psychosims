@@ -8,19 +8,33 @@ macro-event seeding.
 
 ## Runtime
 
-Python 3.12+ with FastAPI. See `pyproject.toml` for dependencies and scripts.
+Go 1.26+. See [`ADR-0006`](../docs/design/ADR-0006-server-runtime-go.md) for the
+runtime decision (superseding ADR-0003). No third-party web framework is used;
+the control plane is built on the standard library.
 
 ## Layout
 
-- `src/` — application source.
-- `tests/` — server-side tests.
-- `scripts/` — operational scripts.
+- `go.mod` — module definition (`psychosims.dev/server`).
+- `cmd/psy-server/` — the server entrypoint (`main`).
+- `internal/server/` — HTTP wiring (health check today; Phase 3 endpoints later).
+- `internal/schemas/` — Go structs mirroring the Dart `packages/psychemas/` contract.
+- `internal/psylog/` — cross-stack structured logger (see [`docs/code/LOGGING.md`](../docs/code/LOGGING.md)).
 
 ## Run
 
 ```bash
-python -m server
+go run ./cmd/psy-server   # from server/
+```
+
+## Develop
+
+```bash
+make server.build          # go build ./...
+make server.test           # go test ./...
+make server.lint           # go vet + gofmt check
+make server.format         # gofmt -w
 ```
 
 See [`docs/code/ARCHITECTURE.md`](../docs/code/ARCHITECTURE.md) for the
-trust-boundary contract.
+trust-boundary contract and [`docs/code/SHARED_SCHEMAS.md`](../docs/code/SHARED_SCHEMAS.md)
+for the Dart↔Go schema alignment discipline.
