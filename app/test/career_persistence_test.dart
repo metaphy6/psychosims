@@ -54,7 +54,7 @@ void main() {
         ownedCases: {
           'case-1': CaseHistoryEnvelope(
             carryOverDeltas: [
-              const StructuredDelta(
+              StructuredDelta(
                 rulesetVersion: '0.5.0',
                 axis: StateAxis.trust,
                 deltaMillis: 5,
