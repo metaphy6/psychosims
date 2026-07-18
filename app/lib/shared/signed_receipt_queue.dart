@@ -40,7 +40,8 @@ class SignedReceiptQueue {
   /// Drains the queue by calling [submit] for each entry in order.
   ///
   /// Returns the id of the last successfully-acknowledged entry (the cursor).
-  Future<String?> drain(Future<void> Function(SignedEnvelope envelope) submit) async {
+  Future<String?> drain(
+      Future<void> Function(SignedEnvelope envelope) submit) async {
     var cursor = await persistence.cursor;
     final entries = await persistence.readAfter(cursor);
     for (final entry in entries) {
@@ -105,7 +106,8 @@ class MemoryQueuePersistence implements QueuePersistence {
 
 /// One queued signed envelope.
 class QueueEntry {
-  QueueEntry({required this.id, required this.envelope, required this.enqueuedAt});
+  QueueEntry(
+      {required this.id, required this.envelope, required this.enqueuedAt});
 
   final String id;
   final SignedEnvelope envelope;
@@ -119,14 +121,18 @@ class QueueEntry {
 
   factory QueueEntry.fromJson(Map<String, Object?> json) => QueueEntry(
         id: json['id'] as String,
-        envelope: SignedEnvelope.fromJson(json['envelope'] as Map<String, Object?>),
+        envelope:
+            SignedEnvelope.fromJson(json['envelope'] as Map<String, Object?>),
         enqueuedAt: DateTime.parse(json['enqueued_at'] as String),
       );
 }
 
 /// Bounded exponential backoff + jitter (0.10 resilience policy).
 class RetryPolicy {
-  const RetryPolicy({this.maxAttempts = 5, this.baseDelay = const Duration(seconds: 1), this.maxDelay = const Duration(minutes: 1)});
+  const RetryPolicy(
+      {this.maxAttempts = 5,
+      this.baseDelay = const Duration(seconds: 1),
+      this.maxDelay = const Duration(minutes: 1)});
 
   final int maxAttempts;
   final Duration baseDelay;

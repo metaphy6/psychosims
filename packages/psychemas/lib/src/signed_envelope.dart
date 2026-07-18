@@ -27,7 +27,8 @@ class SignedEnvelope {
       };
 
   factory SignedEnvelope.fromJson(Map<String, Object?> json) => SignedEnvelope(
-        canonicalReceiptBytes: (json['canonical_receipt_bytes'] as List<dynamic>).cast<int>(),
+        canonicalReceiptBytes:
+            (json['canonical_receipt_bytes'] as List<dynamic>).cast<int>(),
         signature: (json['signature'] as List<dynamic>).cast<int>(),
         suiteId: json['suite_id'] as String,
         signingKeyId: json['signing_key_id'] as String,
