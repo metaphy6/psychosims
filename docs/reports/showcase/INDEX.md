@@ -6,3 +6,4 @@ Headless runs of the pure deterministic core, organised one folder per
 roadmap phase. Regenerate with `scripts/showcase.sh`.
 
 - [Phase 2](phase2/INDEX.md)
+- [Phase 3](phase3/INDEX.md)

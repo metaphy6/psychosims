@@ -7,6 +7,19 @@ import 'package:path/path.dart' as p;
 import 'package:psychemas/psychemas.dart';
 import 'package:psychosims/shared/career_persistence.dart';
 
+SignedEnvelope _dummyEnvelope(SessionReceipt receipt) => SignedEnvelope(
+      canonicalReceiptBytes: CanonicalJson.encode(receipt.toJson()),
+      signature: const [0, 1, 2, 3],
+      suiteId: 'ed25519-v1',
+      signingKeyId: 'test-key-1',
+    );
+
+String _idempotencyKeyOf(SignedEnvelope envelope) {
+  final json = jsonDecode(utf8.decode(envelope.canonicalReceiptBytes))
+      as Map<String, Object?>;
+  return json['idempotency_key']! as String;
+}
+
 void main() {
   group('CareerPersistenceService', () {
     late Directory dir;
@@ -26,7 +39,7 @@ void main() {
     });
 
     CareerSave sampleSave() {
-      return const CareerSave(
+      return CareerSave(
         profile: CareerProfile(
           profileId: 'profile-1',
           rulesetVersion: '0.5.0',
@@ -71,7 +84,7 @@ void main() {
           ),
         },
         receiptQueue: [
-          SessionReceipt(
+          _dummyEnvelope(const SessionReceipt(
             id: 'receipt-1',
             rulesetVersion: '0.5.0',
             patientId: 'patient-1',
@@ -81,7 +94,7 @@ void main() {
             startState: {},
             actions: [InteractionPattern.openQuestion],
             deltas: [],
-          ),
+          )),
         ],
       );
     }
@@ -99,7 +112,10 @@ void main() {
       expect(loaded.clinic!.tier, 2);
       expect(loaded.ownedCases['case-1']!.priorSessionCount, 1);
       expect(loaded.ownedCases['case-1']!.collectedClues.first, 'clue-1');
-      expect(loaded.receiptQueue.first.id, 'receipt-1');
+      expect(
+        _idempotencyKeyOf(loaded.receiptQueue.first),
+        'receipt-ik-1',
+      );
     });
 
     test('returns null when no save exists', () async {
@@ -256,13 +272,14 @@ void main() {
         deltas: [],
       );
 
-      await service.appendReceipt(receipt);
-      await service.appendReceipt(receipt); // duplicate append
+      final envelope = _dummyEnvelope(receipt);
+      await service.appendSignedReceipt(envelope);
+      await service.appendSignedReceipt(envelope); // duplicate append
 
-      final drained = await service.drainReceiptQueue();
+      final drained = await service.drainSignedReceiptQueue();
       expect(drained.length, 1);
-      expect(drained.first.idempotencyKey, 'ik-r1');
-      expect(await service.drainReceiptQueue(), isEmpty);
+      expect(_idempotencyKeyOf(drained.first), 'ik-r1');
+      expect(await service.drainSignedReceiptQueue(), isEmpty);
     });
 
     test('export and import round-trip', () async {
@@ -282,7 +299,7 @@ void main() {
       final save = sampleSave();
       await service.save(save);
 
-      const appended = SessionReceipt(
+      final appended = _dummyEnvelope(const SessionReceipt(
         id: 'r2',
         rulesetVersion: '0.5.0',
         patientId: 'p2',
@@ -292,14 +309,14 @@ void main() {
         startState: {},
         actions: [InteractionPattern.validate],
         deltas: [],
-      );
-      await service.appendReceipt(appended);
+      ));
+      await service.appendSignedReceipt(appended);
       // No save() called: simulate crash / kill.
 
       final loaded = await service.load();
       expect(loaded!.receiptQueue.length, 2);
       expect(
-        loaded.receiptQueue.map((r) => r.idempotencyKey),
+        loaded.receiptQueue.map(_idempotencyKeyOf),
         contains('ik-r2'),
       );
     });

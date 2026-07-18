@@ -18,6 +18,7 @@ export 'src/operational_pressure.dart';
 export 'src/recovery_mode.dart';
 export 'src/medication_state.dart';
 export 'src/session_outcome.dart';
+export 'src/signed_envelope.dart';
 export 'src/state_axis.dart';
 export 'src/study_catalog.dart';
 export 'src/loadout.dart';

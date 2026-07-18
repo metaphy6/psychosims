@@ -1,10 +1,87 @@
 {
   "id": "fixture-receipt-001",
-  "schemaVersion": "0.1.0",
-  "rulesetVersion": "0.1.0",
-  "patientId": "fixture-p-001",
-  "turnCount": 3,
+  "schema_version": "0.3.0",
+  "ruleset_version": "0.1.0",
+  "patient_id": "fixture-p-001",
+  "idempotency_key": "idem-fixture-001",
+  "correlation_id": "corr-fixture-001",
+  "turn_count": 3,
+  "start_state": {
+    "loadout": {
+      "card_ids": [
+        "open_question",
+        "validate",
+        "reframe"
+      ],
+      "slot_cap": 6
+    },
+    "library": {
+      "owned_card_ids": [
+        "open_question",
+        "validate",
+        "reframe",
+        "set_boundary",
+        "reflect",
+        "disclose_parallel"
+      ]
+    },
+    "controllers": {
+      "focus": "balanced",
+      "emotional_delivery": "balanced"
+    },
+    "initial_axes": {
+      "trust": 0,
+      "agitation": 0,
+      "activeDefense": 0,
+      "trauma": 0,
+      "freezeTurns": 0,
+      "sessionProgress": 0,
+      "medicationTolerance": 0,
+      "medicationDependency": 0
+    },
+    "root_seed": 42
+  },
+  "actions": [
+    "open_question",
+    "validate",
+    "reframe"
+  ],
   "deltas": [
-    {"axis": "trust", "deltaMillis": 50, "reasonKey": "reason.relatable"}
+    {
+      "ruleset_version": "0.1.0",
+      "axis": "trust",
+      "delta_millis": 50,
+      "reason_key": "reason.relatable",
+      "card_type": "relatable",
+      "card_signature": "buffer",
+      "context_fit": "aligned"
+    },
+    {
+      "ruleset_version": "0.1.0",
+      "axis": "agitation",
+      "delta_millis": -25,
+      "reason_key": "reason.buffer",
+      "card_type": "relatable",
+      "card_signature": "buffer",
+      "context_fit": "partial"
+    }
+  ],
+  "ledger_events": [
+    {
+      "kind": "session_fee",
+      "idempotency_key": "ledger-fixture-001",
+      "timestamp_seconds": 1700000000,
+      "currency": "cash",
+      "amount_micros": -100000,
+      "reason_key": "reason.session_fee"
+    },
+    {
+      "kind": "session_reward",
+      "idempotency_key": "ledger-fixture-002",
+      "timestamp_seconds": 1700000000,
+      "currency": "xp",
+      "amount_micros": 50000,
+      "reason_key": "reason.session_reward"
+    }
   ]
 }

@@ -49,13 +49,13 @@ class CareerSave {
   final CareerProfile profile;
   final ClinicAsset? clinic;
   final Map<String, CaseHistoryEnvelope> ownedCases;
-  final List<SessionReceipt> receiptQueue;
+  final List<SignedEnvelope> receiptQueue;
 
   CareerSave copyWith({
     CareerProfile? profile,
     ClinicAsset? clinic,
     Map<String, CaseHistoryEnvelope>? ownedCases,
-    List<SessionReceipt>? receiptQueue,
+    List<SignedEnvelope>? receiptQueue,
   }) {
     return CareerSave(
       profile: profile ?? this.profile,
@@ -71,7 +71,7 @@ class CareerSave {
         'owned_cases': ownedCases.map(
           (caseId, envelope) => MapEntry(caseId, envelope.toJson()),
         ),
-        'receipt_queue': receiptQueue.map((r) => r.toJson()).toList(),
+        'receipt_queue': receiptQueue.map((e) => e.toJson()).toList(),
       };
 
   static CareerSave fromJson(Map<String, Object?> json) {
@@ -87,7 +87,7 @@ class CareerSave {
       ),
       receiptQueue: (json['receipt_queue']! as List<dynamic>)
           .cast<Map<String, Object?>>()
-          .map(SessionReceipt.fromJson)
+          .map(SignedEnvelope.fromJson)
           .toList(),
     );
   }
@@ -203,15 +203,15 @@ class CareerPersistenceService {
     }
     if (result == null) return null;
 
-    // Merge any receipts that were appended since the last full save.
+    // Merge any signed receipts that were appended since the last full save.
     final pending = await _readReceiptQueue();
     if (pending.isEmpty) return result;
 
-    final seen = result.receiptQueue.map((r) => r.idempotencyKey).toSet();
+    final seen = result.receiptQueue.map(_envelopeIdempotencyKey).toSet();
     return result.copyWith(
       receiptQueue: [
         ...result.receiptQueue,
-        ...pending.where((r) => seen.add(r.idempotencyKey)),
+        ...pending.where((e) => seen.add(_envelopeIdempotencyKey(e))),
       ],
     );
   }
@@ -229,18 +229,20 @@ class CareerPersistenceService {
         );
   }
 
-  /// Appends [receipt] to the durable receipt queue if its idempotency key is
-  /// not already present.
+  /// Appends [envelope] to the durable signed receipt queue if its
+  /// idempotency key is not already present.
   ///
-  /// The queue is the offline stand-in for the Phase 3.4 submission queue.
-  /// Writes are append-only and fsynced; the in-save snapshot is updated at the
-  /// next [save] call.
-  Future<void> appendReceipt(SessionReceipt receipt) async {
+  /// The queue is the offline stand-in for the Phase 3.4 submission queue. It
+  /// now stores the 3.0 signed envelope rather than the bare
+  /// [SessionReceipt] — a receipt is signed once at enqueue and the same
+  /// canonical bytes are re-sent on every retry. Writes are append-only and
+  /// fsynced; the in-save snapshot is updated at the next [save] call.
+  Future<void> appendSignedReceipt(SignedEnvelope envelope) async {
     if (!await directory.exists()) {
       await directory.create(recursive: true);
     }
 
-    final line = '${CanonicalJson.encodeString(receipt.toJson())}\n';
+    final line = '${CanonicalJson.encodeString(envelope.toJson())}\n';
     final bytes = utf8.encode(line);
 
     final raf = await _receiptQueueFile.open(mode: FileMode.writeOnlyAppend);
@@ -252,31 +254,38 @@ class CareerPersistenceService {
     }
   }
 
-  /// Drains the durable receipt queue and returns the receipts in order.
+  /// Drains the durable signed receipt queue and returns the envelopes in
+  /// order.
   ///
   /// Deduplicates by idempotency key so replayed appends never double-apply.
-  Future<List<SessionReceipt>> drainReceiptQueue() async {
-    final receipts = await _readReceiptQueue();
+  Future<List<SignedEnvelope>> drainSignedReceiptQueue() async {
+    final envelopes = await _readReceiptQueue();
     if (await _receiptQueueFile.exists()) {
       await _receiptQueueFile.delete();
     }
-    return receipts;
+    return envelopes;
   }
 
-  Future<List<SessionReceipt>> _readReceiptQueue() async {
+  Future<List<SignedEnvelope>> _readReceiptQueue() async {
     if (!await _receiptQueueFile.exists()) return const [];
     final lines = await _receiptQueueFile.readAsLines();
     final seen = <String>{};
-    final receipts = <SessionReceipt>[];
+    final envelopes = <SignedEnvelope>[];
     for (final line in lines) {
       if (line.trim().isEmpty) continue;
       final json = jsonDecode(line) as Map<String, Object?>;
-      final receipt = SessionReceipt.fromJson(json);
-      if (seen.add(receipt.idempotencyKey)) {
-        receipts.add(receipt);
+      final envelope = SignedEnvelope.fromJson(json);
+      if (seen.add(_envelopeIdempotencyKey(envelope))) {
+        envelopes.add(envelope);
       }
     }
-    return receipts;
+    return envelopes;
+  }
+
+  String _envelopeIdempotencyKey(SignedEnvelope envelope) {
+    final json = jsonDecode(utf8.decode(envelope.canonicalReceiptBytes))
+        as Map<String, Object?>;
+    return json['idempotency_key']! as String;
   }
 
   /// Exports the current main save to [destination].
