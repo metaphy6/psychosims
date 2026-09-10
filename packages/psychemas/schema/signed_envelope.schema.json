@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Signed receipt envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "canonical_receipt_bytes",
+    "signature",
+    "suite_id",
+    "signing_key_id"
+  ],
+  "properties": {
+    "canonical_receipt_bytes": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "maxLength": 174764,
+      "minLength": 4
+    },
+    "signature": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "minLength": 88,
+      "maxLength": 88
+    },
+    "suite_id": {
+      "const": "ed25519-v1"
+    },
+    "signing_key_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  }
+}

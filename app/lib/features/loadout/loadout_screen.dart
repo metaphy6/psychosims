@@ -152,7 +152,7 @@ class LoadoutScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16),
               child: ElevatedButton(
-                onPressed: controller.isWithinCap
+                onPressed: controller.canStartSession
                     ? () => Get.toNamed(
                           AppRoutes.session,
                           arguments: {

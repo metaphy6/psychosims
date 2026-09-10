@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -33,6 +34,8 @@ ModelHttpResponse _partialResponse(
     body: Stream.fromIterable([body]),
     totalLength: totalLength,
     contentLength: body.length,
+    rangeStart: start,
+    rangeEnd: start + body.length - 1,
   );
 }
 
@@ -49,6 +52,7 @@ class _MockHttpClient implements ModelHttpClient {
     Uri url, {
     int? start,
     int? end,
+    String? ifRange,
   }) async {
     callCount++;
     lastStart = start;
@@ -63,6 +67,19 @@ class _FixedDiskSpaceProvider implements DiskSpaceProvider {
 
   @override
   Future<int> freeBytes(Directory directory) async => _freeBytes;
+}
+
+class _DiskFullFileSystem extends DartIoFileSystemOperations {
+  @override
+  Future<void> writeStream(String path, Stream<List<int>> data,
+      {FileMode mode = FileMode.write}) async {
+    if (path.endsWith('.tmp')) {
+      await super.writeStream(path, data.take(1), mode: mode);
+      throw FileSystemException(
+          'Disk full', path, const OSError('No space left', 28));
+    }
+    return super.writeStream(path, data, mode: mode);
+  }
 }
 
 Config _testConfig({
@@ -231,6 +248,12 @@ void main() {
       final secondHalf = fullBytes.sublist(64);
 
       File(p.join(tempDir.path, 'phi.gguf.tmp')).writeAsBytesSync(firstHalf);
+      File(p.join(tempDir.path, 'phi.gguf.tmp.meta')).writeAsStringSync(
+          jsonEncode({
+        'url': url,
+        'checksum': checksum,
+        'total_length': fullBytes.length
+      }));
 
       final mockClient = _MockHttpClient(
         (_, {int? start, int? end}) => _partialResponse(
@@ -380,6 +403,78 @@ void main() {
 
       expect(progressValues, isNotEmpty);
       expect(progressValues.last, 1.0);
+    });
+
+    test(
+        'disk-full failure retains the partial and never publishes or retries it',
+        () async {
+      final client = _MockHttpClient(
+          (_, {int? start, int? end}) => _okResponse([1, 2, 3]));
+      final service = ModelFetchService(_testConfig(), tempDir, logger,
+          httpClient: client,
+          fileSystem: _DiskFullFileSystem(),
+          diskSpaceProvider: _FixedDiskSpaceProvider(1024 * 1024));
+      await expectLater(
+          service.fetchModel(
+              'https://models.example/full.gguf', _sha256([1, 2, 3])),
+          throwsA(isA<FileSystemException>()));
+      expect(service.status, FetchStatus.error);
+      expect(client.callCount, 1);
+      expect(await File(p.join(tempDir.path, 'full.gguf')).exists(), isFalse);
+      expect(
+          await File(p.join(tempDir.path, 'full.gguf.tmp')).exists(), isTrue);
+    });
+
+    test('disk measurement failure never substitutes invented free capacity',
+        () async {
+      await expectLater(
+          const DefaultDiskSpaceProvider()
+              .freeBytes(Directory(p.join(tempDir.path, 'missing'))),
+          throwsA(isA<ModelFetchException>()));
+    });
+
+    test('verified cached file stays available when disk space is low',
+        () async {
+      final bytes = [1, 2, 3];
+      final cached = File(p.join(tempDir.path, 'cached.gguf'));
+      await cached.writeAsBytes(bytes);
+      final client = _MockHttpClient(
+          (_, {int? start, int? end}) => throw StateError('must not download'));
+      final service = ModelFetchService(_testConfig(), tempDir, logger,
+          httpClient: client, diskSpaceProvider: _FixedDiskSpaceProvider(0));
+      expect(
+          await (await service.fetchModel(
+                  'https://models.example/cached.gguf', _sha256(bytes)))
+              .readAsBytes(),
+          bytes);
+      expect(client.callCount, 0);
+    });
+
+    test('an unknown-length body cannot consume the disk reserve', () async {
+      final client = _MockHttpClient((_, {int? start, int? end}) =>
+          ModelHttpResponse(
+              statusCode: 200, body: Stream.value(List<int>.filled(501, 1))));
+      final service = ModelFetchService(
+          _testConfig(minFreeDiskBytes: 1), tempDir, logger,
+          httpClient: client, diskSpaceProvider: _FixedDiskSpaceProvider(1000));
+      await expectLater(
+          service.fetchModel('https://models.example/bounded.gguf', 'a' * 64),
+          throwsA(isA<ModelFetchDiskSpaceException>()));
+      expect(client.callCount, 1);
+      expect(
+          await File(p.join(tempDir.path, 'bounded.gguf')).exists(), isFalse);
+    });
+
+    test('symlinked partial cannot overwrite another local file', () async {
+      final target = File(p.join(tempDir.path, 'private-data'));
+      await target.writeAsString('preserve');
+      await Link(p.join(tempDir.path, 'model.gguf.tmp')).create(target.path);
+      final service = ModelFetchService(_testConfig(), tempDir, logger,
+          diskSpaceProvider: _FixedDiskSpaceProvider(1024 * 1024));
+      await expectLater(
+          service.fetchModel('https://models.example/model.gguf', 'a' * 64),
+          throwsA(isA<ModelFetchException>()));
+      expect(await target.readAsString(), 'preserve');
     });
 
     test('can be cancelled', () async {

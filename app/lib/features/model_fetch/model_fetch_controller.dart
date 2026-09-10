@@ -1,13 +1,10 @@
-import 'dart:io';
-
 import 'package:get/get.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:psyconfig/psyconfig.dart';
 
 import '../../shared/l10n.dart';
 import '../../shared/logger.dart';
 import '../../shared/model_fetch_service.dart';
+import '../../shared/model_cache.dart';
 
 /// UI state for the first-run model fetch screen.
 enum ModelFetchUiStatus { idle, downloading, verifying, complete, error }
@@ -20,10 +17,12 @@ class ModelFetchController extends GetxController {
   ModelFetchController({
     required this.config,
     required this.logger,
+    required this.modelCache,
   });
 
   final Config config;
   final PsyLog logger;
+  final ModelCache modelCache;
 
   final status = ModelFetchUiStatus.idle.obs;
   final progress = 0.0.obs;
@@ -42,23 +41,18 @@ class ModelFetchController extends GetxController {
     isPaused.value = false;
     progress.value = 0.0;
 
-    final source = _resolveSource();
-    if (source == null) {
-      status.value = ModelFetchUiStatus.error;
-      errorMessage.value = L10n.modelFetchNoSource;
-      return;
-    }
-
-    final dir = Directory(p.join(
-      (await getApplicationDocumentsDirectory()).path,
-      'models',
-    ));
-    _service = ModelFetchService(config, dir, logger);
-
     try {
+      final source = modelCache.source;
+      final checksum = source.checksum;
+      if (checksum == null || checksum.isEmpty || source.url.isEmpty) {
+        status.value = ModelFetchUiStatus.error;
+        errorMessage.value = L10n.modelFetchNoSource;
+        return;
+      }
+      _service = ModelFetchService(config, await modelCache.directory, logger);
       final file = await _service!.fetchModel(
         source.url,
-        source.checksum,
+        checksum,
         meteredConnection: isMetered.value,
         onProgress: (p) => progress.value = p,
       );
@@ -101,24 +95,9 @@ class ModelFetchController extends GetxController {
     isMetered.value = value;
   }
 
-  ({String url, String checksum, String fileName})? _resolveSource() {
-    final urls = config.model.modelChecksums;
-    final primary = config.model.tierAPrimaryUrl;
-    if (primary.isNotEmpty && urls.containsKey(primary)) {
-      return (
-        url: primary,
-        checksum: urls[primary]!,
-        fileName: p.basename(primary),
-      );
-    }
-    final tierB = config.model.tierBUrl;
-    if (tierB.isNotEmpty && urls.containsKey(tierB)) {
-      return (
-        url: tierB,
-        checksum: urls[tierB]!,
-        fileName: p.basename(tierB),
-      );
-    }
-    return null;
+  @override
+  void onClose() {
+    _service?.cancel();
+    super.onClose();
   }
 }

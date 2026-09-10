@@ -7,7 +7,7 @@ commissions as entry gates. These are the concrete artifacts behind the
 a `reports/` snapshot (a point-in-time audit), a spec here is a **living
 reference** that later phases implement and tune against.
 
-Section refs (§N) point at [`STARTER.md`](../../STARTER.md).
+Section refs (§N) point at [`STARTER.md`](../design/STARTER.md).
 
 | # | Spec | Closes in | Status |
 |---|---|---|---|

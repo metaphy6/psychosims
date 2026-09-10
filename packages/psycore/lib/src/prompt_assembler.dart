@@ -62,38 +62,100 @@ class PromptAssembler {
     required int outputReserve,
     CaseHistoryEnvelope? historyEnvelope,
     ClinicalEncyclopedia encyclopedia = ClinicalEncyclopedia.empty,
+    PromptCorrection? correction,
+    int correctionAttempt = 1,
+  }) =>
+      assembleDetailed(
+              rulesetVersion: rulesetVersion,
+              manifest: manifest,
+              state: state,
+              conversationWindow: conversationWindow,
+              inputBudget: inputBudget,
+              outputReserve: outputReserve,
+              historyEnvelope: historyEnvelope,
+              encyclopedia: encyclopedia,
+              correction: correction,
+              correctionAttempt: correctionAttempt)
+          .prompt;
+
+  /// Measures net component costs using the real, fully rendered template.
+  /// The final render is checked as a whole, including chat-template overhead.
+  AssembledPrompt assembleDetailed({
+    required String rulesetVersion,
+    required PatientManifest manifest,
+    required SimState state,
+    required List<ConversationTurn> conversationWindow,
+    required int inputBudget,
+    required int outputReserve,
+    CaseHistoryEnvelope? historyEnvelope,
+    ClinicalEncyclopedia encyclopedia = ClinicalEncyclopedia.empty,
+    PromptCorrection? correction,
+    int correctionAttempt = 1,
   }) {
-    final exemplars = roleplayFrame.exemplars();
-    final t1 = _buildTier1(rulesetVersion, manifest, state);
-    final t1Rendered = chatTemplate.render(systemFrame: t1, turns: const []);
-    final t1Tokens = tokenCounter.count(t1Rendered);
-
-    // Exemplars are fixed roleplay-frame content, not truncatable window turns,
-    // so they are reserved out of the budget alongside T1.
-    final exemplarTokens =
-        exemplars.isEmpty ? 0 : _renderedTier2Tokens(t1, exemplars);
-
-    if (t1Tokens + exemplarTokens + outputReserve > inputBudget) {
-      throw const PromptAssemblyException(
-        PromptAssemblyError.tier1Overflow,
-        'Tier 1 (frame + exemplars) + output reserve exceeds input budget',
-      );
+    if (inputBudget < 1 ||
+        outputReserve < 0 ||
+        correctionAttempt < 1 ||
+        correctionAttempt > 2) {
+      throw ArgumentError('Invalid prompt budget or correction attempt');
     }
-
-    final t2Budget = inputBudget - t1Tokens - exemplarTokens - outputReserve;
-    final t2 = _buildTier2(
-      t1,
-      conversationWindow,
-      state,
-      budget: t2Budget,
-      historyEnvelope: historyEnvelope,
-      encyclopedia: encyclopedia,
-    );
-
-    return chatTemplate.render(
-      systemFrame: t1,
-      turns: [...exemplars, ...t2.turns],
-    );
+    final t1 = _buildTier1(rulesetVersion, manifest, state);
+    final examples = roleplayFrame.examplesFor(manifest);
+    final window = List<ConversationTurn>.of(conversationWindow);
+    final scene = <ConversationTurn>[];
+    final sceneText =
+        state.turn > 0 || (historyEnvelope?.priorSessionCount ?? 0) > 0
+            ? _buildHistoryDigest(state,
+                historyEnvelope: historyEnvelope, encyclopedia: encyclopedia)
+            : roleplayFrame.scene(state);
+    if (sceneText.isNotEmpty)
+      scene.add(ConversationTurn(role: 'system', text: sceneText));
+    final corrections = <ConversationTurn>[];
+    if (correction != null) {
+      final reason = switch (correction) {
+        PromptCorrection.missingClues =>
+          'The previous reply missed required clue markers.',
+        PromptCorrection.refusal =>
+          'The previous reply broke character. Voice only your own feelings as the fictional patient, without advice or refusal.',
+        PromptCorrection.invalidDialogue =>
+          'The previous reply did not follow the dialogue format. Use one or two short first-person sentences, without analysis, advice, lists, headings or metadata.',
+      };
+      final markers = manifest.clueTokens.map((clue) => '[$clue]').join(' ');
+      corrections.add(ConversationTurn(
+          role: 'system',
+          text:
+              'Correction $correctionAttempt: $reason Write a fresh first-person reply.${markers.isEmpty ? '' : ' End with exactly: $markers'}'));
+    }
+    String render(List<ConversationTurn> turns) =>
+        chatTemplate.render(systemFrame: t1, turns: turns);
+    int count(List<ConversationTurn> turns) =>
+        tokenCounter.count(render(turns));
+    final limit = inputBudget - outputReserve;
+    if (count([...examples, ...corrections]) > limit) {
+      throw const PromptAssemblyException(PromptAssemblyError.tier1Overflow,
+          'Frame, exemplars, correction and output reserve exceed input budget');
+    }
+    while (window.isNotEmpty &&
+        count([...examples, ...window, ...scene, ...corrections]) > limit) {
+      window.removeAt(0);
+    }
+    if (count([...examples, ...scene, ...corrections]) > limit) scene.clear();
+    final baseTokens = count(const []);
+    final exampleTokens = count(examples);
+    final windowTokens = count([...examples, ...window]);
+    final sceneTokens = count([...examples, ...window, ...scene]);
+    final turns = [...examples, ...window, ...scene, ...corrections];
+    final prompt = render(turns);
+    final total = tokenCounter.count(prompt);
+    return AssembledPrompt(
+        prompt: prompt,
+        stablePrefix: t1,
+        tokens: PromptTokenBreakdown(
+            frame: baseTokens,
+            examples: exampleTokens - baseTokens,
+            window: windowTokens - exampleTokens,
+            scene: sceneTokens - windowTokens,
+            correction: total - sceneTokens,
+            outputReserve: outputReserve));
   }
 
   /// Builds the immutable Tier-1 prefix.
@@ -112,66 +174,17 @@ class PromptAssembler {
       ..writeln('ruleset_version=$rulesetVersion')
       ..writeln('case_id=${manifest.id}')
       ..writeln('style_archetype=${manifest.styleArchetype.name}')
-      ..writeln('clue_tokens=${manifest.clueTokens.join(", ")}')
-      ..writeln(manifest.modelFacingTemplate);
+      ..writeln('clue_tokens=${manifest.clueTokens.join(", ")}');
     final instruction =
-        roleplayFrame.instruction(manifest: manifest, state: state);
-    if (instruction.isNotEmpty) {
+        roleplayFrame.stableInstruction(manifest: manifest, state: state);
+    if (instruction.isEmpty) {
+      buffer.writeln(manifest.modelFacingTemplate);
+    } else {
       buffer
         ..writeln()
         ..writeln(instruction);
     }
     return buffer.toString().trim();
-  }
-
-  /// Builds Tier-2 content within [budget] tokens.
-  ///
-  /// Truncation order: conversation window → history digest. T1 and the output
-  /// reserve are never touched.
-  ///
-  /// Token counts are measured on the rendered prompt so template overhead is
-  /// included in the budget.
-  _Tier2 _buildTier2(
-    String t1,
-    List<ConversationTurn> conversationWindow,
-    SimState state, {
-    required int budget,
-    CaseHistoryEnvelope? historyEnvelope,
-    ClinicalEncyclopedia encyclopedia = ClinicalEncyclopedia.empty,
-  }) {
-    // Start with the full conversation window. A history digest is only added
-    // once the session has advanced past the opening turn; on turn 0 the
-    // roleplay frame's current-feeling line already conveys the state.
-    final turns = List<ConversationTurn>.of(conversationWindow);
-    if (state.turn > 0 || (historyEnvelope?.priorSessionCount ?? 0) > 0) {
-      turns.add(ConversationTurn(
-        role: 'system',
-        text: _buildHistoryDigest(
-          state,
-          historyEnvelope: historyEnvelope,
-          encyclopedia: encyclopedia,
-        ),
-      ));
-    }
-
-    // Drop oldest turns until the rendered T2 fits the budget.
-    while (turns.isNotEmpty &&
-        _renderedTier2Tokens(t1, turns) > budget &&
-        turns.length > 1) {
-      turns.removeAt(0);
-    }
-
-    // If even a single remaining turn is over budget, drop it entirely.
-    if (turns.isNotEmpty && _renderedTier2Tokens(t1, turns) > budget) {
-      turns.clear();
-    }
-
-    return _Tier2(turns: turns);
-  }
-
-  int _renderedTier2Tokens(String t1, List<ConversationTurn> turns) {
-    final rendered = chatTemplate.render(systemFrame: t1, turns: turns);
-    return tokenCounter.count(rendered) - tokenCounter.count(t1);
   }
 
   /// Builds a deterministic, natural-language summary of prior state.
@@ -206,8 +219,35 @@ class PromptAssembler {
   }
 }
 
-class _Tier2 {
-  final List<ConversationTurn> turns;
+/// Trusted retry reasons; generated text never becomes an instruction.
+enum PromptCorrection { missingClues, refusal, invalidDialogue }
 
-  const _Tier2({required this.turns});
+class AssembledPrompt {
+  final String prompt;
+  final String stablePrefix;
+  final PromptTokenBreakdown tokens;
+  const AssembledPrompt(
+      {required this.prompt, required this.stablePrefix, required this.tokens});
+}
+
+/// Net additions to rendered input size. Costs sum exactly to [total].
+class PromptTokenBreakdown {
+  final int frame, examples, window, scene, correction, outputReserve;
+  const PromptTokenBreakdown(
+      {required this.frame,
+      required this.examples,
+      required this.window,
+      required this.scene,
+      required this.correction,
+      required this.outputReserve});
+  int get total => frame + examples + window + scene + correction;
+  Map<String, int> toJson() => {
+        'frame': frame,
+        'examples': examples,
+        'window': window,
+        'scene': scene,
+        'correction': correction,
+        'input_total': total,
+        'output_reserve': outputReserve
+      };
 }

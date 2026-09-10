@@ -1,0 +1,4005 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "local:psychemas@0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "psychemas",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 30}], \"sha256\": \"d30422fe1bf469f08160d8588b33eb3a5782036845a831573643220d6b21ddc2\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "workspace"
+        }
+      ],
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "bom-ref": "local:psychosims.dev/server",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "psychosims.dev/server",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 30}], \"sha256\": \"d30422fe1bf469f08160d8588b33eb3a5782036845a831573643220d6b21ddc2\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "go"
+        }
+      ],
+      "type": "library",
+      "version": "workspace"
+    },
+    {
+      "bom-ref": "local:psychosims@0.1.0+1",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "psychosims",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 30}], \"sha256\": \"d30422fe1bf469f08160d8588b33eb3a5782036845a831573643220d6b21ddc2\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "workspace"
+        }
+      ],
+      "type": "library",
+      "version": "0.1.0+1"
+    },
+    {
+      "bom-ref": "local:psychosims_tools@0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "psychosims_tools",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 30}], \"sha256\": \"d30422fe1bf469f08160d8588b33eb3a5782036845a831573643220d6b21ddc2\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "workspace"
+        }
+      ],
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "bom-ref": "local:psyconfig@0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "psyconfig",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 30}], \"sha256\": \"d30422fe1bf469f08160d8588b33eb3a5782036845a831573643220d6b21ddc2\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "workspace"
+        }
+      ],
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "bom-ref": "local:psycore@0.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "psycore",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 30}], \"sha256\": \"d30422fe1bf469f08160d8588b33eb3a5782036845a831573643220d6b21ddc2\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "workspace"
+        }
+      ],
+      "type": "library",
+      "version": "0.1.0"
+    },
+    {
+      "bom-ref": "model-license:PHI3.5_LICENSE",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "PHI3.5_LICENSE",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"PHI3.5_LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 56}], \"sha256\": \"fa8235e5b48faca34e3ca98cf4f694ef08bd216d28b58071a1f85b1d50cb814d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "bundled-model-license"
+        }
+      ],
+      "type": "library",
+      "version": "fa8235e5b48faca34e3ca98cf4f694ef08bd216d28b58071a1f85b1d50cb814d"
+    },
+    {
+      "bom-ref": "model-license:QWEN2.5_LICENSE",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "QWEN2.5_LICENSE",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"QWEN2.5_LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "bundled-model-license"
+        }
+      ],
+      "type": "library",
+      "version": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"
+    },
+    {
+      "bom-ref": "model-license:SMOLLM2_LICENSE",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "SMOLLM2_LICENSE",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"SMOLLM2_LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 33}], \"sha256\": \"13adb48e8c8940d90c5744783d2ea7e0ea488d684b6b39b76e8c959a2dc1624e\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "bundled-model-license"
+        }
+      ],
+      "type": "library",
+      "version": "13adb48e8c8940d90c5744783d2ea7e0ea488d684b6b39b76e8c959a2dc1624e"
+    },
+    {
+      "bom-ref": "native:llama.cpp@311d4211bf1611ff7ca6b67035a4a07c79766efc",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "llama.cpp",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 39}], \"sha256\": \"94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d\"}"
+        },
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE-jsonhpp\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 36}], \"sha256\": \"c0d068392ea65358b798b8c165103560f06e9e3b38c4ab4e2d8810a7b931af86\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "git-submodule"
+        }
+      ],
+      "purl": "pkg:generic/llama.cpp@311d4211bf1611ff7ca6b67035a4a07c79766efc",
+      "type": "library",
+      "version": "311d4211bf1611ff7ca6b67035a4a07c79766efc"
+    },
+    {
+      "bom-ref": "pkg:golang/github.com/lib/pq@v1.12.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "github.com/lib/pq",
+      "properties": [
+        {
+          "name": "psychosims:go-module-sum",
+          "value": "h1:tTWxr2YLKwIvK90ZXEw8GP7UFHtcbTtty8zsI+YjrfQ="
+        },
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 79}], \"sha256\": \"97124ae88383d1220994d57118d689e73a36401eb832c1ce7b15723984e716b7\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "go"
+        }
+      ],
+      "purl": "pkg:golang/github.com/lib/pq@v1.12.3",
+      "type": "library",
+      "version": "v1.12.3"
+    },
+    {
+      "bom-ref": "pkg:pub/_fe_analyzer_shared@99.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "_fe_analyzer_shared",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"efa31b5ac790016736fa9761642b0af16d37cd4fb483de2905adb5258cb89722\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/_fe_analyzer_shared@99.0.0",
+      "type": "library",
+      "version": "99.0.0"
+    },
+    {
+      "bom-ref": "pkg:pub/analyzer@12.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "analyzer",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"7e124af6a556f045cb3a20cafbdaa31602ac2c82cbcb3c3b15faaaf514b06028\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/analyzer@12.1.0",
+      "type": "library",
+      "version": "12.1.0"
+    },
+    {
+      "bom-ref": "pkg:pub/app_links@6.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "app_links",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/app_links@6.4.1",
+      "type": "library",
+      "version": "6.4.1"
+    },
+    {
+      "bom-ref": "pkg:pub/app_links_linux@1.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "app_links_linux",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/app_links_linux@1.0.3",
+      "type": "library",
+      "version": "1.0.3"
+    },
+    {
+      "bom-ref": "pkg:pub/app_links_platform_interface@2.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "app_links_platform_interface",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/app_links_platform_interface@2.0.2",
+      "type": "library",
+      "version": "2.0.2"
+    },
+    {
+      "bom-ref": "pkg:pub/app_links_web@1.0.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "app_links_web",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"1eb85fc97224598dad1852b5d6483bbcf0aa8608790dcc657a5a2a761ae9c8c6\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/app_links_web@1.0.4",
+      "type": "library",
+      "version": "1.0.4"
+    },
+    {
+      "bom-ref": "pkg:pub/args@2.7.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "args",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"dfb09c74e29386cd3e2719f32d4995d59526179753931d31840757c77fbf2791\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/args@2.7.0",
+      "type": "library",
+      "version": "2.7.0"
+    },
+    {
+      "bom-ref": "pkg:pub/async@2.13.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "async",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/async@2.13.1",
+      "type": "library",
+      "version": "2.13.1"
+    },
+    {
+      "bom-ref": "pkg:pub/boolean_selector@2.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "boolean_selector",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"b71519245009a3b8f126196a5408ec031e216e8e0d985085958c6543f82a8a2a\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/boolean_selector@2.1.2",
+      "type": "library",
+      "version": "2.1.2"
+    },
+    {
+      "bom-ref": "pkg:pub/characters@1.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "characters",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"0371d1da6a57fb791db29d29b95333429205f51f3cb2eb3a0c12d91838a38744\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/characters@1.4.0",
+      "type": "library",
+      "version": "1.4.0"
+    },
+    {
+      "bom-ref": "pkg:pub/cli_config@0.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "cli_config",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"605bcf409f2347e3bcc9905ab70a2f3218e841bae372b0cbfbf305a222f74222\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/cli_config@0.2.0",
+      "type": "library",
+      "version": "0.2.0"
+    },
+    {
+      "bom-ref": "pkg:pub/cli_util@0.4.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "cli_util",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/cli_util@0.4.2",
+      "type": "library",
+      "version": "0.4.2"
+    },
+    {
+      "bom-ref": "pkg:pub/clock@1.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "clock",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/clock@1.1.2",
+      "type": "library",
+      "version": "1.1.2"
+    },
+    {
+      "bom-ref": "pkg:pub/code_assets@1.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "code_assets",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"21ae23b0b9ff67a2dc75ab085d1e8db8ac548c5faf370af17f28dd2ef3b52b7b\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/code_assets@1.2.1",
+      "type": "library",
+      "version": "1.2.1"
+    },
+    {
+      "bom-ref": "pkg:pub/collection@1.19.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "collection",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/collection@1.19.1",
+      "type": "library",
+      "version": "1.19.1"
+    },
+    {
+      "bom-ref": "pkg:pub/convert@3.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "convert",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ad6a71997da90924b2cfb1fb47ec46537f70faf469efe016168794ae45ed6888\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/convert@3.1.2",
+      "type": "library",
+      "version": "3.1.2"
+    },
+    {
+      "bom-ref": "pkg:pub/coverage@1.15.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "coverage",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/coverage@1.15.1",
+      "type": "library",
+      "version": "1.15.1"
+    },
+    {
+      "bom-ref": "pkg:pub/crypto@3.0.7",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "crypto",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ad6a71997da90924b2cfb1fb47ec46537f70faf469efe016168794ae45ed6888\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/crypto@3.0.7",
+      "type": "library",
+      "version": "3.0.7"
+    },
+    {
+      "bom-ref": "pkg:pub/cryptography@2.9.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "cryptography",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"59899c6091b540582ed617e8eeaac4919dc985ccfc35459ee9752b699be5205b\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/cryptography@2.9.0",
+      "type": "library",
+      "version": "2.9.0"
+    },
+    {
+      "bom-ref": "pkg:pub/fake_async@1.3.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "fake_async",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/fake_async@1.3.3",
+      "type": "library",
+      "version": "1.3.3"
+    },
+    {
+      "bom-ref": "pkg:pub/ffi@2.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "ffi",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"0371d1da6a57fb791db29d29b95333429205f51f3cb2eb3a0c12d91838a38744\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/ffi@2.2.0",
+      "type": "library",
+      "version": "2.2.0"
+    },
+    {
+      "bom-ref": "pkg:pub/ffi_leak_tracker@0.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "ffi_leak_tracker",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 1386, \"id\": \"BSD-3-Clause\", \"offset\": 51}], \"sha256\": \"332f290333e64ed007b4f59aeeebd8fd3ceaadfbfa226a6cf2a3ab1583281624\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/ffi_leak_tracker@0.1.2",
+      "type": "library",
+      "version": "0.1.2"
+    },
+    {
+      "bom-ref": "pkg:pub/ffigen@10.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "ffigen",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"7b0f62043efeab7b541af55c5261069eaef37ca3d2683ff0d4cfa787a26fafc3\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/ffigen@10.0.0",
+      "type": "library",
+      "version": "10.0.0"
+    },
+    {
+      "bom-ref": "pkg:pub/file@7.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "file",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"f6df86b1412172537273e8e80ee2fb8a66aa7307ce0b39ea5ddab47ca41b8c49\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/file@7.0.1",
+      "type": "library",
+      "version": "7.0.1"
+    },
+    {
+      "bom-ref": "pkg:pub/flutter_lints@3.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter_lints",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/flutter_lints@3.0.2",
+      "type": "library",
+      "version": "3.0.2"
+    },
+    {
+      "bom-ref": "pkg:pub/flutter_secure_storage@11.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter_secure_storage",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9956709956709957, \"extent\": 1380, \"id\": \"BSD-3-Clause\", \"offset\": 72}], \"sha256\": \"55dafb084270616f95b9bea53654adda8bdcad95c022a83c4cf8769073f829fa\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/flutter_secure_storage@11.0.0",
+      "type": "library",
+      "version": "11.0.0"
+    },
+    {
+      "bom-ref": "pkg:pub/flutter_secure_storage_darwin@0.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter_secure_storage_darwin",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9956709956709957, \"extent\": 1380, \"id\": \"BSD-3-Clause\", \"offset\": 75}], \"sha256\": \"3754c516086c62307896512b68024837bee5d2bea42a55cfd03f7448b92b06c8\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/flutter_secure_storage_darwin@0.4.1",
+      "type": "library",
+      "version": "0.4.1"
+    },
+    {
+      "bom-ref": "pkg:pub/flutter_secure_storage_linux@3.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter_secure_storage_linux",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9956709956709957, \"extent\": 1380, \"id\": \"BSD-3-Clause\", \"offset\": 72}], \"sha256\": \"55dafb084270616f95b9bea53654adda8bdcad95c022a83c4cf8769073f829fa\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/flutter_secure_storage_linux@3.0.2",
+      "type": "library",
+      "version": "3.0.2"
+    },
+    {
+      "bom-ref": "pkg:pub/flutter_secure_storage_platform_interface@2.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter_secure_storage_platform_interface",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9956709956709957, \"extent\": 1380, \"id\": \"BSD-3-Clause\", \"offset\": 72}], \"sha256\": \"55dafb084270616f95b9bea53654adda8bdcad95c022a83c4cf8769073f829fa\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/flutter_secure_storage_platform_interface@2.1.0",
+      "type": "library",
+      "version": "2.1.0"
+    },
+    {
+      "bom-ref": "pkg:pub/flutter_secure_storage_web@2.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter_secure_storage_web",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9956709956709957, \"extent\": 1380, \"id\": \"BSD-3-Clause\", \"offset\": 72}], \"sha256\": \"55dafb084270616f95b9bea53654adda8bdcad95c022a83c4cf8769073f829fa\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/flutter_secure_storage_web@2.1.1",
+      "type": "library",
+      "version": "2.1.1"
+    },
+    {
+      "bom-ref": "pkg:pub/flutter_secure_storage_windows@4.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter_secure_storage_windows",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9956709956709957, \"extent\": 1380, \"id\": \"BSD-3-Clause\", \"offset\": 72}], \"sha256\": \"55dafb084270616f95b9bea53654adda8bdcad95c022a83c4cf8769073f829fa\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/flutter_secure_storage_windows@4.2.2",
+      "type": "library",
+      "version": "4.2.2"
+    },
+    {
+      "bom-ref": "pkg:pub/frontend_server_client@4.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "frontend_server_client",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"f3fedf65adeec4d6ccb2abf053ebc0f07603d402db3d3c5651322b50502e1071\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/frontend_server_client@4.0.0",
+      "type": "library",
+      "version": "4.0.0"
+    },
+    {
+      "bom-ref": "pkg:pub/get@4.7.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "get",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 30}], \"sha256\": \"ec83934ddf3a59ecd89efa679ee527be1e09ea87d02c8e095430405c1784ff80\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/get@4.7.3",
+      "type": "library",
+      "version": "4.7.3"
+    },
+    {
+      "bom-ref": "pkg:pub/glob@2.1.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "glob",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/glob@2.1.3",
+      "type": "library",
+      "version": "2.1.3"
+    },
+    {
+      "bom-ref": "pkg:pub/gtk@2.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MPL-2.0"
+          }
+        }
+      ],
+      "name": "gtk",
+      "properties": [
+        {
+          "name": "psychosims:distribution-obligation",
+          "value": "Retain MPL notices and provide the exact covered source, including any modifications, with a future distributed build. Local development only; distribution acceptance is pending."
+        },
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MPL-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 14342, \"id\": \"MPL-2.0\", \"offset\": 0}], \"sha256\": \"1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        },
+        {
+          "name": "psychosims:source-reference",
+          "value": "https://github.com/ubuntu-flutter-community/gtk.dart"
+        }
+      ],
+      "purl": "pkg:pub/gtk@2.2.0",
+      "type": "library",
+      "version": "2.2.0"
+    },
+    {
+      "bom-ref": "pkg:pub/hooks@2.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "hooks",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"21ae23b0b9ff67a2dc75ab085d1e8db8ac548c5faf370af17f28dd2ef3b52b7b\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/hooks@2.0.2",
+      "type": "library",
+      "version": "2.0.2"
+    },
+    {
+      "bom-ref": "pkg:pub/http_multi_server@3.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "http_multi_server",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff0b91d4f3c32b25cb6ec84985e8da89b0ba2a2b2f7eef353cda5e5423a20390\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/http_multi_server@3.2.2",
+      "type": "library",
+      "version": "3.2.2"
+    },
+    {
+      "bom-ref": "pkg:pub/http_parser@4.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "http_parser",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/http_parser@4.1.2",
+      "type": "library",
+      "version": "4.1.2"
+    },
+    {
+      "bom-ref": "pkg:pub/io@1.0.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "io",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ea97a7558a7bd7cee4e2355f7529e3cbebb0dcbb546ddb9a90f10c9eb6b08da5\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/io@1.0.5",
+      "type": "library",
+      "version": "1.0.5"
+    },
+    {
+      "bom-ref": "pkg:pub/jni@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "jni",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"08a004aa8956c3cf3b24f7f69c966247233953e18e6afaa61191ea47b7eb70f6\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/jni@1.0.0",
+      "type": "library",
+      "version": "1.0.0"
+    },
+    {
+      "bom-ref": "pkg:pub/jni_flutter@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "jni_flutter",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"b1fcb475d67817411f335ac92872507011e574c4cb29cfdaaf7707b75641932c\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/jni_flutter@1.0.1",
+      "type": "library",
+      "version": "1.0.1"
+    },
+    {
+      "bom-ref": "pkg:pub/leak_tracker@11.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "leak_tracker",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"08a004aa8956c3cf3b24f7f69c966247233953e18e6afaa61191ea47b7eb70f6\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/leak_tracker@11.0.2",
+      "type": "library",
+      "version": "11.0.2"
+    },
+    {
+      "bom-ref": "pkg:pub/leak_tracker_flutter_testing@3.0.10",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "leak_tracker_flutter_testing",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"08a004aa8956c3cf3b24f7f69c966247233953e18e6afaa61191ea47b7eb70f6\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/leak_tracker_flutter_testing@3.0.10",
+      "type": "library",
+      "version": "3.0.10"
+    },
+    {
+      "bom-ref": "pkg:pub/leak_tracker_testing@3.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "leak_tracker_testing",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"08a004aa8956c3cf3b24f7f69c966247233953e18e6afaa61191ea47b7eb70f6\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/leak_tracker_testing@3.0.2",
+      "type": "library",
+      "version": "3.0.2"
+    },
+    {
+      "bom-ref": "pkg:pub/lints@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "lints",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"421fe78c3b5df297f8b4ab2c74f2450a274ee6d245a113091f6b9f90570af193\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/lints@3.0.0",
+      "type": "library",
+      "version": "3.0.0"
+    },
+    {
+      "bom-ref": "pkg:pub/logging@1.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "logging",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"dfb09c74e29386cd3e2719f32d4995d59526179753931d31840757c77fbf2791\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/logging@1.3.0",
+      "type": "library",
+      "version": "1.3.0"
+    },
+    {
+      "bom-ref": "pkg:pub/matcher@0.12.17",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "matcher",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/matcher@0.12.17",
+      "type": "library",
+      "version": "0.12.17"
+    },
+    {
+      "bom-ref": "pkg:pub/matcher@0.12.20",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "matcher",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/matcher@0.12.20",
+      "type": "library",
+      "version": "0.12.20"
+    },
+    {
+      "bom-ref": "pkg:pub/material_color_utilities@0.11.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "material_color_utilities",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"d103f246ef4c18dab8af0c1dcf6a8af884e5cff554da7261a48ac43c17d98f2e\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/material_color_utilities@0.11.1",
+      "type": "library",
+      "version": "0.11.1"
+    },
+    {
+      "bom-ref": "pkg:pub/meta@1.17.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "meta",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"b71519245009a3b8f126196a5408ec031e216e8e0d985085958c6543f82a8a2a\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/meta@1.17.0",
+      "type": "library",
+      "version": "1.17.0"
+    },
+    {
+      "bom-ref": "pkg:pub/meta@1.19.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "meta",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"b71519245009a3b8f126196a5408ec031e216e8e0d985085958c6543f82a8a2a\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/meta@1.19.0",
+      "type": "library",
+      "version": "1.19.0"
+    },
+    {
+      "bom-ref": "pkg:pub/mime@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "mime",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/mime@2.0.0",
+      "type": "library",
+      "version": "2.0.0"
+    },
+    {
+      "bom-ref": "pkg:pub/node_preamble@2.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        },
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "node_preamble",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\", \"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 56}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 1105}], \"sha256\": \"41997ee02074e3796e539b81b4501ed7d8bc1a620d11ef32cf56494e778461a9\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/node_preamble@2.0.2",
+      "type": "library",
+      "version": "2.0.2"
+    },
+    {
+      "bom-ref": "pkg:pub/objective_c@9.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "objective_c",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"1cda25a8de6880c5338de0b4a06ee89e8537c213eb1379c16a4c035bfd198b5c\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/objective_c@9.4.1",
+      "type": "library",
+      "version": "9.4.1"
+    },
+    {
+      "bom-ref": "pkg:pub/package_config@2.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "package_config",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"0371d1da6a57fb791db29d29b95333429205f51f3cb2eb3a0c12d91838a38744\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/package_config@2.2.0",
+      "type": "library",
+      "version": "2.2.0"
+    },
+    {
+      "bom-ref": "pkg:pub/path@1.9.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "path",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/path@1.9.1",
+      "type": "library",
+      "version": "1.9.1"
+    },
+    {
+      "bom-ref": "pkg:pub/path_provider@2.1.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "path_provider",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/path_provider@2.1.6",
+      "type": "library",
+      "version": "2.1.6"
+    },
+    {
+      "bom-ref": "pkg:pub/path_provider_android@2.3.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "path_provider_android",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/path_provider_android@2.3.1",
+      "type": "library",
+      "version": "2.3.1"
+    },
+    {
+      "bom-ref": "pkg:pub/path_provider_foundation@2.6.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "path_provider_foundation",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/path_provider_foundation@2.6.0",
+      "type": "library",
+      "version": "2.6.0"
+    },
+    {
+      "bom-ref": "pkg:pub/path_provider_linux@2.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "path_provider_linux",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/path_provider_linux@2.2.2",
+      "type": "library",
+      "version": "2.2.2"
+    },
+    {
+      "bom-ref": "pkg:pub/path_provider_platform_interface@2.1.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "path_provider_platform_interface",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/path_provider_platform_interface@2.1.3",
+      "type": "library",
+      "version": "2.1.3"
+    },
+    {
+      "bom-ref": "pkg:pub/path_provider_windows@2.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "path_provider_windows",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/path_provider_windows@2.3.0",
+      "type": "library",
+      "version": "2.3.0"
+    },
+    {
+      "bom-ref": "pkg:pub/platform@3.1.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "platform",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"143839f62c9b7f88143ea9f688361c27050888acde7696b34e04414bd254fafc\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/platform@3.1.6",
+      "type": "library",
+      "version": "3.1.6"
+    },
+    {
+      "bom-ref": "pkg:pub/plugin_platform_interface@2.1.8",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "plugin_platform_interface",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/plugin_platform_interface@2.1.8",
+      "type": "library",
+      "version": "2.1.8"
+    },
+    {
+      "bom-ref": "pkg:pub/pool@1.5.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "pool",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/pool@1.5.2",
+      "type": "library",
+      "version": "1.5.2"
+    },
+    {
+      "bom-ref": "pkg:pub/pub_semver@2.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "pub_semver",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/pub_semver@2.2.0",
+      "type": "library",
+      "version": "2.2.0"
+    },
+    {
+      "bom-ref": "pkg:pub/quiver@3.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "name": "quiver",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 0}], \"sha256\": \"58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/quiver@3.2.2",
+      "type": "library",
+      "version": "3.2.2"
+    },
+    {
+      "bom-ref": "pkg:pub/record_use@0.6.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "record_use",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"1cda25a8de6880c5338de0b4a06ee89e8537c213eb1379c16a4c035bfd198b5c\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/record_use@0.6.0",
+      "type": "library",
+      "version": "0.6.0"
+    },
+    {
+      "bom-ref": "pkg:pub/shelf@1.4.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "shelf",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff0b91d4f3c32b25cb6ec84985e8da89b0ba2a2b2f7eef353cda5e5423a20390\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/shelf@1.4.2",
+      "type": "library",
+      "version": "1.4.2"
+    },
+    {
+      "bom-ref": "pkg:pub/shelf_packages_handler@3.0.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "shelf_packages_handler",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"b71519245009a3b8f126196a5408ec031e216e8e0d985085958c6543f82a8a2a\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/shelf_packages_handler@3.0.2",
+      "type": "library",
+      "version": "3.0.2"
+    },
+    {
+      "bom-ref": "pkg:pub/shelf_static@1.1.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "shelf_static",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ad6a71997da90924b2cfb1fb47ec46537f70faf469efe016168794ae45ed6888\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/shelf_static@1.1.3",
+      "type": "library",
+      "version": "1.1.3"
+    },
+    {
+      "bom-ref": "pkg:pub/shelf_web_socket@3.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "shelf_web_socket",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff0b91d4f3c32b25cb6ec84985e8da89b0ba2a2b2f7eef353cda5e5423a20390\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/shelf_web_socket@3.0.0",
+      "type": "library",
+      "version": "3.0.0"
+    },
+    {
+      "bom-ref": "pkg:pub/source_map_stack_trace@2.1.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "source_map_stack_trace",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ad6a71997da90924b2cfb1fb47ec46537f70faf469efe016168794ae45ed6888\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/source_map_stack_trace@2.1.2",
+      "type": "library",
+      "version": "2.1.2"
+    },
+    {
+      "bom-ref": "pkg:pub/source_maps@0.10.13",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "source_maps",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff0b91d4f3c32b25cb6ec84985e8da89b0ba2a2b2f7eef353cda5e5423a20390\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/source_maps@0.10.13",
+      "type": "library",
+      "version": "0.10.13"
+    },
+    {
+      "bom-ref": "pkg:pub/source_span@1.10.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "source_span",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/source_span@1.10.2",
+      "type": "library",
+      "version": "1.10.2"
+    },
+    {
+      "bom-ref": "pkg:pub/stack_trace@1.12.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "stack_trace",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff0b91d4f3c32b25cb6ec84985e8da89b0ba2a2b2f7eef353cda5e5423a20390\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/stack_trace@1.12.1",
+      "type": "library",
+      "version": "1.12.1"
+    },
+    {
+      "bom-ref": "pkg:pub/stream_channel@2.1.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "stream_channel",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/stream_channel@2.1.4",
+      "type": "library",
+      "version": "2.1.4"
+    },
+    {
+      "bom-ref": "pkg:pub/string_scanner@1.4.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "string_scanner",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/string_scanner@1.4.1",
+      "type": "library",
+      "version": "1.4.1"
+    },
+    {
+      "bom-ref": "pkg:pub/term_glyph@1.2.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "term_glyph",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ea97a7558a7bd7cee4e2355f7529e3cbebb0dcbb546ddb9a90f10c9eb6b08da5\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/term_glyph@1.2.2",
+      "type": "library",
+      "version": "1.2.2"
+    },
+    {
+      "bom-ref": "pkg:pub/test@1.31.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "test",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/test@1.31.1",
+      "type": "library",
+      "version": "1.31.1"
+    },
+    {
+      "bom-ref": "pkg:pub/test_api@0.7.12",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "test_api",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff1b9f0df9036c04be424b1e3ce12789bea880ad5ffc3a48e069ae2d40a087a4\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/test_api@0.7.12",
+      "type": "library",
+      "version": "0.7.12"
+    },
+    {
+      "bom-ref": "pkg:pub/test_api@0.7.7",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "test_api",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff1b9f0df9036c04be424b1e3ce12789bea880ad5ffc3a48e069ae2d40a087a4\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/test_api@0.7.7",
+      "type": "library",
+      "version": "0.7.7"
+    },
+    {
+      "bom-ref": "pkg:pub/test_core@0.6.18",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "test_core",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff1b9f0df9036c04be424b1e3ce12789bea880ad5ffc3a48e069ae2d40a087a4\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/test_core@0.6.18",
+      "type": "library",
+      "version": "0.6.18"
+    },
+    {
+      "bom-ref": "pkg:pub/typed_data@1.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "typed_data",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ff15faa32a2e638107b7789592b14426162a75ba620044ee2340a20ec6ce5e73\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/typed_data@1.4.0",
+      "type": "library",
+      "version": "1.4.0"
+    },
+    {
+      "bom-ref": "pkg:pub/url_launcher@6.3.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "url_launcher",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/url_launcher@6.3.2",
+      "type": "library",
+      "version": "6.3.2"
+    },
+    {
+      "bom-ref": "pkg:pub/url_launcher_android@6.3.30",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "url_launcher_android",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/url_launcher_android@6.3.30",
+      "type": "library",
+      "version": "6.3.30"
+    },
+    {
+      "bom-ref": "pkg:pub/url_launcher_ios@6.4.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "url_launcher_ios",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/url_launcher_ios@6.4.2",
+      "type": "library",
+      "version": "6.4.2"
+    },
+    {
+      "bom-ref": "pkg:pub/url_launcher_linux@3.2.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "url_launcher_linux",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/url_launcher_linux@3.2.3",
+      "type": "library",
+      "version": "3.2.3"
+    },
+    {
+      "bom-ref": "pkg:pub/url_launcher_macos@3.2.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "url_launcher_macos",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/url_launcher_macos@3.2.6",
+      "type": "library",
+      "version": "3.2.6"
+    },
+    {
+      "bom-ref": "pkg:pub/url_launcher_platform_interface@2.3.2",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "url_launcher_platform_interface",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/url_launcher_platform_interface@2.3.2",
+      "type": "library",
+      "version": "2.3.2"
+    },
+    {
+      "bom-ref": "pkg:pub/url_launcher_web@2.4.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "url_launcher_web",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/url_launcher_web@2.4.3",
+      "type": "library",
+      "version": "2.4.3"
+    },
+    {
+      "bom-ref": "pkg:pub/url_launcher_windows@3.1.6",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "url_launcher_windows",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"420f7739f169097f0aad1242045169cd643c8f1d94e62866fad265ae4c369b7d\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/url_launcher_windows@3.1.6",
+      "type": "library",
+      "version": "3.1.6"
+    },
+    {
+      "bom-ref": "pkg:pub/vector_math@2.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        },
+        {
+          "license": {
+            "id": "Zlib"
+          }
+        }
+      ],
+      "name": "vector_math",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\", \"Zlib\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 1401}], \"sha256\": \"b5d856a1e27e9ebea4957fc3526f1c65782a04894b113c6b3b0fb1321dbdec55\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/vector_math@2.2.0",
+      "type": "library",
+      "version": "2.2.0"
+    },
+    {
+      "bom-ref": "pkg:pub/vm_service@15.2.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "vm_service",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ad6a71997da90924b2cfb1fb47ec46537f70faf469efe016168794ae45ed6888\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/vm_service@15.2.0",
+      "type": "library",
+      "version": "15.2.0"
+    },
+    {
+      "bom-ref": "pkg:pub/vm_service@15.3.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "vm_service",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"ad6a71997da90924b2cfb1fb47ec46537f70faf469efe016168794ae45ed6888\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/vm_service@15.3.0",
+      "type": "library",
+      "version": "15.3.0"
+    },
+    {
+      "bom-ref": "pkg:pub/watcher@1.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "watcher",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"3c32b53167c7dae9190c38dab5dd9fe1789c53623ebc7d1babcb29914c5b3f16\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/watcher@1.2.1",
+      "type": "library",
+      "version": "1.2.1"
+    },
+    {
+      "bom-ref": "pkg:pub/web@1.1.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "web",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"aa913ff50d7542eb8cc35b9f48a80928ac6819ba9057f85d424655e3e8dc271c\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/web@1.1.1",
+      "type": "library",
+      "version": "1.1.1"
+    },
+    {
+      "bom-ref": "pkg:pub/web_socket@1.0.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "web_socket",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"cbe822ef3446af4366b2b82c48b0979d0b12865edfe74c22b9aa617fc362d6e0\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/web_socket@1.0.1",
+      "type": "library",
+      "version": "1.0.1"
+    },
+    {
+      "bom-ref": "pkg:pub/web_socket_channel@3.0.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "web_socket_channel",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"a4b5d7d31626e90b77e8696f1c47643aa31f52e17c1907c1ab60b068110e6e10\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/web_socket_channel@3.0.3",
+      "type": "library",
+      "version": "3.0.3"
+    },
+    {
+      "bom-ref": "pkg:pub/webkit_inspection_protocol@1.2.1",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "webkit_inspection_protocol",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"eb9a6b9672316612439514f10b5d3b24bcd140313c96a73c370bb7b07897a8cd\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/webkit_inspection_protocol@1.2.1",
+      "type": "library",
+      "version": "1.2.1"
+    },
+    {
+      "bom-ref": "pkg:pub/win32@6.4.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "win32",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 1386, \"id\": \"BSD-3-Clause\", \"offset\": 51}], \"sha256\": \"87ef8bccdd619f2345ba5b9026cf1d6cccb305e36ab83849a8a3af9293abde7e\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/win32@6.4.0",
+      "type": "library",
+      "version": "6.4.0"
+    },
+    {
+      "bom-ref": "pkg:pub/xdg_directories@1.1.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "xdg_directories",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"89519eca6f7b9529b35bdddd623a58c3af06a88c458dbd6531ddb4675acf75a9\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/xdg_directories@1.1.0",
+      "type": "library",
+      "version": "1.1.0"
+    },
+    {
+      "bom-ref": "pkg:pub/yaml@3.1.3",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "name": "yaml",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"MIT\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 74}], \"sha256\": \"d47b93335401b052d79a2f5a3710e4cf7b5aed782faedf84d40fbdd6eb934ec7\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/yaml@3.1.3",
+      "type": "library",
+      "version": "3.1.3"
+    },
+    {
+      "bom-ref": "pkg:pub/yaml_edit@2.2.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "yaml_edit",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"021c41b9b081664f6ee181aaf4e03602c51591204dabe9ac8c8d736f0965b851\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "hosted"
+        }
+      ],
+      "purl": "pkg:pub/yaml_edit@2.2.4",
+      "type": "library",
+      "version": "2.2.4"
+    },
+    {
+      "bom-ref": "sdk:flutter/flutter@3.38.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "sdk"
+        }
+      ],
+      "type": "library",
+      "version": "3.38.5"
+    },
+    {
+      "bom-ref": "sdk:flutter/flutter_test@3.38.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter_test",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "sdk"
+        }
+      ],
+      "type": "library",
+      "version": "3.38.5"
+    },
+    {
+      "bom-ref": "sdk:flutter/flutter_web_plugins@3.38.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "name": "flutter_web_plugins",
+      "properties": [
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"BSD-3-Clause\"], \"matches\": [{\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 0}], \"sha256\": \"a598db94b6290ffbe10b5ecf911057b6a943351c727fdda9e5f2891d68700a20\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "sdk"
+        }
+      ],
+      "type": "library",
+      "version": "3.38.5"
+    },
+    {
+      "bom-ref": "sdk:flutter/sky_engine@3.38.5",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        },
+        {
+          "license": {
+            "id": "BSD-2-Clause-NetBSD"
+          }
+        },
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        },
+        {
+          "license": {
+            "id": "BSL-1.0"
+          }
+        },
+        {
+          "license": {
+            "id": "FTL"
+          }
+        },
+        {
+          "license": {
+            "id": "ISC"
+          }
+        },
+        {
+          "license": {
+            "id": "MIT"
+          }
+        },
+        {
+          "license": {
+            "id": "MPL-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "SGI-B-2.0"
+          }
+        },
+        {
+          "license": {
+            "id": "Unlicense"
+          }
+        },
+        {
+          "license": {
+            "id": "Zlib"
+          }
+        }
+      ],
+      "name": "sky_engine",
+      "properties": [
+        {
+          "name": "psychosims:distribution-obligation",
+          "value": "Preserve the complete Flutter engine notice bundle and upstream covered-source availability in each target build. This exact SDK notice inventory is not evidence that all platform binary dependencies have been enumerated; distribution acceptance is pending."
+        },
+        {
+          "name": "psychosims:license-evidence",
+          "value": "{\"file\": \"LICENSE\", \"ids\": [\"Apache-2.0\", \"BSD-2-Clause\", \"BSD-2-Clause-NetBSD\", \"BSD-3-Clause\", \"BSL-1.0\", \"FTL\", \"ISC\", \"MIT\", \"MPL-2.0\", \"SGI-B-2.0\", \"Unlicense\", \"Zlib\"], \"matches\": [{\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 94}, {\"confidence\": 1.0, \"extent\": 1294, \"id\": \"BSL-1.0\", \"offset\": 1175}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 2522}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 6432}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 7489}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 8558}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 9627}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 10676}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 11735}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 12799}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 13846}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 14916}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 15949}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 16979}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 18033}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 19072}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 20102}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 21128}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 22172}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 23188}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 24245}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 25274}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 26307}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 27359}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 28411}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 29463}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 30515}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 31572}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 32614}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 34755}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 44831}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 64749}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 71094}, {\"confidence\": 0.9521776259607173, \"extent\": 1115, \"id\": \"Unlicense\", \"offset\": 72129}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 73353}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 74419}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 75502}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 76584}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 78283}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 88209}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 98141}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 108075}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 117992}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 127923}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 137269}, {\"confidence\": 0.9378101223949719, \"extent\": 6046, \"id\": \"FTL\", \"offset\": 146243}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 152346}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 154701}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 155982}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 157144}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 158365}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 159603}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 160719}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 161885}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 163097}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 164213}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 165329}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 166495}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 167611}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 168794}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 169960}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 171258}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 172536}, {\"confidence\": 1.0, \"extent\": 1442, \"id\": \"SGI-B-2.0\", \"offset\": 173534}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 176099}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 177522}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 178947}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 180380}, {\"confidence\": 0.9629101283880172, \"extent\": 1402, \"id\": \"BSD-3-Clause\", \"offset\": 181817}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 183318}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 213025}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 222959}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 232893}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 243668}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 253765}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 254868}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 256019}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 258035}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 259476}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 260950}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 262457}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 264071}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 265685}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 267221}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 268802}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 270475}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 272099}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 273768}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 275304}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 276918}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 278547}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 280138}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 281607}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 283076}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 284578}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 286080}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 287578}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 289141}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 290745}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 292262}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 293736}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 295243}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 296750}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 298335}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 299804}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 301335}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 302804}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 304362}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 305983}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 307139}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 308007}, {\"confidence\": 0.9705449189985272, \"extent\": 679, \"id\": \"ISC\", \"offset\": 310419}, {\"confidence\": 0.9826839826839827, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 311155}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 312638}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 313942}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 315265}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 316514}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 317979}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 319473}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 321019}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 322031}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 322878}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 324493}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 325934}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 326781}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 328329}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 329906}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 331455}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 332901}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 333803}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 334800}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 336265}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 337735}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 339176}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 340023}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 341485}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 343511}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 344943}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 346371}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 347827}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 349283}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 350828}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 352290}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 353718}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 355150}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 364226}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 365698}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 367135}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 368600}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 370097}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 372281}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 373741}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 375202}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 377177}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 378620}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 380594}, {\"confidence\": 0.9812409812409812, \"extent\": 1371, \"id\": \"BSD-3-Clause\", \"offset\": 382564}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 385100}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 386543}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 387976}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 389396}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 390452}, {\"confidence\": 0.9805194805194806, \"extent\": 1386, \"id\": \"BSD-3-Clause\", \"offset\": 391898}, {\"confidence\": 0.9805194805194806, \"extent\": 1386, \"id\": \"BSD-3-Clause\", \"offset\": 393355}, {\"confidence\": 0.9805194805194806, \"extent\": 1386, \"id\": \"BSD-3-Clause\", \"offset\": 394812}, {\"confidence\": 0.9805194805194806, \"extent\": 1386, \"id\": \"BSD-3-Clause\", \"offset\": 396264}, {\"confidence\": 0.9805194805194806, \"extent\": 1386, \"id\": \"BSD-3-Clause\", \"offset\": 397721}, {\"confidence\": 0.9805194805194806, \"extent\": 1386, \"id\": \"BSD-3-Clause\", \"offset\": 399178}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 400888}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 404259}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 405144}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 406029}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 406914}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 407799}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 408732}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 410976}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 411823}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 416529}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 417575}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 418591}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 419641}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 420488}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 421383}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 422230}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 424120}, {\"confidence\": 0.9841269841269842, \"extent\": 1366, \"id\": \"BSD-3-Clause\", \"offset\": 425131}, {\"confidence\": 0.9935064935064936, \"extent\": 1379, \"id\": \"BSD-3-Clause\", \"offset\": 427728}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 429530}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 435489}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 484399}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 485274}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 488215}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 496121}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 506045}, {\"confidence\": 1.0, \"extent\": 1197, \"id\": \"BSD-2-Clause\", \"offset\": 516607}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 523644}, {\"confidence\": 1.0, \"extent\": 1197, \"id\": \"BSD-2-Clause\", \"offset\": 530746}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 533373}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 537524}, {\"confidence\": 0.9841269841269842, \"extent\": 1366, \"id\": \"BSD-3-Clause\", \"offset\": 542965}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 549176}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 552412}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 578455}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 579320}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 587338}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 588789}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 593157}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 596916}, {\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 598331}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 599775}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 603037}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 607585}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 610756}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 615658}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 621663}, {\"confidence\": 0.9819624819624819, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 625420}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 633059}, {\"confidence\": 1.0, \"extent\": 1294, \"id\": \"BSL-1.0\", \"offset\": 636745}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 642522}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 643782}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 650398}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 652166}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 653770}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 658381}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 665637}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 670231}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 673866}, {\"confidence\": 0.9094488188976377, \"extent\": 1192, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 676337}, {\"confidence\": 0.9797979797979798, \"extent\": 1375, \"id\": \"BSD-3-Clause\", \"offset\": 816568}, {\"confidence\": 1.0, \"extent\": 14342, \"id\": \"MPL-2.0\", \"offset\": 819868}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 845289}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 846815}, {\"confidence\": 0.9711399711399712, \"extent\": 1358, \"id\": \"BSD-3-Clause\", \"offset\": 850750}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 852134}, {\"confidence\": 1.0, \"extent\": 8866, \"id\": \"Apache-2.0\", \"offset\": 854918}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 867578}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 868992}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 891927}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 897559}, {\"confidence\": 0.9733044733044733, \"extent\": 1367, \"id\": \"BSD-3-Clause\", \"offset\": 899479}, {\"confidence\": 0.9619526202440776, \"extent\": 1393, \"id\": \"BSD-3-Clause\", \"offset\": 900972}, {\"confidence\": 0.9783549783549783, \"extent\": 1381, \"id\": \"BSD-3-Clause\", \"offset\": 908308}, {\"confidence\": 0.9797979797979798, \"extent\": 1369, \"id\": \"BSD-3-Clause\", \"offset\": 910845}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 918999}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 920784}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 922174}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 924208}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 925975}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 927517}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 928907}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 930237}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 931627}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 932908}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 934247}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 935528}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 936804}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 938412}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 939742}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 941339}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 942558}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 943778}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 945053}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 946266}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 947591}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 948915}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 950070}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 951213}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 952349}, {\"confidence\": 1.0, \"extent\": 988, \"id\": \"MIT\", \"offset\": 955317}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 972633}, {\"confidence\": 0.9837092731829574, \"extent\": 785, \"id\": \"Zlib\", \"offset\": 973511}, {\"confidence\": 0.9094488188976377, \"extent\": 1193, \"id\": \"BSD-2-Clause-NetBSD\", \"offset\": 974373}], \"sha256\": \"66f37204b91a314563d3261efdd4b1858a49684ed99c267e0ee4ad5f00f74ea0\"}"
+        },
+        {
+          "name": "psychosims:source",
+          "value": "sdk"
+        },
+        {
+          "name": "psychosims:source-reference",
+          "value": "https://github.com/flutter/flutter"
+        }
+      ],
+      "type": "library",
+      "version": "3.38.5"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "pkg:pub/crypto@3.0.7",
+        "pkg:pub/lints@3.0.0",
+        "pkg:pub/test@1.31.1"
+      ],
+      "ref": "local:psychemas@0.1.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:golang/github.com/lib/pq@v1.12.3"
+      ],
+      "ref": "local:psychosims.dev/server"
+    },
+    {
+      "dependsOn": [
+        "local:psychemas@0.1.0",
+        "local:psyconfig@0.1.0",
+        "local:psycore@0.1.0",
+        "pkg:pub/app_links@6.4.1",
+        "pkg:pub/convert@3.1.2",
+        "pkg:pub/crypto@3.0.7",
+        "pkg:pub/cryptography@2.9.0",
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/ffigen@10.0.0",
+        "pkg:pub/flutter_lints@3.0.2",
+        "pkg:pub/flutter_secure_storage@11.0.0",
+        "pkg:pub/get@4.7.3",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/path_provider@2.1.6",
+        "pkg:pub/url_launcher@6.3.2",
+        "sdk:flutter/flutter@3.38.5",
+        "sdk:flutter/flutter_test@3.38.5"
+      ],
+      "ref": "local:psychosims@0.1.0+1"
+    },
+    {
+      "dependsOn": [
+        "local:psychemas@0.1.0",
+        "local:psyconfig@0.1.0",
+        "local:psycore@0.1.0",
+        "pkg:pub/crypto@3.0.7",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/test@1.31.1",
+        "pkg:pub/yaml@3.1.3"
+      ],
+      "ref": "local:psychosims_tools@0.1.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/lints@3.0.0",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/meta@1.19.0",
+        "pkg:pub/test@1.31.1",
+        "pkg:pub/yaml@3.1.3"
+      ],
+      "ref": "local:psyconfig@0.1.0"
+    },
+    {
+      "dependsOn": [
+        "local:psychemas@0.1.0",
+        "local:psyconfig@0.1.0",
+        "pkg:pub/crypto@3.0.7",
+        "pkg:pub/lints@3.0.0",
+        "pkg:pub/test@1.31.1"
+      ],
+      "ref": "local:psycore@0.1.0"
+    },
+    {
+      "dependsOn": [],
+      "ref": "model-license:PHI3.5_LICENSE"
+    },
+    {
+      "dependsOn": [],
+      "ref": "model-license:QWEN2.5_LICENSE"
+    },
+    {
+      "dependsOn": [],
+      "ref": "model-license:SMOLLM2_LICENSE"
+    },
+    {
+      "dependsOn": [],
+      "ref": "native:llama.cpp@311d4211bf1611ff7ca6b67035a4a07c79766efc"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:golang/github.com/lib/pq@v1.12.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.19.0",
+        "pkg:pub/source_span@1.10.2"
+      ],
+      "ref": "pkg:pub/_fe_analyzer_shared@99.0.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/_fe_analyzer_shared@99.0.0",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/convert@3.1.2",
+        "pkg:pub/crypto@3.0.7",
+        "pkg:pub/glob@2.1.3",
+        "pkg:pub/meta@1.19.0",
+        "pkg:pub/package_config@2.2.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/pub_semver@2.2.0",
+        "pkg:pub/source_span@1.10.2",
+        "pkg:pub/watcher@1.2.1",
+        "pkg:pub/yaml@3.1.3"
+      ],
+      "ref": "pkg:pub/analyzer@12.1.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/app_links_linux@1.0.3",
+        "pkg:pub/app_links_platform_interface@2.0.2",
+        "pkg:pub/app_links_web@1.0.4",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/app_links@6.4.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/app_links_platform_interface@2.0.2",
+        "pkg:pub/gtk@2.2.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/app_links_linux@1.0.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/plugin_platform_interface@2.1.8",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/app_links_platform_interface@2.0.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/app_links_platform_interface@2.0.2",
+        "pkg:pub/web@1.1.1",
+        "sdk:flutter/flutter@3.38.5",
+        "sdk:flutter/flutter_web_plugins@3.38.5"
+      ],
+      "ref": "pkg:pub/app_links_web@1.0.4"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/args@2.7.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/meta@1.19.0"
+      ],
+      "ref": "pkg:pub/async@2.13.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/source_span@1.10.2",
+        "pkg:pub/string_scanner@1.4.1"
+      ],
+      "ref": "pkg:pub/boolean_selector@2.1.2"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/characters@1.4.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/args@2.7.0",
+        "pkg:pub/yaml@3.1.3"
+      ],
+      "ref": "pkg:pub/cli_config@0.2.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/path@1.9.1"
+      ],
+      "ref": "pkg:pub/cli_util@0.4.2"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/clock@1.1.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/hooks@2.0.2"
+      ],
+      "ref": "pkg:pub/code_assets@1.2.1"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/collection@1.19.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/typed_data@1.4.0"
+      ],
+      "ref": "pkg:pub/convert@3.1.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/args@2.7.0",
+        "pkg:pub/cli_config@0.2.0",
+        "pkg:pub/glob@2.1.3",
+        "pkg:pub/logging@1.3.0",
+        "pkg:pub/meta@1.19.0",
+        "pkg:pub/package_config@2.2.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/source_maps@0.10.13",
+        "pkg:pub/stack_trace@1.12.1",
+        "pkg:pub/vm_service@15.2.0",
+        "pkg:pub/vm_service@15.3.0",
+        "pkg:pub/yaml@3.1.3"
+      ],
+      "ref": "pkg:pub/coverage@1.15.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/typed_data@1.4.0"
+      ],
+      "ref": "pkg:pub/crypto@3.0.7"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/crypto@3.0.7",
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/typed_data@1.4.0"
+      ],
+      "ref": "pkg:pub/cryptography@2.9.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/clock@1.1.2",
+        "pkg:pub/collection@1.19.1"
+      ],
+      "ref": "pkg:pub/fake_async@1.3.3"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/ffi@2.2.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/ffi@2.2.0"
+      ],
+      "ref": "pkg:pub/ffi_leak_tracker@0.1.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/args@2.7.0",
+        "pkg:pub/cli_util@0.4.2",
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/file@7.0.1",
+        "pkg:pub/glob@2.1.3",
+        "pkg:pub/logging@1.3.0",
+        "pkg:pub/package_config@2.2.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/quiver@3.2.2",
+        "pkg:pub/yaml@3.1.3",
+        "pkg:pub/yaml_edit@2.2.4"
+      ],
+      "ref": "pkg:pub/ffigen@10.0.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/meta@1.19.0",
+        "pkg:pub/path@1.9.1"
+      ],
+      "ref": "pkg:pub/file@7.0.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/lints@3.0.0"
+      ],
+      "ref": "pkg:pub/flutter_lints@3.0.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/flutter_secure_storage_darwin@0.4.1",
+        "pkg:pub/flutter_secure_storage_linux@3.0.2",
+        "pkg:pub/flutter_secure_storage_platform_interface@2.1.0",
+        "pkg:pub/flutter_secure_storage_web@2.1.1",
+        "pkg:pub/flutter_secure_storage_windows@4.2.2",
+        "pkg:pub/meta@1.17.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/flutter_secure_storage@11.0.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/plugin_platform_interface@2.1.8",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/flutter_secure_storage_darwin@0.4.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/flutter_secure_storage_platform_interface@2.1.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/flutter_secure_storage_linux@3.0.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/plugin_platform_interface@2.1.8",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/flutter_secure_storage_platform_interface@2.1.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/flutter_secure_storage_platform_interface@2.1.0",
+        "pkg:pub/web@1.1.1",
+        "sdk:flutter/flutter@3.38.5",
+        "sdk:flutter/flutter_web_plugins@3.38.5"
+      ],
+      "ref": "pkg:pub/flutter_secure_storage_web@2.1.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/flutter_secure_storage_platform_interface@2.1.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/path_provider@2.1.6",
+        "pkg:pub/path_provider_platform_interface@2.1.3",
+        "pkg:pub/win32@6.4.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/flutter_secure_storage_windows@4.2.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/path@1.9.1"
+      ],
+      "ref": "pkg:pub/frontend_server_client@4.0.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/web@1.1.1",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/get@4.7.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/file@7.0.1",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/string_scanner@1.4.1"
+      ],
+      "ref": "pkg:pub/glob@2.1.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/meta@1.17.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/gtk@2.2.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/crypto@3.0.7",
+        "pkg:pub/logging@1.3.0",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/pub_semver@2.2.0",
+        "pkg:pub/record_use@0.6.0",
+        "pkg:pub/yaml@3.1.3"
+      ],
+      "ref": "pkg:pub/hooks@2.0.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1"
+      ],
+      "ref": "pkg:pub/http_multi_server@3.2.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/source_span@1.10.2",
+        "pkg:pub/string_scanner@1.4.1",
+        "pkg:pub/typed_data@1.4.0"
+      ],
+      "ref": "pkg:pub/http_parser@4.1.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.19.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/string_scanner@1.4.1"
+      ],
+      "ref": "pkg:pub/io@1.0.5"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/args@2.7.0",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/package_config@2.2.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/plugin_platform_interface@2.1.8"
+      ],
+      "ref": "pkg:pub/jni@1.0.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/jni@1.0.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/jni_flutter@1.0.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/clock@1.1.2",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/vm_service@15.2.0"
+      ],
+      "ref": "pkg:pub/leak_tracker@11.0.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/leak_tracker@11.0.2",
+        "pkg:pub/leak_tracker_testing@3.0.2",
+        "pkg:pub/matcher@0.12.17",
+        "pkg:pub/meta@1.17.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/leak_tracker_flutter_testing@3.0.10"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/leak_tracker@11.0.2",
+        "pkg:pub/matcher@0.12.17",
+        "pkg:pub/meta@1.17.0"
+      ],
+      "ref": "pkg:pub/leak_tracker_testing@3.0.2"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/lints@3.0.0"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/logging@1.3.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/stack_trace@1.12.1",
+        "pkg:pub/term_glyph@1.2.2",
+        "pkg:pub/test_api@0.7.7"
+      ],
+      "ref": "pkg:pub/matcher@0.12.17"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/meta@1.19.0",
+        "pkg:pub/stack_trace@1.12.1",
+        "pkg:pub/term_glyph@1.2.2",
+        "pkg:pub/test_api@0.7.12"
+      ],
+      "ref": "pkg:pub/matcher@0.12.20"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1"
+      ],
+      "ref": "pkg:pub/material_color_utilities@0.11.1"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/meta@1.17.0"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/meta@1.19.0"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/mime@2.0.0"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/node_preamble@2.0.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/code_assets@1.2.1",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/hooks@2.0.2",
+        "pkg:pub/logging@1.3.0",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/pub_semver@2.2.0"
+      ],
+      "ref": "pkg:pub/objective_c@9.4.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/path@1.9.1"
+      ],
+      "ref": "pkg:pub/package_config@2.2.0"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/path@1.9.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/path_provider_android@2.3.1",
+        "pkg:pub/path_provider_foundation@2.6.0",
+        "pkg:pub/path_provider_linux@2.2.2",
+        "pkg:pub/path_provider_platform_interface@2.1.3",
+        "pkg:pub/path_provider_windows@2.3.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/path_provider@2.1.6"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/jni@1.0.0",
+        "pkg:pub/jni_flutter@1.0.1",
+        "pkg:pub/path_provider_platform_interface@2.1.3",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/path_provider_android@2.3.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/objective_c@9.4.1",
+        "pkg:pub/path_provider_platform_interface@2.1.3",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/path_provider_foundation@2.6.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/path_provider_platform_interface@2.1.3",
+        "pkg:pub/xdg_directories@1.1.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/path_provider_linux@2.2.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/platform@3.1.6",
+        "pkg:pub/plugin_platform_interface@2.1.8",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/path_provider_platform_interface@2.1.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/path_provider_platform_interface@2.1.3",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/path_provider_windows@2.3.0"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/platform@3.1.6"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.17.0"
+      ],
+      "ref": "pkg:pub/plugin_platform_interface@2.1.8"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/stack_trace@1.12.1"
+      ],
+      "ref": "pkg:pub/pool@1.5.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1"
+      ],
+      "ref": "pkg:pub/pub_semver@2.2.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/matcher@0.12.17"
+      ],
+      "ref": "pkg:pub/quiver@3.2.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/pub_semver@2.2.0"
+      ],
+      "ref": "pkg:pub/record_use@0.6.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/http_parser@4.1.2",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/stack_trace@1.12.1",
+        "pkg:pub/stream_channel@2.1.4"
+      ],
+      "ref": "pkg:pub/shelf@1.4.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/shelf@1.4.2",
+        "pkg:pub/shelf_static@1.1.3"
+      ],
+      "ref": "pkg:pub/shelf_packages_handler@3.0.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/convert@3.1.2",
+        "pkg:pub/http_parser@4.1.2",
+        "pkg:pub/mime@2.0.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/shelf@1.4.2"
+      ],
+      "ref": "pkg:pub/shelf_static@1.1.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/shelf@1.4.2",
+        "pkg:pub/stream_channel@2.1.4",
+        "pkg:pub/web_socket_channel@3.0.3"
+      ],
+      "ref": "pkg:pub/shelf_web_socket@3.0.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/source_maps@0.10.13",
+        "pkg:pub/stack_trace@1.12.1"
+      ],
+      "ref": "pkg:pub/source_map_stack_trace@2.1.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/source_span@1.10.2"
+      ],
+      "ref": "pkg:pub/source_maps@0.10.13"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/term_glyph@1.2.2"
+      ],
+      "ref": "pkg:pub/source_span@1.10.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/path@1.9.1"
+      ],
+      "ref": "pkg:pub/stack_trace@1.12.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1"
+      ],
+      "ref": "pkg:pub/stream_channel@2.1.4"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/source_span@1.10.2"
+      ],
+      "ref": "pkg:pub/string_scanner@1.4.1"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/term_glyph@1.2.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/analyzer@12.1.0",
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/boolean_selector@2.1.2",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/coverage@1.15.1",
+        "pkg:pub/http_multi_server@3.2.2",
+        "pkg:pub/io@1.0.5",
+        "pkg:pub/matcher@0.12.20",
+        "pkg:pub/node_preamble@2.0.2",
+        "pkg:pub/package_config@2.2.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/pool@1.5.2",
+        "pkg:pub/shelf@1.4.2",
+        "pkg:pub/shelf_packages_handler@3.0.2",
+        "pkg:pub/shelf_static@1.1.3",
+        "pkg:pub/shelf_web_socket@3.0.0",
+        "pkg:pub/source_span@1.10.2",
+        "pkg:pub/stack_trace@1.12.1",
+        "pkg:pub/stream_channel@2.1.4",
+        "pkg:pub/test_api@0.7.12",
+        "pkg:pub/test_core@0.6.18",
+        "pkg:pub/typed_data@1.4.0",
+        "pkg:pub/web_socket_channel@3.0.3",
+        "pkg:pub/webkit_inspection_protocol@1.2.1",
+        "pkg:pub/yaml@3.1.3"
+      ],
+      "ref": "pkg:pub/test@1.31.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/boolean_selector@2.1.2",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/meta@1.19.0",
+        "pkg:pub/source_span@1.10.2",
+        "pkg:pub/stack_trace@1.12.1",
+        "pkg:pub/stream_channel@2.1.4",
+        "pkg:pub/string_scanner@1.4.1",
+        "pkg:pub/term_glyph@1.2.2"
+      ],
+      "ref": "pkg:pub/test_api@0.7.12"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/boolean_selector@2.1.2",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/source_span@1.10.2",
+        "pkg:pub/stack_trace@1.12.1",
+        "pkg:pub/stream_channel@2.1.4",
+        "pkg:pub/string_scanner@1.4.1",
+        "pkg:pub/term_glyph@1.2.2"
+      ],
+      "ref": "pkg:pub/test_api@0.7.7"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/analyzer@12.1.0",
+        "pkg:pub/args@2.7.0",
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/boolean_selector@2.1.2",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/coverage@1.15.1",
+        "pkg:pub/frontend_server_client@4.0.0",
+        "pkg:pub/glob@2.1.3",
+        "pkg:pub/io@1.0.5",
+        "pkg:pub/meta@1.19.0",
+        "pkg:pub/package_config@2.2.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/pool@1.5.2",
+        "pkg:pub/source_map_stack_trace@2.1.2",
+        "pkg:pub/source_maps@0.10.13",
+        "pkg:pub/source_span@1.10.2",
+        "pkg:pub/stack_trace@1.12.1",
+        "pkg:pub/stream_channel@2.1.4",
+        "pkg:pub/test_api@0.7.12",
+        "pkg:pub/vm_service@15.2.0",
+        "pkg:pub/vm_service@15.3.0",
+        "pkg:pub/yaml@3.1.3"
+      ],
+      "ref": "pkg:pub/test_core@0.6.18"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1"
+      ],
+      "ref": "pkg:pub/typed_data@1.4.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/url_launcher_android@6.3.30",
+        "pkg:pub/url_launcher_ios@6.4.2",
+        "pkg:pub/url_launcher_linux@3.2.3",
+        "pkg:pub/url_launcher_macos@3.2.6",
+        "pkg:pub/url_launcher_platform_interface@2.3.2",
+        "pkg:pub/url_launcher_web@2.4.3",
+        "pkg:pub/url_launcher_windows@3.1.6",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/url_launcher@6.3.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/url_launcher_platform_interface@2.3.2",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/url_launcher_android@6.3.30"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/url_launcher_platform_interface@2.3.2",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/url_launcher_ios@6.4.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/url_launcher_platform_interface@2.3.2",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/url_launcher_linux@3.2.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/url_launcher_platform_interface@2.3.2",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/url_launcher_macos@3.2.6"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/plugin_platform_interface@2.1.8",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/url_launcher_platform_interface@2.3.2"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/url_launcher_platform_interface@2.3.2",
+        "pkg:pub/web@1.1.1",
+        "sdk:flutter/flutter@3.38.5",
+        "sdk:flutter/flutter_web_plugins@3.38.5"
+      ],
+      "ref": "pkg:pub/url_launcher_web@2.4.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/url_launcher_platform_interface@2.3.2",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "pkg:pub/url_launcher_windows@3.1.6"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/vector_math@2.2.0"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/vm_service@15.2.0"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/vm_service@15.3.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/path@1.9.1"
+      ],
+      "ref": "pkg:pub/watcher@1.2.1"
+    },
+    {
+      "dependsOn": [],
+      "ref": "pkg:pub/web@1.1.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/web@1.1.1"
+      ],
+      "ref": "pkg:pub/web_socket@1.0.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/async@2.13.1",
+        "pkg:pub/crypto@3.0.7",
+        "pkg:pub/stream_channel@2.1.4",
+        "pkg:pub/web@1.1.1",
+        "pkg:pub/web_socket@1.0.1"
+      ],
+      "ref": "pkg:pub/web_socket_channel@3.0.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/logging@1.3.0"
+      ],
+      "ref": "pkg:pub/webkit_inspection_protocol@1.2.1"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/ffi@2.2.0",
+        "pkg:pub/ffi_leak_tracker@0.1.2",
+        "pkg:pub/meta@1.17.0"
+      ],
+      "ref": "pkg:pub/win32@6.4.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/path@1.9.1"
+      ],
+      "ref": "pkg:pub/xdg_directories@1.1.0"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/source_span@1.10.2",
+        "pkg:pub/string_scanner@1.4.1"
+      ],
+      "ref": "pkg:pub/yaml@3.1.3"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/source_span@1.10.2",
+        "pkg:pub/yaml@3.1.3"
+      ],
+      "ref": "pkg:pub/yaml_edit@2.2.4"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/characters@1.4.0",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/material_color_utilities@0.11.1",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/vector_math@2.2.0",
+        "sdk:flutter/sky_engine@3.38.5"
+      ],
+      "ref": "sdk:flutter/flutter@3.38.5"
+    },
+    {
+      "dependsOn": [
+        "pkg:pub/clock@1.1.2",
+        "pkg:pub/collection@1.19.1",
+        "pkg:pub/fake_async@1.3.3",
+        "pkg:pub/leak_tracker_flutter_testing@3.0.10",
+        "pkg:pub/matcher@0.12.17",
+        "pkg:pub/meta@1.17.0",
+        "pkg:pub/path@1.9.1",
+        "pkg:pub/stack_trace@1.12.1",
+        "pkg:pub/stream_channel@2.1.4",
+        "pkg:pub/test_api@0.7.7",
+        "pkg:pub/vector_math@2.2.0",
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "sdk:flutter/flutter_test@3.38.5"
+    },
+    {
+      "dependsOn": [
+        "sdk:flutter/flutter@3.38.5"
+      ],
+      "ref": "sdk:flutter/flutter_web_plugins@3.38.5"
+    },
+    {
+      "dependsOn": [],
+      "ref": "sdk:flutter/sky_engine@3.38.5"
+    }
+  ],
+  "metadata": {
+    "properties": [
+      {
+        "name": "psychosims:input:app/assets/licenses/PHI3.5_LICENSE",
+        "value": "fa8235e5b48faca34e3ca98cf4f694ef08bd216d28b58071a1f85b1d50cb814d"
+      },
+      {
+        "name": "psychosims:input:app/assets/licenses/QWEN2.5_LICENSE",
+        "value": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"
+      },
+      {
+        "name": "psychosims:input:app/assets/licenses/SMOLLM2_LICENSE",
+        "value": "13adb48e8c8940d90c5744783d2ea7e0ea488d684b6b39b76e8c959a2dc1624e"
+      },
+      {
+        "name": "psychosims:input:app/pubspec.lock",
+        "value": "7f539d9c979f1b26869abc604fdf034940dbd22a7b8e8b22c5a08e5034fef6c6"
+      },
+      {
+        "name": "psychosims:input:app/pubspec.yaml",
+        "value": "3509e23969187c148334f412d387377f3e3bb26983509d115819dc17fa681780"
+      },
+      {
+        "name": "psychosims:input:config/pubspec.lock",
+        "value": "47ab5ccc9d4f4a98989f91dc74ab0882abc7bc7b47311de0a7033c0f86fc0127"
+      },
+      {
+        "name": "psychosims:input:config/pubspec.yaml",
+        "value": "696b462381f136cd8dedd0ab754acbb9ed87a93619355f7c776d0a0fa64f9eb9"
+      },
+      {
+        "name": "psychosims:input:native/patches/0001-sgemm-arm-fp16-scalar-fallback.patch",
+        "value": "9f479358f6e1ab548a338da9e09baba98c630a98c2242468f17d8409f2a3e8e2"
+      },
+      {
+        "name": "psychosims:input:native/third_party/llama.cpp:commit",
+        "value": "311d4211bf1611ff7ca6b67035a4a07c79766efc"
+      },
+      {
+        "name": "psychosims:input:native/third_party/llama.cpp:diff",
+        "value": "579fc04bb558c2d1c2c97c0a514f4ca89a7264c00a00a824428b058c07e3966f"
+      },
+      {
+        "name": "psychosims:input:packages/psychemas/pubspec.lock",
+        "value": "b57e61131affab14356e744ce18e30295920e8b64fd68999ad934069d0551e07"
+      },
+      {
+        "name": "psychosims:input:packages/psychemas/pubspec.yaml",
+        "value": "751c00a30e4a697803e5b25c7a971535cd604c33347caef09c2a1742f7a12ab5"
+      },
+      {
+        "name": "psychosims:input:packages/psycore/pubspec.lock",
+        "value": "9b91de2a770f3170dcaec8771c6bfce83b3a7116d9fb424b859f5c72874f4775"
+      },
+      {
+        "name": "psychosims:input:packages/psycore/pubspec.yaml",
+        "value": "c07e35d2a39a67144b93c8d1e5f8f2e39321fc1d9422a622b50d79168496a030"
+      },
+      {
+        "name": "psychosims:input:scripts/license_policy.json",
+        "value": "4e6028fff53bb86fbe15ae43fd8734511529fbcbcfe0ccf30b2f7e69c6e76da4"
+      },
+      {
+        "name": "psychosims:input:server/go.mod",
+        "value": "8e037db2f0cc5fe9f29695872e0e20781b0158fa26cdcae8b559d764cb779e5d"
+      },
+      {
+        "name": "psychosims:input:server/go.sum",
+        "value": "c53dd01640f9a6190b5f09402f13d0ec5f199b2a6a3f673bb885ed308593e955"
+      },
+      {
+        "name": "psychosims:input:tools/pubspec.lock",
+        "value": "f3751b0d634c7b4c152a21bc551014fd1be3ccc12f028f7a41645a1d7b75473a"
+      },
+      {
+        "name": "psychosims:input:tools/pubspec.yaml",
+        "value": "9ae3eaa27d584e5565805de0ae6febb41ddcce6fa2817ac641ab17deec30334c"
+      },
+      {
+        "name": "psychosims:license-classifier",
+        "value": "google/licenseclassifier@3cfbab2d0e0d; threshold=0.9"
+      },
+      {
+        "name": "psychosims:coverage",
+        "value": "Resolved Dart packages including dev/SDK packages, Go modules, pinned llama.cpp, bundled model license texts. Platform binaries and bundled SDK internals require platform build inventories."
+      },
+      {
+        "name": "psychosims:go-toolchain",
+        "value": "go1.26.7"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

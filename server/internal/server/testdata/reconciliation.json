@@ -1,0 +1,62 @@
+{
+  "receipt": {
+    "id": "session_fixture_v1",
+    "idempotency_key": "rcp_fixture_v1",
+    "profile_version": 2,
+    "reward_status": "held_unproven",
+    "retryable": false,
+    "status": "accepted"
+  },
+  "batch": {
+    "results": [
+      {
+        "id": "session_fixture_v1",
+        "idempotency_key": "rcp_fixture_v1",
+        "profile_version": 2,
+        "reward_status": "held_unproven",
+        "retryable": false,
+        "status": "accepted"
+      },
+      {
+        "id": "session_retry_v1",
+        "idempotency_key": "rcp_retry_v1",
+        "retryable": true,
+        "status": "retryable",
+        "code": "service_unavailable",
+        "message": "temporary failure"
+      },
+      {
+        "id": "session_later_v1",
+        "idempotency_key": "rcp_later_v1",
+        "profile_version": 3,
+        "reward_status": "held_unproven",
+        "retryable": false,
+        "status": "accepted"
+      }
+    ],
+    "queue_depth_hint": 1,
+    "cursor": "rcp_fixture_v1"
+  },
+  "certified": {
+    "id": "session_certified_v1",
+    "idempotency_key": "rcp_fixture_v1",
+    "profile_version": 4,
+    "reward_status": "certified",
+    "certificate_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "xp_awarded": 100,
+    "study_points_awarded": 3,
+    "cash_micros_awarded": 2500000,
+    "retryable": false,
+    "status": "accepted"
+  },
+  "certified_unrewarded": {
+    "id": "session_unrewarded_v1",
+    "idempotency_key": "rcp_fixture_v1",
+    "profile_version": 5,
+    "reward_status": "certified_unrewarded",
+    "reward_reason": "window_budget",
+    "certificate_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "retryable": false,
+    "status": "accepted"
+  }
+}

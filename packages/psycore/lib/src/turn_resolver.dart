@@ -477,12 +477,12 @@ class TurnResolver {
     if (state.agitationLevel >= balance.crisisThreshold) {
       return SessionOutcome.crisis;
     }
+    if (state.sessionProgress >= balance.successProgressThreshold) {
+      return SessionOutcome.succeed;
+    }
     if (state.agitationLevel <= balance.calmThreshold &&
         state.trustScore >= balance.stableTrustFloor) {
       return SessionOutcome.stabilize;
-    }
-    if (state.sessionProgress >= balance.successProgressThreshold) {
-      return SessionOutcome.succeed;
     }
     return SessionOutcome.ongoing;
   }

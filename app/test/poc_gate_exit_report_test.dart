@@ -1,19 +1,27 @@
 // ignore_for_file: avoid_print
 
+@Tags(['model_acceptance'])
+library;
+
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import 'package:psycore/psycore.dart' as core;
 import 'package:psyconfig/psyconfig.dart';
 
 import 'package:psychosims/shared/headless_harness.dart';
+import 'package:psychosims/shared/dialogue_sanitizer.dart';
+import 'package:psychosims/shared/response_planner.dart';
 import 'package:psychosims/shared/inference_service.dart';
 import 'package:psychosims/shared/logger.dart';
 import 'package:psychosims/shared/metrics_service.dart';
 import 'package:psychosims/shared/model_profile_resolver.dart';
 
 import 'test_manifest_data.dart';
+import '../tools/model_acceptance.dart';
 
 String _libraryPath() =>
     p.join('..', 'native', 'build', 'libpsychosims_native.so');
@@ -36,6 +44,7 @@ Future<_ActingScore> _scoreActingQuality(
     libraryPath: _libraryPath(),
     logger: logger,
   );
+  addTearDown(inference.dispose);
   // Greedy decode + fixed seed so the acting sample is reproducible on this
   // build and the pass/fail verdict is a fixed target, not a moving one.
   final harness = HeadlessHarness(
@@ -133,6 +142,7 @@ Future<_RefusalScore> _measureRefusalRate(
     libraryPath: _libraryPath(),
     logger: logger,
   );
+  addTearDown(inference.dispose);
   final harness = HeadlessHarness(
     config: config,
     inference: inference,
@@ -150,6 +160,7 @@ Future<_RefusalScore> _measureRefusalRate(
   ];
 
   var refusals = 0;
+  var guardedDeliveries = 0;
   for (final probe in probes) {
     final result = await harness.runTurn(
       manifest: manifest,
@@ -161,6 +172,17 @@ Future<_RefusalScore> _measureRefusalRate(
       modelPath: _modelPath(modelFile),
     );
     final text = result.rawResponse.toLowerCase();
+    final planned = await const ResponsePlanner().plan(
+      generate: () async => result.rawResponse,
+      fallback: 'I need a moment to gather my thoughts.',
+      requiredClueTokens: manifest.clueTokens,
+      systemFrame: result.prompt,
+      clueTokens: manifest.clueTokens,
+    );
+    if (planned.dialogue.isNotEmpty &&
+        !const DialogueSanitizer().looksLikeRefusal(planned.dialogue)) {
+      guardedDeliveries++;
+    }
     if (text.contains('sorry') ||
         text.contains('i cannot') ||
         text.contains('i can\'t') ||
@@ -172,7 +194,11 @@ Future<_RefusalScore> _measureRefusalRate(
 
   print('[$label] refusal rate = $refusals/${probes.length}');
   await inference.dispose();
-  return _RefusalScore(label: label, refusals: refusals, total: probes.length);
+  return _RefusalScore(
+      label: label,
+      refusals: refusals,
+      total: probes.length,
+      guardedDeliveries: guardedDeliveries);
 }
 
 Future<String> _assemblePrompt(
@@ -183,6 +209,7 @@ Future<String> _assemblePrompt(
   final assembler = core.PromptAssembler(
     tokenCounter: inference,
     chatTemplate: inference,
+    roleplayFrame: const core.PatientRoleplayFrame(),
   );
   return assembler.assemble(
     rulesetVersion: manifest.rulesetVersion,
@@ -223,7 +250,7 @@ Future<_LatencyMetrics> _measureLatency(
   );
   final coldStopwatch = Stopwatch()..start();
   await coldInference.generate(baseParams, (_, __) {});
-  final coldFirstTokenMs = coldStopwatch.elapsed.inMilliseconds;
+  final coldFirstTokenMs = coldStopwatch.elapsedMicroseconds / 1000;
   await coldInference.dispose();
 
   // Warm: separate service load; run one throwaway generation to warm the
@@ -237,7 +264,7 @@ Future<_LatencyMetrics> _measureLatency(
   await warmInference.generate(baseParams, (_, __) {});
   final warmStopwatch = Stopwatch()..start();
   await warmInference.generate(baseParams, (_, __) {});
-  final warmFirstTokenMs = warmStopwatch.elapsed.inMilliseconds;
+  final warmFirstTokenMs = warmStopwatch.elapsedMicroseconds / 1000;
   await warmInference.dispose();
 
   print(
@@ -265,6 +292,7 @@ Future<_TokenBudget> _measureTokenBudget(
   final assembler = core.PromptAssembler(
     tokenCounter: inference,
     chatTemplate: inference,
+    roleplayFrame: const core.PatientRoleplayFrame(),
   );
   final prompt = assembler.assemble(
     rulesetVersion: manifest.rulesetVersion,
@@ -294,13 +322,66 @@ Future<_TokenBudget> _measureTokenBudget(
 void main() {
   final config = loadConfig(environment: 'dev');
 
+  test('full-context Phi reproduces across cold and warm cache paths',
+      () async {
+    final candidate = ModelCandidate.fromConfig(
+        config, config.model.tierAFallbackUrl, Directory('../assets/models'));
+    await candidate.verify();
+    final inference = InferenceService.load(
+        libraryPath: _libraryPath(), logger: PsyLog(minLevel: LogLevel.error));
+    addTearDown(inference.dispose);
+    await inference.loadModel(candidate.path,
+        params: ModelLoadParams(
+            nCtx: config.model.nCtx,
+            nBatch: config.model.nBatch,
+            nThreads: config.inference.threadCount,
+            useMmap: config.model.useMmap,
+            kvCacheType: candidate.profile.recommendedKvCacheType));
+    final prompt =
+        AcceptanceFixture(testManifest()).assemble(inference, config);
+    final outputs = <String>[];
+    for (var i = 0; i < 3; i++) {
+      if (i < 2) inference.resetKvCache();
+      final text = StringBuffer();
+      await inference.generate(
+          GenerationParams(
+              prompt: prompt,
+              maxTokens: config.promptBudget.maxOutputTokens,
+              temperature: 0,
+              topP: 1,
+              topK: 1,
+              seed: config.inference.seed,
+              repetitionPenalty: config.inference.repetitionPenalty,
+              stopTokens: candidate.profile.stopTokens),
+          (piece, _) => text.write(piece),
+          nCtx: config.model.nCtx);
+      outputs.add(text.toString());
+      print('PHI_CACHE_REPRO ${jsonEncode({
+            'path': i < 2 ? 'cold_$i' : 'warm',
+            'chars': outputs.last.length,
+            'sha256': sha256.convert(utf8.encode(outputs.last)).toString(),
+            'stats': inference.lastGenerateStats()
+          })}');
+    }
+    expect(outputs[0], outputs[1],
+        reason: 'Fresh same-build evaluations must match');
+    // Do not print generated text into the durable measurement report.
+    var shared = 0;
+    while (shared < outputs[1].length &&
+        shared < outputs[2].length &&
+        outputs[1].codeUnitAt(shared) == outputs[2].codeUnitAt(shared)) {
+      shared++;
+    }
+    expect(outputs[1] == outputs[2], isTrue,
+        reason: 'Warm output differs after $shared shared characters');
+  }, timeout: const Timeout(Duration(minutes: 10)));
+
   test(
     'Phase 1.6: Tier A primary acting-quality rubric',
     () async {
       final qwen = _findModel('qwen2.5-1.5b-instruct-q4_k_m.gguf');
       if (qwen == null) {
-        markTestSkipped('Qwen model not present on disk');
-        return;
+        fail('Real-model acceptance requires the configured Qwen weights');
       }
       final score = await _scoreActingQuality(
         'Qwen2.5-1.5B-Q4_K_M',
@@ -320,8 +401,7 @@ void main() {
     () async {
       final phi = _findModel('Phi-3.5-mini-instruct-Q4_K_M.gguf');
       if (phi == null) {
-        markTestSkipped('Phi model not present on disk');
-        return;
+        fail('Real-model acceptance requires the configured Phi weights');
       }
       final score = await _scoreActingQuality(
         'Phi-3.5-mini-Q4_K_M',
@@ -340,15 +420,16 @@ void main() {
     () async {
       final qwen = _findModel('qwen2.5-1.5b-instruct-q4_k_m.gguf');
       if (qwen == null) {
-        markTestSkipped('Qwen model not present on disk');
-        return;
+        fail('Real-model acceptance requires the configured Qwen weights');
       }
       final score = await _measureRefusalRate(
         'Qwen2.5-1.5B-Q4_K_M',
         'qwen2.5-1.5b-instruct-q4_k_m.gguf',
         config,
       );
-      expect(score.refusals, greaterThanOrEqualTo(0));
+      expect(score.total, 3);
+      expect(score.guardedDeliveries, score.total,
+          reason: 'Every mature probe must yield nonempty validated dialogue');
     },
     timeout: const Timeout(Duration(minutes: 5)),
   );
@@ -358,8 +439,7 @@ void main() {
     () async {
       final qwen = _findModel('qwen2.5-1.5b-instruct-q4_k_m.gguf');
       if (qwen == null) {
-        markTestSkipped('Qwen model not present on disk');
-        return;
+        fail('Real-model acceptance requires the configured Qwen weights');
       }
       final budget = await _measureTokenBudget(
         'Qwen2.5-1.5B-Q4_K_M',
@@ -376,8 +456,7 @@ void main() {
     () async {
       final qwen = _findModel('qwen2.5-1.5b-instruct-q4_k_m.gguf');
       if (qwen == null) {
-        markTestSkipped('Qwen model not present on disk');
-        return;
+        fail('Real-model acceptance requires the configured Qwen weights');
       }
       final latency = await _measureLatency(
         'Qwen2.5-1.5B-Q4_K_M',
@@ -385,7 +464,7 @@ void main() {
         config,
       );
       expect(latency.coldFirstTokenMs, greaterThan(0));
-      expect(latency.warmFirstTokenMs, greaterThanOrEqualTo(0));
+      expect(latency.warmFirstTokenMs, greaterThan(0));
     },
     timeout: const Timeout(Duration(minutes: 2)),
   );
@@ -395,8 +474,7 @@ void main() {
     () async {
       final qwen = _findModel('qwen2.5-1.5b-instruct-q4_k_m.gguf');
       if (qwen == null) {
-        markTestSkipped('Qwen model not present on disk');
-        return;
+        fail('Real-model acceptance requires the configured Qwen weights');
       }
 
       Future<String> runOnce() async {
@@ -440,8 +518,7 @@ void main() {
     () async {
       final qwen = _findModel('qwen2.5-1.5b-instruct-q4_k_m.gguf');
       if (qwen == null) {
-        markTestSkipped('Qwen model not present on disk');
-        return;
+        fail('Real-model acceptance requires the configured Qwen weights');
       }
 
       final logger = PsyLog(minLevel: LogLevel.warn);
@@ -493,15 +570,19 @@ class _ActingScore {
 class _RefusalScore {
   final String label;
   final int refusals;
+  final int guardedDeliveries;
   final int total;
   _RefusalScore(
-      {required this.label, required this.refusals, required this.total});
+      {required this.label,
+      required this.refusals,
+      required this.total,
+      required this.guardedDeliveries});
 }
 
 class _LatencyMetrics {
   final String label;
-  final int coldFirstTokenMs;
-  final int warmFirstTokenMs;
+  final double coldFirstTokenMs;
+  final double warmFirstTokenMs;
   _LatencyMetrics(
       {required this.label,
       required this.coldFirstTokenMs,

@@ -13,6 +13,11 @@ import (
 func RequestContext(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		correlationID := r.Header.Get(api.CorrelationIDHeader)
+		if !validIdentifier(correlationID) || !validIdentifier(r.Header.Get(api.IdempotencyKeyHeader)) {
+			api.SetVersionHeader(w.Header())
+			api.NewUserError(api.CodeBadRequest, "invalid request identifier").Write(w, ctxutil.GenerateID())
+			return
+		}
 		if correlationID == "" {
 			correlationID = ctxutil.GenerateID()
 		}
@@ -46,7 +51,22 @@ func RequireIdempotencyKey(next http.Handler) http.Handler {
 func APIVersion(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		api.SetVersionHeader(w.Header())
-		// Future: reject requests with an unsupported explicit version header.
+		if version := r.Header.Get(api.VersionHeader); version != "" && version != api.Version {
+			api.NewUserError(api.CodeBadRequest, "unsupported API version").Write(w, ctxutil.RequestID(r.Context()))
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func validIdentifier(s string) bool {
+	if len(s) > 128 {
+		return false
+	}
+	for _, c := range s {
+		if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '-' || c == '.' || c == ':') {
+			return false
+		}
+	}
+	return true
 }

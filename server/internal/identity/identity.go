@@ -173,9 +173,21 @@ func (s *Service) SignIn(ctx context.Context, provider, token, nonce string) (st
 
 	identity, err := v.Verify(ctx, token, nonce)
 	if err != nil {
-		return "", api.NewUnauthorized("provider verification failed: " + err.Error())
+		return "", providerFailure(err)
 	}
 	identity.Provider = provider
+	if identity.ProviderID == "" || len(identity.ProviderID) > 255 {
+		return "", api.NewUnauthorized("invalid provider subject")
+	}
+	if resolver, ok := s.repo.(interface {
+		ResolveVerified(context.Context, ProviderIdentity) (string, error)
+	}); ok {
+		accountID, err := resolver.ResolveVerified(ctx, identity)
+		if err != nil {
+			return "", api.NewInternalError("account resolution failed")
+		}
+		return accountID, nil
+	}
 
 	accountID, err := s.repo.FindByProvider(ctx, provider, identity.ProviderID)
 	if err != nil {
@@ -202,7 +214,7 @@ func (s *Service) LinkAccount(ctx context.Context, accountID, provider, token, n
 	}
 	identity, err := v.Verify(ctx, token, nonce)
 	if err != nil {
-		return api.NewUnauthorized("provider verification failed: " + err.Error())
+		return providerFailure(err)
 	}
 	identity.Provider = provider
 
@@ -214,6 +226,9 @@ func (s *Service) LinkAccount(ctx context.Context, accountID, provider, token, n
 		return api.NewConflict(api.CodeConflict, "provider identity already linked to another account")
 	}
 	if err := s.repo.LinkProvider(ctx, accountID, identity); err != nil {
+		if he, ok := err.(api.HTTPError); ok {
+			return he
+		}
 		return api.NewInternalError("account linking failed: " + err.Error())
 	}
 	return nil
@@ -291,6 +306,9 @@ func (s *StubVerifier) Verify(ctx context.Context, token, nonce string) (Provide
 // state value and a nonce for the client to include in its authorization
 // request. The state value is integrity-protected with HMAC-SHA256.
 func (s *Service) StartAuthSession(ctx context.Context, provider, channel, codeChallenge, codeChallengeMethod string) (state, nonce string, err error) {
+	if codeChallengeMethod != "S256" || len(codeChallenge) != 43 || !validPKCE(codeChallenge) {
+		return "", "", api.NewUserError(api.CodeBadRequest, "S256 PKCE challenge required")
+	}
 	if provider != "google" && provider != "apple" {
 		return "", "", api.NewUserError(api.CodeBadRequest, "unsupported identity provider")
 	}
@@ -317,6 +335,15 @@ func (s *Service) StartAuthSession(ctx context.Context, provider, channel, codeC
 		RedirectURI:         redirectURI,
 		Provider:            provider,
 		ExpiresAt:           time.Now().UTC().Add(10 * time.Minute),
+	}
+	if durable, ok := s.stateStore.(interface {
+		CreateOrReplay(context.Context, AuthSession) (AuthSession, error)
+	}); ok {
+		session, err = durable.CreateOrReplay(ctx, session)
+		if err != nil {
+			return "", "", err
+		}
+		return session.State, session.Nonce, nil
 	}
 	if err := s.stateStore.Create(ctx, session); err != nil {
 		return "", "", api.NewInternalError("state store failed: " + err.Error())
@@ -345,15 +372,42 @@ func (s *Service) VerifyState(ctx context.Context, state, codeVerifier string) (
 // ExchangeCode verifies PKCE state, consumes the session to prevent replay,
 // then validates the provider id_token. It is the desktop-channel counterpart
 // to SignIn.
-func (s *Service) ExchangeCode(ctx context.Context, provider, idToken, state, codeVerifier string) (string, error) {
+func (s *Service) ExchangeCode(ctx context.Context, provider, code, state, codeVerifier string) (string, error) {
 	nonce, err := s.VerifyState(ctx, state, codeVerifier)
 	if err != nil {
 		return "", err
 	}
+	session, err := s.stateStore.Peek(ctx, state)
+	if err != nil || session.Provider != provider {
+		return "", api.NewUserError(api.CodeBadRequest, "provider does not match authorization state")
+	}
+	exchanger, ok := s.verifiers[session.Provider].(interface {
+		Exchange(context.Context, string, string, string) (string, error)
+	})
+	if !ok {
+		return "", api.NewServiceUnavailable("provider code exchange unavailable")
+	}
 	if _, err := s.stateStore.Consume(ctx, state); err != nil {
 		return "", api.NewUserError(api.CodeBadRequest, "unknown or expired state")
 	}
-	return s.SignIn(ctx, provider, idToken, nonce)
+	idToken, err := exchanger.Exchange(ctx, code, session.RedirectURI, codeVerifier)
+	if err != nil {
+		return "", api.NewUnauthorized("provider code exchange failed")
+	}
+	return s.SignIn(ctx, session.Provider, idToken, nonce)
+}
+
+// AuthSession returns stored handshake metadata without accepting caller provider
+// or redirect choices during code exchange.
+func (s *Service) AuthSession(ctx context.Context, state string) (*AuthSession, error) {
+	return s.stateStore.Peek(ctx, state)
+}
+func (s *Service) AuthorizationURL(session AuthSession) (string, error) {
+	p, ok := s.verifiers[session.Provider].(interface{ AuthorizationURL(AuthSession) string })
+	if !ok {
+		return "", api.NewServiceUnavailable("provider browser authorization unavailable")
+	}
+	return p.AuthorizationURL(session), nil
 }
 
 func normalizePKCEMethod(m string) string {
@@ -365,6 +419,9 @@ func normalizePKCEMethod(m string) string {
 }
 
 func verifyPKCE(verifier, challenge, method string) error {
+	if method != "S256" || len(verifier) < 43 || len(verifier) > 128 || !validPKCE(verifier) {
+		return errors.New("invalid S256 verifier")
+	}
 	method = normalizePKCEMethod(method)
 	var computed string
 	if method == "S256" {
@@ -377,6 +434,40 @@ func verifyPKCE(verifier, challenge, method string) error {
 		return errors.New("code challenge mismatch")
 	}
 	return nil
+}
+
+func validPKCE(s string) bool {
+	for _, c := range s {
+		if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~') {
+			return false
+		}
+	}
+	return true
+}
+
+// VerifyExchange uses a locked durable session supplied by the composition
+// layer. Its caller atomically consumes that session with account/token writes.
+func (s *Service) VerifyExchange(ctx context.Context, session AuthSession, code, verifier string) (ProviderIdentity, error) {
+	if verifyStateSignature(session.State, s.stateSecret) != nil || !time.Now().Before(session.ExpiresAt) || verifyPKCE(verifier, session.CodeChallenge, session.CodeChallengeMethod) != nil {
+		return ProviderIdentity{}, api.NewUnauthorized("invalid authorization state or verifier")
+	}
+	p := s.verifiers[session.Provider]
+	exchanger, ok := p.(interface {
+		Exchange(context.Context, string, string, string) (string, error)
+	})
+	if !ok {
+		return ProviderIdentity{}, api.NewServiceUnavailable("provider code exchange unavailable")
+	}
+	token, err := exchanger.Exchange(ctx, code, session.RedirectURI, verifier)
+	if err != nil {
+		return ProviderIdentity{}, providerFailure(err)
+	}
+	verified, err := p.Verify(ctx, token, session.Nonce)
+	if err != nil {
+		return ProviderIdentity{}, providerFailure(err)
+	}
+	verified.Provider = session.Provider
+	return verified, nil
 }
 
 func signState(rawState string, secret []byte) string {
@@ -417,4 +508,12 @@ func generateAccountID() (string, error) {
 	return "acc_" + hex.EncodeToString(b), nil
 }
 
-
+// Provider diagnostics can contain URLs or credentials. Expose only the retry
+// classification, never the underlying message.
+func providerFailure(err error) error {
+	var he api.HTTPError
+	if errors.As(err, &he) && he.Status == 503 {
+		return api.NewServiceUnavailable("identity provider temporarily unavailable")
+	}
+	return api.NewUnauthorized("provider verification failed; restart authorization")
+}

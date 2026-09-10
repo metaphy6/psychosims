@@ -3,13 +3,13 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-CHECK_FLAG=""
+FORMAT_FLAGS=()
 if [[ "${1:-}" == "--check" ]]; then
-  CHECK_FLAG="--set-exit-if-changed"
+  FORMAT_FLAGS=(--output=none --set-exit-if-changed)
 fi
 
 echo "▶️  Dart format"
 
-dart format $CHECK_FLAG config packages app || true
+dart format "${FORMAT_FLAGS[@]}" config packages app tools
 
 echo "✅ Dart format done"

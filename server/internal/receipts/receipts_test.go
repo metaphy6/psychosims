@@ -3,6 +3,9 @@ package receipts
 import (
 	"context"
 	"crypto/ed25519"
+	"errors"
+	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -109,6 +112,53 @@ func TestValidateAcceptsGoldenReceipt(t *testing.T) {
 	}
 }
 
+func TestValidateFullSessionActionAndDeltaBounds(t *testing.T) {
+	for _, count := range []int{100, 120, 121} {
+		v, _, priv := setupValidator(t)
+		r := validReceipt()
+		r.LedgerEvents = nil
+		r.TurnCount = count
+		r.Actions = make([]schemas.InteractionPattern, count)
+		for i := range r.Actions {
+			r.Actions[i] = schemas.OpenQuestion
+		}
+		_, err := v.Validate(context.Background(), "acc-1", signEnvelope(r, priv, "key_1"))
+		if (err == nil) != (count <= 120) {
+			t.Fatalf("action count %d: %v", count, err)
+		}
+	}
+	v, _, priv := setupValidator(t)
+	r := validReceipt()
+	delta := r.Deltas[0]
+	// Exercise a stricter configured count while remaining below the separate
+	// canonical-byte cap; a 1025-item full typed payload exceeds that cap first.
+	v.cfg.MaxDeltas = 512
+	r.Deltas = make([]schemas.StructuredDelta, 513)
+	for i := range r.Deltas {
+		r.Deltas[i] = delta
+	}
+	_, err := v.Validate(context.Background(), "acc-1", signEnvelope(r, priv, "key_1"))
+	if err == nil || !strings.Contains(err.Error(), "delta") {
+		t.Fatalf("delta bound not enforced: %v", err)
+	}
+}
+
+func TestOversizedCanonicalReceiptRejectedBeforeKeyLookup(t *testing.T) {
+	lookups := 0
+	verifier := crypto.NewVerifier(func(string) (ed25519.PublicKey, error) {
+		lookups++
+		return nil, errors.New("key lookup must not run")
+	})
+	limits := DefaultLimits()
+	v := NewVerifier(verifier, nil, nil, nil, nil, &limits)
+	env := schemas.SignedEnvelope{CanonicalReceiptBytes: []byte(strings.Repeat(" ", 131073)), Signature: make([]byte, 64), SuiteID: "ed25519-v1", SigningKeyID: "key"}
+	_, err := v.Validate(context.Background(), "account", env)
+	var failure api.HTTPError
+	if lookups != 0 || !errors.As(err, &failure) || failure.Status != http.StatusRequestEntityTooLarge {
+		t.Fatalf("oversize reached key lookup or wrong error: lookups=%d error=%v", lookups, err)
+	}
+}
+
 func TestValidateRejectsBadSignature(t *testing.T) {
 	v, _, _ := setupValidator(t)
 	_, wrongPriv, _ := ed25519.GenerateKey(nil)
@@ -195,5 +245,57 @@ func TestDeadLetterRecordsRejection(t *testing.T) {
 	}
 	if records[0].Outcome != string(api.CodeInvalidSignature) {
 		t.Errorf("outcome = %q, want invalid_signature", records[0].Outcome)
+	}
+}
+
+func TestValidateRejectsDialogueInSupportedFields(t *testing.T) {
+	sentinel := "private patient dialogue"
+	mutations := map[string]func(*schemas.SessionReceipt){
+		"id":                  func(r *schemas.SessionReceipt) { r.ID = sentinel },
+		"patient":             func(r *schemas.SessionReceipt) { r.PatientID = sentinel },
+		"idempotency":         func(r *schemas.SessionReceipt) { r.IdempotencyKey = sentinel },
+		"correlation":         func(r *schemas.SessionReceipt) { r.CorrelationID = sentinel },
+		"oversize identifier": func(r *schemas.SessionReceipt) { r.CorrelationID = strings.Repeat("a", 129) },
+		"case":                func(r *schemas.SessionReceipt) { r.StartState.CaseID = sentinel },
+		"checksum":            func(r *schemas.SessionReceipt) { r.StartState.ManifestChecksum = sentinel },
+		"axis key":            func(r *schemas.SessionReceipt) { r.StartState.InitialAxes[sentinel] = 1 },
+		"axis value":          func(r *schemas.SessionReceipt) { r.StartState.InitialAxes["trust"] = 101 },
+		"loadout": func(r *schemas.SessionReceipt) {
+			r.StartState.Loadout.CardIds = append(r.StartState.Loadout.CardIds, sentinel)
+		},
+		"library": func(r *schemas.SessionReceipt) {
+			r.StartState.Library.OwnedCardIds = append(r.StartState.Library.OwnedCardIds, sentinel)
+		},
+		"focus": func(r *schemas.SessionReceipt) { r.StartState.Controllers.Focus = schemas.FocusAxis(sentinel) },
+		"delivery": func(r *schemas.SessionReceipt) {
+			r.StartState.Controllers.EmotionalDelivery = schemas.EmotionalDelivery(sentinel)
+		},
+		"delta axis":     func(r *schemas.SessionReceipt) { r.Deltas[0].Axis = schemas.StateAxis(sentinel) },
+		"delta rule":     func(r *schemas.SessionReceipt) { r.Deltas[0].RulesetVersion = sentinel },
+		"delta reason":   func(r *schemas.SessionReceipt) { r.Deltas[0].ReasonKey = sentinel },
+		"card type":      func(r *schemas.SessionReceipt) { r.Deltas[0].CardType = schemas.CardType(sentinel) },
+		"card signature": func(r *schemas.SessionReceipt) { r.Deltas[0].CardSignature = schemas.CardSignature(sentinel) },
+		"context fit":    func(r *schemas.SessionReceipt) { r.Deltas[0].ContextFit = schemas.ContextFit(sentinel) },
+	}
+	for name, mutate := range mutations {
+		t.Run(name, func(t *testing.T) {
+			v, _, priv := setupValidator(t)
+			r := validReceipt()
+			mutate(&r)
+			_, err := v.Validate(context.Background(), "acc-1", signEnvelope(r, priv, "key_1"))
+			if err == nil {
+				t.Fatal("dialogue or unsupported structured value accepted")
+			}
+		})
+	}
+}
+
+func TestReceiptFailureDoesNotEchoLedgerDialogue(t *testing.T) {
+	v, _, priv := setupValidator(t)
+	r := validReceipt()
+	r.LedgerEvents = []schemas.LedgerEvent{{Currency: "private patient dialogue", AmountMicros: 1}}
+	_, err := v.Validate(context.Background(), "acc-1", signEnvelope(r, priv, "key_1"))
+	if err == nil || strings.Contains(err.Error(), "private patient dialogue") {
+		t.Fatalf("unsafe ledger error: %v", err)
 	}
 }

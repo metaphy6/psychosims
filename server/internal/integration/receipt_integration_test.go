@@ -332,7 +332,7 @@ func (r *leaseOwnershipRepository) Get(ctx context.Context, patientID string) (*
 	return r.record, nil
 }
 
-func (r *leaseOwnershipRepository) Claim(ctx context.Context, patientID, accountID string, version int) error {
+func (r *leaseOwnershipRepository) Claim(ctx context.Context, patientID, accountID string, version int, classes ...ownership.MemoryClass) error {
 	return fmt.Errorf("not used")
 }
 
@@ -368,7 +368,7 @@ func (r *slowOwnershipRepository) Get(ctx context.Context, patientID string) (*o
 	}
 }
 
-func (r *slowOwnershipRepository) Claim(ctx context.Context, patientID, accountID string, version int) error {
+func (r *slowOwnershipRepository) Claim(ctx context.Context, patientID, accountID string, version int, classes ...ownership.MemoryClass) error {
 	select {
 	case <-time.After(r.delay):
 		return fmt.Errorf("store timeout")
@@ -439,13 +439,13 @@ func TestReceiptTamperedCanonicalBytes(t *testing.T) {
 // field drift.
 func TestProfileRoundTrip(t *testing.T) {
 	prof := profile.PrimitiveProfile{
-		AccountID:   "acct-rt",
-		Version:     7,
-		Level:       3,
-		XP:          1200,
-		CashMicros:  5000000,
-		ClinicTier:  2,
-		UpdatedAt:   time.Unix(2000, 0).UTC(),
+		AccountID:  "acct-rt",
+		Version:    7,
+		Level:      3,
+		XP:         1200,
+		CashMicros: 5000000,
+		ClinicTier: 2,
+		UpdatedAt:  time.Unix(2000, 0).UTC(),
 	}
 	payload, err := json.Marshal(prof)
 	if err != nil {

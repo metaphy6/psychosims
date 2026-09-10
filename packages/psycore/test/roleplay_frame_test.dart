@@ -70,6 +70,16 @@ void main() {
       expect(a, equals(b));
     });
 
+    test('examples use every current clue and never a different case marker',
+        () {
+      final other = _manifest(clueTokens: const ['zephyrose', 'sabre-noxa']);
+      final example = frame.examplesFor(other)[1].text;
+      expect(example, endsWith('[zephyrose] [sabre-noxa]'));
+      expect(example, isNot(contains('ferve-axine')));
+      expect(frame.examplesFor(_manifest(clueTokens: const []))[1].text,
+          isNot(contains('[')));
+    });
+
     test('provides in-character few-shot exemplars', () {
       final exemplars = frame.exemplars();
       expect(exemplars, isNotEmpty);
@@ -107,7 +117,7 @@ void main() {
       // Roleplay instruction is present.
       expect(prompt, contains('in the first person'));
       // Exemplar turns are present.
-      expect(prompt, contains("I can't sit still"));
+      expect(prompt, contains('I feel restless'));
       // Real conversation window is present.
       expect(prompt, contains('Hello.'));
       // Budget is honoured.
@@ -185,7 +195,7 @@ void main() {
         manifest: _manifest(clueTokens: const ['zephyrose']),
         state: state,
       );
-      expect(text, contains('"zephyrose"'));
+      expect(text, contains('[zephyrose]'));
       expect(text, isNot(contains('clue_tokens=')));
     });
 
@@ -203,7 +213,7 @@ void main() {
         manifest: _manifest(clueTokens: const []),
         state: state,
       );
-      expect(text, isNot(contains('surface in your own')));
+      expect(text, isNot(contains('Every reply must end')));
     });
 
     test('falls back to levelled words when axes are at default zero', () {

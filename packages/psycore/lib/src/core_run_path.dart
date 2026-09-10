@@ -23,6 +23,7 @@ class CoreRunPath {
   /// [clock] is fully injected; for a pure replay use [InjectedClock.replay].
   /// [rulesetVersion] selects the pinned PRNG constants. The [loadout] and
   /// [library] enforce which cards may be played.
+  /// Resolution stops at the first terminal outcome, ignoring later actions.
   ///
   /// If [startState] is provided, resolution begins from that state instead of
   /// the manifest's initial state. This lets the sandbox step through a case
@@ -53,6 +54,7 @@ class CoreRunPath {
       );
       final output = resolver.resolve(input);
       outputs.add(output);
+      if (output.isTerminal) break;
       state = output.nextState;
     }
 

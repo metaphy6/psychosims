@@ -7,6 +7,8 @@ Records — accepted decisions with rationale).
 
 - [`DESIGN.template.md`](DESIGN.template.md) — for proposing a non-trivial change before building it.
 - [`ADR.template.md`](ADR.template.md) — for recording a code-level decision after it's made.
+- [`ADR-0008-explicit-model-acceptance.md`](ADR-0008-explicit-model-acceptance.md) — separates contract CI evidence from strict real-model acceptance, updating ADR-0004's command consequence.
+- [`ADR-0009-bounded-authoritative-derivation.md`](ADR-0009-bounded-authoritative-derivation.md) — accepted finite certified-outcome payout path after independent client/server/transaction review; broader C-9 quantities remain later work.
 
 ## When to write
 

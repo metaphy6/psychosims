@@ -17,6 +17,9 @@ class ModelLoadParams {
   final int nBatch;
   final int nThreads;
   final bool useMmap;
+
+  /// Explicit development backend; normal application loads use llama.cpp.
+  final String backend;
   final String? kvCacheType;
   final String? correlationId;
 
@@ -25,6 +28,7 @@ class ModelLoadParams {
     this.nBatch = 512,
     this.nThreads = 4,
     this.useMmap = true,
+    this.backend = 'llama.cpp',
     this.kvCacheType,
     this.correlationId,
   });
@@ -34,6 +38,7 @@ class ModelLoadParams {
         'n_batch': nBatch,
         'n_threads': nThreads,
         'use_mmap': useMmap,
+        'backend': backend,
         if (kvCacheType != null && kvCacheType!.isNotEmpty)
           'kv_cache_type': kvCacheType,
         if (correlationId != null && correlationId!.isNotEmpty)
@@ -119,8 +124,6 @@ class _GenerateRequest implements _WorkerRequest {
   final String paramsJson;
 }
 
-class _CancelRequest implements _WorkerRequest {}
-
 class _UnloadRequest implements _WorkerRequest {}
 
 class _ResetKvRequest implements _WorkerRequest {}
@@ -135,8 +138,9 @@ class _PortResponse implements _WorkerResponse {
 }
 
 class _LoadedResponse implements _WorkerResponse {
-  _LoadedResponse({required this.success, this.error});
+  _LoadedResponse({required this.success, this.contextAddress, this.error});
   final bool success;
+  final int? contextAddress;
   final String? error;
 }
 
@@ -147,9 +151,12 @@ class _TokenResponse implements _WorkerResponse {
 }
 
 class _GenerateDoneResponse implements _WorkerResponse {
-  _GenerateDoneResponse(this.result);
+  _GenerateDoneResponse(this.result, this.stats);
   final int result;
+  final Map<String, Object?> stats;
 }
+
+class _DisposedResponse implements _WorkerResponse {}
 
 class _ErrorResponse implements _WorkerResponse {
   _ErrorResponse(this.message);
@@ -181,6 +188,7 @@ class _WorkerService {
     try {
       _ctx = _bindings.psy_context_load(pathPtr.cast(), paramsPtr.cast());
       if (_ctx == null || _ctx!.address == 0) {
+        _ctx = null;
         throw InferenceException('Failed to load model at $modelPath');
       }
     } finally {
@@ -200,8 +208,12 @@ class _WorkerService {
     if (_ctx != null) _bindings.psy_reset_kv(_ctx!);
   }
 
-  void cancel() {
-    if (_ctx != null) _bindings.psy_cancel(_ctx!);
+  Map<String, Object?> lastGenerateStats() {
+    if (_ctx == null) return const {};
+    return jsonDecode(_bindings
+        .psy_last_generate_stats(_ctx!)
+        .cast<Utf8>()
+        .toDartString()) as Map<String, Object?>;
   }
 
   int generate(
@@ -288,6 +300,7 @@ void _inferenceWorker(Map<String, Object?> init) {
       disposeCallback();
       service?.unload();
       service = null;
+      mainSendPort.send(_DisposedResponse());
       receivePort.close();
       return;
     }
@@ -296,7 +309,8 @@ void _inferenceWorker(Map<String, Object?> init) {
       try {
         service ??= _WorkerService(libraryPath);
         service!.load(request.modelPath, request.paramsJson);
-        mainSendPort.send(_LoadedResponse(success: true));
+        mainSendPort.send(_LoadedResponse(
+            success: true, contextAddress: service!._ctx!.address));
       } on InferenceException catch (e) {
         mainSendPort.send(_LoadedResponse(success: false, error: e.message));
       } on Exception catch (e) {
@@ -344,14 +358,12 @@ void _inferenceWorker(Map<String, Object?> init) {
         if (flush.isNotEmpty) {
           mainSendPort.send(_TokenResponse(flush, true));
         }
-        mainSendPort.send(_GenerateDoneResponse(result));
+        mainSendPort.send(_GenerateDoneResponse(result, s.lastGenerateStats()));
       } on Exception catch (e) {
         mainSendPort.send(_ErrorResponse(e.toString()));
       } finally {
         utf8Accumulator = null;
       }
-    } else if (request is _CancelRequest) {
-      s.cancel();
     }
   });
 }
@@ -362,15 +374,12 @@ void _inferenceWorker(Map<String, Object?> init) {
 /// assembler can consume the active model's real tokenizer and chat template
 /// once a model is loaded. No other module touches the FFI directly.
 ///
-/// Tokenization and chat-template rendering run synchronously on the owning
-/// isolate so the pure prompt assembler stays synchronous. Generation runs on
-/// a dedicated worker isolate so the UI isolate is never blocked by FFI calls.
+/// The worker owns the only native model/context and loads it asynchronously.
+/// The UI borrows its handle for read-only tokenizer/template operations and
+/// the native thread-safe cancellation flag. All context mutations and frees
+/// run on the worker, serialized after active generation completes.
 class InferenceService implements core.TokenCounter, core.ChatTemplate {
-  InferenceService._(
-    this._logger,
-    this._libraryPath, {
-    bool isWorker = false,
-  }) : _isWorker = isWorker;
+  InferenceService._(this._logger, this._libraryPath);
 
   /// Loads the native library in the current isolate.
   ///
@@ -412,8 +421,9 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
   late final PsychosimsNativeBindings _bindings;
   final PsyLog _logger;
   final String? _libraryPath;
-  final bool _isWorker;
+  // Borrowed from the worker; this isolate must never destroy this context.
   ffi.Pointer<PsyContext>? _ctx;
+  Map<String, Object?> _lastStats = const {};
 
   Isolate? _worker;
   SendPort? _workerSendPort;
@@ -423,6 +433,7 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
 
   final _generationLock = Lock();
   bool _generationInFlight = false;
+  bool _cancelRequested = false;
   bool _disposed = false;
 
   bool get isLoaded => _ctx != null;
@@ -431,7 +442,6 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
   String get version => _bindings.psy_version().cast<Utf8>().toDartString();
 
   Future<void> _ensureWorker() {
-    if (_isWorker) return Future.value();
     if (_disposed) {
       return Future.error(InferenceException('Service is disposed'));
     }
@@ -473,59 +483,48 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
 
   /// Loads a model from [modelPath] with load-time parameters in [params].
   ///
-  /// The model is loaded both in the owning isolate (for tokenization/template)
-  /// and in the dedicated worker isolate (for generation). When the real
-  /// llama.cpp backend uses mmap, the weight memory is shared by the OS; the
-  /// KV cache is allocated per context.
+  /// One worker-owned context serves tokenizer, template and generation calls.
   Future<void> loadModel(
     String modelPath, {
     ModelLoadParams params = const ModelLoadParams(),
   }) async {
     if (_disposed) throw InferenceException('Service is disposed');
-    if (_ctx != null) unloadModel();
-    final paramsJson = jsonEncode(params.toJson());
-    final pathPtr = modelPath.toNativeUtf8();
-    final paramsPtr = paramsJson.toNativeUtf8();
-    try {
-      _ctx = _bindings.psy_context_load(pathPtr.cast(), paramsPtr.cast());
-      if (_ctx == null || _ctx!.address == 0) {
-        throw InferenceException(
-          'Failed to load model at $modelPath',
-          kind: InferenceErrorKind.loadFailure,
-        );
-      }
+    if (_generationInFlight) {
+      throw InferenceException('Cannot load a model during generation');
+    }
+    await _generationLock.synchronized(() async {
+      if (_disposed) throw InferenceException('Service is disposed');
+      _ctx = null;
+      _lastStats = const {};
+      await _ensureWorker();
+      final completer = Completer<void>();
+      late final StreamSubscription<_WorkerResponse> sub;
+      sub = _responseController.stream.listen((response) {
+        if (response is _LoadedResponse) {
+          if (response.success) {
+            _ctx =
+                ffi.Pointer<PsyContext>.fromAddress(response.contextAddress!);
+            completer.complete();
+          } else {
+            completer.completeError(InferenceException(
+              response.error ?? 'Worker failed to load model at $modelPath',
+              kind: InferenceErrorKind.loadFailure,
+            ));
+          }
+          sub.cancel();
+        } else if (response is _ErrorResponse) {
+          completer.completeError(InferenceException(response.message));
+          sub.cancel();
+        }
+      });
+      _send(_LoadRequest(modelPath, jsonEncode(params.toJson())));
+      await completer.future;
       _logger.success('inference', 'model_loaded', kv: {
-        'path': modelPath,
+        'backend': params.backend,
         'n_ctx': params.nCtx,
         'n_batch': params.nBatch,
       });
-    } finally {
-      calloc.free(pathPtr);
-      calloc.free(paramsPtr);
-    }
-    // Eagerly spawn the worker and load the same model there so the first
-    // generate() call does not pay the load latency.
-    await _ensureWorker();
-    final completer = Completer<void>();
-    late final StreamSubscription<_WorkerResponse> sub;
-    sub = _responseController.stream.listen((response) {
-      if (response is _LoadedResponse) {
-        if (response.success) {
-          completer.complete();
-        } else {
-          completer.completeError(InferenceException(
-            response.error ?? 'Worker failed to load model at $modelPath',
-            kind: InferenceErrorKind.loadFailure,
-          ));
-        }
-        sub.cancel();
-      } else if (response is _ErrorResponse) {
-        completer.completeError(InferenceException(response.message));
-        sub.cancel();
-      }
     });
-    _send(_LoadRequest(modelPath, paramsJson));
-    return completer.future;
   }
 
   /// Runs a short warm-up generation so the first real turn is not a latency
@@ -541,11 +540,13 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
 
   /// Unloads the model and frees native resources.
   void unloadModel() {
-    if (_ctx == null && _worker == null) return;
-    if (_ctx != null) {
-      _bindings.psy_context_destroy(_ctx!);
-      _ctx = null;
+    if (_generationLock.locked && !_generationInFlight) {
+      throw InferenceException('Cannot unload while loading or disposing');
     }
+    if (_ctx == null && _worker == null) return;
+    cancel();
+    _ctx = null;
+    _lastStats = const {};
     if (_worker != null) {
       _send(_UnloadRequest());
     }
@@ -554,7 +555,6 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
 
   /// Resets the KV cache without unloading the model.
   void resetKvCache() {
-    if (_ctx != null) _bindings.psy_reset_kv(_ctx!);
     if (_worker != null) _send(_ResetKvRequest());
   }
 
@@ -576,13 +576,7 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
   /// `generation_ms`, and `total_ms`. Returns an empty map if unloaded.
   Map<String, Object?> lastGenerateStats() {
     if (_ctx == null) return const {};
-    final ptr = _bindings.psy_last_generate_stats(_ctx!);
-    final json = ptr.cast<Utf8>().toDartString();
-    try {
-      return jsonDecode(json) as Map<String, Object?>;
-    } on FormatException {
-      return const {};
-    }
+    return Map.unmodifiable(_lastStats);
   }
 
   @override
@@ -615,14 +609,21 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
     }
     final conversation = _conversationJson(systemFrame, turns);
     final jsonPtr = conversation.toNativeUtf8();
-    final outPtr = calloc<ffi.Char>(4096);
+    var outPtr = calloc<ffi.Char>(4096);
     try {
-      final written = _bindings.psy_apply_chat_template(
+      var written = _bindings.psy_apply_chat_template(
         _ctx!,
         jsonPtr.cast(),
         outPtr,
         4096,
       );
+      if (written >= 4096) {
+        calloc.free(outPtr);
+        final capacity = written + 1;
+        outPtr = calloc<ffi.Char>(capacity);
+        written = _bindings.psy_apply_chat_template(
+            _ctx!, jsonPtr.cast(), outPtr, capacity);
+      }
       if (written < 0) {
         return const core.PlainChatTemplate().render(
           systemFrame: systemFrame,
@@ -674,11 +675,13 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
   /// Returns once generation completes, is cancelled, or errors. Only one
   /// generation may be in flight at a time; concurrent calls are rejected
   /// with [InferenceException] to prevent races against the native context.
+  /// [nCtx], when positive, applies an additional caller cap; omission uses
+  /// the actual loaded model context and a caller can never enlarge it.
   Future<void> generate(
     GenerationParams params,
     void Function(String token, bool isCompleteCodepoint) onToken, {
     String? correlationId,
-    int nCtx = 2048,
+    int nCtx = 0,
   }) async {
     if (_generationInFlight) {
       throw InferenceException(
@@ -689,6 +692,7 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
 
     await _generationLock.synchronized(() async {
       _generationInFlight = true;
+      _cancelRequested = false;
       try {
         if (_ctx == null) {
           throw InferenceException(
@@ -697,10 +701,15 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
           );
         }
 
+        final loadedContext = metadata()['n_ctx'];
+        if (loadedContext is! int || loadedContext <= 0) {
+          throw InferenceException('Loaded model context size is unavailable',
+              kind: InferenceErrorKind.loadFailure);
+        }
         guardContextWindow(
           prompt: params.prompt,
           maxOutputTokens: params.maxTokens,
-          nCtx: nCtx,
+          nCtx: nCtx > 0 && nCtx < loadedContext ? nCtx : loadedContext,
         );
 
         await _ensureWorker();
@@ -721,7 +730,11 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
             onToken(response.text, response.isCompleteCodepoint);
           } else if (response is _GenerateDoneResponse) {
             sub.cancel();
+            _lastStats = response.stats;
             _generationInFlight = false;
+            // The final native token may already have completed when the UI
+            // asks to cancel. Clear that late flag before any following turn.
+            if (_cancelRequested && response.result != 1) resetKvCache();
             if (response.result == 1) {
               _logger.warn('inference', 'generation_cancelled');
               // A cancelled turn leaves partial KV state; reset it so the next
@@ -734,7 +747,9 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
             } else if (response.result < 0) {
               completer.completeError(InferenceException(
                 'Native generation failed',
-                kind: InferenceErrorKind.generationError,
+                kind: response.result == -2
+                    ? InferenceErrorKind.contextOverflow
+                    : InferenceErrorKind.generationError,
               ));
             } else {
               _logger.success('inference', 'generation_complete', kv: {
@@ -758,23 +773,33 @@ class InferenceService implements core.TokenCounter, core.ChatTemplate {
     });
   }
 
-  /// Cancels an in-flight generation. Safe to call from any isolate.
+  /// Writes the native atomic cancellation flag directly; a worker message
+  /// cannot be processed while that worker is inside a blocking FFI decode.
   void cancel() {
-    if (_worker != null) _send(_CancelRequest());
+    if (_generationInFlight && _ctx != null) {
+      _cancelRequested = true;
+      _bindings.psy_cancel(_ctx!);
+    }
   }
 
   /// Disposes the service, terminates the worker isolate, and unloads the model.
   Future<void> dispose() async {
     if (_disposed) return;
     _disposed = true;
-    unloadModel();
-    if (_worker != null) {
-      _send(_DisposeRequest());
-      _worker!.kill(priority: Isolate.immediate);
-      _worker = null;
-    }
-    _receivePort.close();
-    await _responseController.close();
+    cancel();
+    await _generationLock.synchronized(() async {
+      _ctx = null;
+      if (_worker != null) {
+        final disposed = _responseController.stream
+            .firstWhere((response) => response is _DisposedResponse);
+        _send(_DisposeRequest());
+        await disposed;
+        _worker = null;
+        _workerSendPort = null;
+      }
+      _receivePort.close();
+      await _responseController.close();
+    });
   }
 }
 
@@ -787,12 +812,15 @@ class Lock {
     while (_active != null) {
       await _active;
     }
-    final future = task();
-    _active = future;
+    // Waiters observe release, not the preceding task's error. In particular,
+    // disposal must still run after an active generation was cancelled.
+    final released = Completer<void>();
+    _active = released.future;
     try {
-      return await future;
+      return await task();
     } finally {
       _active = null;
+      released.complete();
     }
   }
 }

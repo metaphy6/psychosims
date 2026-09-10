@@ -1,3 +1,20 @@
 add_executable(native_smoke_test native_smoke_test.cpp)
 target_link_libraries(native_smoke_test psychosims_native)
-add_test(NAME native_smoke COMMAND native_smoke_test)
+add_executable(native_sanitizer_cycles native_sanitizer_cycles.cpp)
+target_link_libraries(native_sanitizer_cycles psychosims_native Threads::Threads)
+add_executable(native_sampling_test native_sampling_test.cpp)
+target_include_directories(native_sampling_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_link_libraries(native_sampling_test PRIVATE llama ggml Threads::Threads)
+foreach(test_target native_smoke_test native_sanitizer_cycles native_sampling_test)
+    # Release builds must execute assertions too.
+    if(MSVC)
+        target_compile_options(${test_target} PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(${test_target} PRIVATE -UNDEBUG)
+    endif()
+endforeach()
+add_test(NAME native_contracts COMMAND native_smoke_test --contracts-only)
+add_test(NAME native_real_smoke COMMAND native_smoke_test
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../assets/models/qwen2.5-1.5b-instruct-q4_k_m.gguf")
+
+add_test(NAME native_sampling COMMAND native_sampling_test)

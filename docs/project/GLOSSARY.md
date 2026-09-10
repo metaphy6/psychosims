@@ -1,7 +1,7 @@
 # 📖 Glossary
 
 Domain terms used across Psychosims. One line each. Alphabetic. Section
-references (§N) point at [`STARTER.md`](../../STARTER.md).
+references (§N) point at [`STARTER.md`](../design/STARTER.md).
 
 | Term | Meaning |
 |---|---|

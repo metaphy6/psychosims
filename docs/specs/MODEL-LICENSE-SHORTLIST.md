@@ -3,7 +3,7 @@
 > **Closes register item C-2** ([ROADMAP](../planning/ROADMAP.md#-conceptual-corrections-register)).
 > Candidate open base models for the on-device "Universal Actor" (§5), compared on
 > the one axis that constrains a commercial embedded game: **redistribution terms**.
-> Section refs (§N) → [`STARTER.md`](../../STARTER.md).
+> Section refs (§N) → [`STARTER.md`](../design/STARTER.md).
 
 - **Status:** drafted shortlist (final model chosen at the PoC, §1, jointly with C-1)
 - **Owner:** @maintainer
@@ -58,6 +58,13 @@ in-app attribution string, or MAU clause.
   recorded in the PoC exit report and the [DECISION_LOG](../project/DECISION_LOG.md).
 
 ## Open (resolved at selection)
+
+The 2026-09-10 local review reconciled the exact Qwen2.5-1.5B-Instruct
+Apache-2.0 and Phi-3.5-mini MIT sources, plus SmolLM2's official Apache-2.0
+model-card declaration, with [bundled attribution](../../LICENSES.md).
+The [dependency inventory](../reports/dependency-inventory.cdx.json) fingerprints
+the bundled texts. This corrects the former Qwen non-commercial attribution;
+it does not close model/device selection or distribution acceptance.
 
 - Exact license text re-verification for every shortlisted model + size.
 - Attribution wording placement (about screen / store listing).

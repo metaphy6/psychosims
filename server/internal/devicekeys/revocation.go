@@ -83,7 +83,7 @@ func RevocationHandler(svc *Service, ttl time.Duration) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		list, err := svc.BuildRevocationList(r.Context(), ttl)
 		if err != nil {
-			api.NewInternalError("revocation list failed: " + err.Error()).Write(w, ctxutil.RequestID(r.Context()))
+			api.NewInternalError("revocation list failed: "+err.Error()).Write(w, ctxutil.RequestID(r.Context()))
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")

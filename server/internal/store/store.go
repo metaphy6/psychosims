@@ -48,10 +48,6 @@ func New(ctx context.Context, cfg *config.Config) (*Store, error) {
 	}
 
 	s := &Store{db: db, cfg: cfg}
-	if err := s.ensureMigrationsTable(ctx); err != nil {
-		_ = db.Close()
-		return nil, fmt.Errorf("ensure migrations table: %w", err)
-	}
 	if err := s.MigrateUp(ctx); err != nil {
 		_ = db.Close()
 		return nil, fmt.Errorf("migrate up: %w", err)
@@ -75,6 +71,7 @@ func (s *Store) Tx(ctx context.Context, fn func(*sql.Tx) error) error {
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
+	defer tx.Rollback()
 	if err := fn(tx); err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return fmt.Errorf("rollback failed after error (%v): %w", err, rbErr)
@@ -108,54 +105,68 @@ func (s *Store) CurrentSchemaVersion(ctx context.Context) (int, error) {
 	return int(version.Int64), nil
 }
 
-// MigrateUp applies all pending migrations in version order.
+// MigrateUp applies schema and version records in one serialized transaction.
 func (s *Store) MigrateUp(ctx context.Context) error {
-	migs := Migrations()
-	sort.Slice(migs, func(i, j int) bool { return migs[i].Version < migs[j].Version })
-
-	current, err := s.CurrentSchemaVersion(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, m := range migs {
-		if m.Version <= current {
-			continue
-		}
-		if _, err := s.db.ExecContext(ctx, m.Up); err != nil {
-			return fmt.Errorf("migration %d (%s) up failed: %w", m.Version, m.Description, err)
-		}
-		if _, err := s.db.ExecContext(ctx, `INSERT INTO schema_migrations (version) VALUES ($1)`, m.Version); err != nil {
-			return fmt.Errorf("record migration %d: %w", m.Version, err)
-		}
-		current = m.Version
-	}
-	return nil
+	return s.migrate(ctx, -1)
 }
 
-// MigrateDown rolls back migrations to targetVersion.
+// MigrateDown rolls back to targetVersion atomically.
 func (s *Store) MigrateDown(ctx context.Context, targetVersion int) error {
-	migs := Migrations()
-	sort.Slice(migs, func(i, j int) bool { return migs[i].Version > migs[j].Version })
-
-	current, err := s.CurrentSchemaVersion(ctx)
-	if err != nil {
-		return err
+	if targetVersion < 0 {
+		return fmt.Errorf("negative target version")
 	}
+	return s.migrate(ctx, targetVersion)
+}
 
-	for _, m := range migs {
-		if m.Version > current || m.Version <= targetVersion {
-			continue
+func (s *Store) migrate(ctx context.Context, target int) error {
+	return s.Tx(ctx, func(tx *sql.Tx) error {
+		// Transaction-scoped lock also protects first-time migration-table creation.
+		if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(736001)`); err != nil {
+			return err
 		}
-		if m.Down == "" {
-			return fmt.Errorf("migration %d has no rollback", m.Version)
+		if _, err := tx.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS schema_migrations (
+            version INTEGER PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`); err != nil {
+			return err
 		}
-		if _, err := s.db.ExecContext(ctx, m.Down); err != nil {
-			return fmt.Errorf("migration %d (%s) down failed: %w", m.Version, m.Description, err)
+		var current int
+		if err := tx.QueryRowContext(ctx, `SELECT COALESCE(MAX(version),0) FROM schema_migrations`).Scan(&current); err != nil {
+			return err
 		}
-		if _, err := s.db.ExecContext(ctx, `DELETE FROM schema_migrations WHERE version = $1`, m.Version); err != nil {
-			return fmt.Errorf("unrecord migration %d: %w", m.Version, err)
+		migs := Migrations()
+		sort.Slice(migs, func(i, j int) bool {
+			if target < 0 {
+				return migs[i].Version < migs[j].Version
+			}
+			return migs[i].Version > migs[j].Version
+		})
+		for _, m := range migs {
+			statement := m.Up
+			if target < 0 {
+				if m.Version <= current {
+					continue
+				}
+			} else {
+				if m.Version > current || m.Version <= target {
+					continue
+				}
+				statement = m.Down
+			}
+			if statement == "" {
+				return fmt.Errorf("migration %d has no script", m.Version)
+			}
+			if _, err := tx.ExecContext(ctx, statement); err != nil {
+				return fmt.Errorf("migration %d (%s): %w", m.Version, m.Description, err)
+			}
+			if target < 0 {
+				if _, err := tx.ExecContext(ctx, `INSERT INTO schema_migrations(version) VALUES($1)`, m.Version); err != nil {
+					return err
+				}
+			} else {
+				if _, err := tx.ExecContext(ctx, `DELETE FROM schema_migrations WHERE version=$1`, m.Version); err != nil {
+					return err
+				}
+			}
 		}
-	}
-	return nil
+		return nil
+	})
 }

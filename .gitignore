@@ -9,6 +9,7 @@ __pycache__/
 
 # auto-installed/generated on open — never source of truth
 .pydeps/
+.tools/
 *.egg-info/
 
 # scaffold output / per-project agent runtime
@@ -30,7 +31,6 @@ docs/tracking/state/*
 .flutter-plugins-dependencies
 .packages
 build/
-pubspec.lock
 *.iml
 .idea/
 android/.gradle/
@@ -70,6 +70,7 @@ cmake-build-*/
 
 # Android Gradle caches generated during local builds
 app/android/.gradle/
+app/android/local.properties
 
 # Large binaries — models, assets, build outputs are never committed
 *.gguf

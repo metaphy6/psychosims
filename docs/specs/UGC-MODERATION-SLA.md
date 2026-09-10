@@ -4,7 +4,7 @@
 > §2.4 makes this the entry gate for the open authoring ecosystem: before the
 > portal opens to external contributors, a moderation staffing model + review SLA
 > must exist so the validation/signing pipeline (§2.2, §2.5) is backed by real
-> capacity, not an unbounded unstaffed queue. Section refs (§N) → [`STARTER.md`](../../STARTER.md).
+> capacity, not an unbounded unstaffed queue. Section refs (§N) → [`STARTER.md`](../design/STARTER.md).
 
 - **Status:** policy set (enforced as the Phase 6.4 entry gate)
 - **Owner:** @maintainer
@@ -64,7 +64,7 @@ creator standing.
 - **Signing gate** (§2.2): only reviewed content is signed + published.
 - **Revocation list** (§2.5, §17): published content can be quarantined/pulled from
   the CDN post-hoc; clients drop revoked entries.
-- **Creator standing / royalties** ([§21](../../STARTER.md)): repeated violations reduce
+- **Creator standing / royalties** ([§21](../design/STARTER.md)): repeated violations reduce
   standing; royalties already gated on validated events + anomaly detection.
 - **Trusted-creator fast-lane:** proven creators get lighter sampling to keep the
   queue tractable at scale.

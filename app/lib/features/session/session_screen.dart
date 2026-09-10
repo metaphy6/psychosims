@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:psychemas/psychemas.dart';
 
 import '../../shared/l10n.dart';
+import '../../app/app_routes.dart';
 import 'session_controller.dart';
 
 /// Phase 1 minimal session screen: structured action selector, streaming
@@ -39,12 +40,43 @@ class SessionScreen extends StatelessWidget {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(
-                    controller.errorMessage.value,
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(controller.errorMessage.value,
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                        onPressed: controller.loadCase,
+                        child: const Text(L10n.sessionRetry)),
+                    TextButton(
+                        onPressed: () => Get.toNamed(AppRoutes.modelFetch),
+                        child: const Text(L10n.homeFetchModel)),
+                  ]),
                 ),
               );
+            case SessionStatus.completed:
+              final result = controller.result.value;
+              return Center(
+                  child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Text(
+                      result?.outcome == SessionOutcome.succeed
+                          ? L10n.sessionSuccess
+                          : L10n.sessionFailure,
+                      style: Theme.of(context).textTheme.headlineMedium),
+                  const SizedBox(height: 16),
+                  Text(controller.onlineContext == null
+                      ? L10n.sessionSaved
+                      : L10n.onlineQueued),
+                  for (final reward in result?.rewards ?? <LedgerEvent>[])
+                    Text(
+                        '${reward.currency.name}: ${reward.amountMicros ~/ 1000000}'),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                      onPressed: controller.startNextSession,
+                      child: const Text(L10n.sessionNext)),
+                ]),
+              ));
             case SessionStatus.ready:
             case SessionStatus.generating:
               return _SessionBody(controller: controller, l10n: l10n);
@@ -65,6 +97,14 @@ class _SessionBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        if (controller.onlineContext != null)
+          Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                  controller.onlineContext!.authorization.rewardStatus ==
+                          'conditional_certified'
+                      ? L10n.onlineConditional
+                      : L10n.onlineUncoveredStart)),
         Expanded(
           child: Obx(() {
             if (controller.displayTurns.isEmpty) {

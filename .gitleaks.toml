@@ -1,0 +1,37 @@
+title = "Psychosims secret policy"
+
+[extend]
+useDefault = true
+
+# The historical assessment says "key, produce/sign receipts". The classifier
+# extracts the English verb "produce/sign" as a credential. Only that literal
+# in that document is exempt; changing it to a key remains a finding.
+[[rules]]
+id = "generic-api-key"
+[[rules.allowlists]]
+description = "Exact assessment prose, not a credential"
+condition = "AND"
+regexTarget = "secret"
+regexes = ['''^produce/sign$''']
+paths = ['''(^|/)docs/reports/2026-09-10-project-assessment\.md$''']
+
+[[rules.allowlists]]
+description = "Public idempotency IDs in shared receipt fixtures, including decoded envelopes"
+condition = "AND"
+regexTarget = "secret"
+regexes = ['''^(ledger-fixture-00[12]|rcp_fixture_v1)$''']
+paths = ['''(^|/)(test_fixtures/receipts/(sample_receipt|signed_ed25519_v1)\.json|app/tools/generate_receipt_fixture\.dart)$''']
+
+[[rules.allowlists]]
+description = "The same public idempotency ID in the Go reconciliation fixture and its generator test"
+condition = "AND"
+regexTarget = "secret"
+regexes = ['''^rcp_fixture_v1$''']
+paths = ['''(^|/)server/internal/server/(testdata/reconciliation\.json|wire_test\.go)$''']
+
+[[rules.allowlists]]
+description = "Exact public SHA-256 of psycore token_counter.dart recorded by the drift-checked outcome compiler"
+condition = "AND"
+regexTarget = "secret"
+regexes = ['''^46c0462d693f645d00fedd4c004c3e5287c448ec89807a9e842267a3d064a119$''']
+paths = ['''(^|/)test_fixtures/outcomes/trusted_catalog_v1\.json$''']

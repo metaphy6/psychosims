@@ -43,10 +43,10 @@ func NewSQLRepository(db *sql.DB) *SQLRepository {
 
 // Get implements Repository.
 func (r *SQLRepository) Get(ctx context.Context, accountID string) (*Record, error) {
-	row := r.db.QueryRowContext(ctx, `SELECT status, last_seen, etag FROM presence WHERE account_id = $1`, accountID)
+	row := r.db.QueryRowContext(ctx, `SELECT status, suite_id, last_seen, etag, signature FROM presence WHERE account_id = $1`, accountID)
 	var rec Record
 	rec.AccountID = accountID
-	if err := row.Scan(&rec.Status, &rec.LastSeen, &rec.ETag); err != nil {
+	if err := row.Scan(&rec.Status, &rec.SuiteID, &rec.LastSeen, &rec.ETag, &rec.Signature); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, api.NewNotFound("presence not found")
 		}
@@ -58,20 +58,20 @@ func (r *SQLRepository) Get(ctx context.Context, accountID string) (*Record, err
 // Upsert implements Repository.
 func (r *SQLRepository) Upsert(ctx context.Context, rec *Record) error {
 	_, err := r.db.ExecContext(ctx, `
-		INSERT INTO presence (account_id, status, suite_id, last_seen, etag)
-		VALUES ($1, $2, $3, $4, $5)
+		INSERT INTO presence (account_id, status, suite_id, last_seen, etag, signature)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT (account_id) DO UPDATE SET
 			status = EXCLUDED.status,
 			suite_id = EXCLUDED.suite_id,
 			last_seen = EXCLUDED.last_seen,
-			etag = EXCLUDED.etag
-	`, rec.AccountID, rec.Status, rec.SuiteID, rec.LastSeen, rec.ETag)
+			etag = EXCLUDED.etag, signature = EXCLUDED.signature
+	`, rec.AccountID, rec.Status, rec.SuiteID, rec.LastSeen, rec.ETag, rec.Signature)
 	return err
 }
 
 // ListByStatus implements Repository.
 func (r *SQLRepository) ListByStatus(ctx context.Context, status string) ([]Record, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT account_id, status, suite_id, last_seen, etag FROM presence WHERE status = $1`, status)
+	rows, err := r.db.QueryContext(ctx, `SELECT account_id, status, suite_id, last_seen, etag, signature FROM presence WHERE status = $1`, status)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (r *SQLRepository) ListByStatus(ctx context.Context, status string) ([]Reco
 	var out []Record
 	for rows.Next() {
 		var rec Record
-		if err := rows.Scan(&rec.AccountID, &rec.Status, &rec.SuiteID, &rec.LastSeen, &rec.ETag); err != nil {
+		if err := rows.Scan(&rec.AccountID, &rec.Status, &rec.SuiteID, &rec.LastSeen, &rec.ETag, &rec.Signature); err != nil {
 			return nil, err
 		}
 		out = append(out, rec)

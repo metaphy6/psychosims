@@ -29,6 +29,9 @@ const char* psy_version(void);
 /// Loads a model from [model_path] and returns a context. Returns NULL on
 /// failure; details are emitted through the logging shim.
 /// [params] is a JSON object string with generation parameters.
+/// Real inference is the default. Only the explicit {"backend":"stub"}
+/// development option creates a stub; failed real loads always return NULL.
+/// Metadata identifies the selected backend as "llama.cpp" or "stub".
 PsyContext* psy_context_load(const char* model_path, const char* params);
 
 /// Destroys the inference context and frees all native resources.
@@ -62,7 +65,9 @@ const char* psy_model_metadata(PsyContext* ctx);
 
 /// Generates tokens from the prompt in [params_json], streaming each token via
 /// [callback]. [user_data] is passed through untouched.
-/// Returns 0 on success, 1 if cancelled, -1 on error.
+/// Returns 0 on success, 1 if cancelled, -1 on error, or -2 if prompt tokens
+/// plus requested output exceed the actual loaded context. Overflow is rejected
+/// before changing the KV cache; prompts are never silently truncated.
 int32_t psy_generate(
     PsyContext* ctx,
     const char* params_json,

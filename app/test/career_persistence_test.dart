@@ -5,11 +5,14 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:psychemas/psychemas.dart';
+import 'package:psycore/psycore.dart' as core;
+import 'package:psyconfig/psyconfig.dart';
+import 'test_manifest_data.dart';
 import 'package:psychosims/shared/career_persistence.dart';
 
 SignedEnvelope _dummyEnvelope(SessionReceipt receipt) => SignedEnvelope(
       canonicalReceiptBytes: CanonicalJson.encode(receipt.toJson()),
-      signature: const [0, 1, 2, 3],
+      signature: List<int>.filled(64, 0),
       suiteId: 'ed25519-v1',
       signingKeyId: 'test-key-1',
     );
@@ -40,7 +43,7 @@ void main() {
 
     CareerSave sampleSave() {
       return CareerSave(
-        profile: CareerProfile(
+        profile: const CareerProfile(
           profileId: 'profile-1',
           rulesetVersion: '0.5.0',
           snapshotBalancesMicros: {'cash': 12345000000},
@@ -58,14 +61,14 @@ void main() {
           unlockedFields: ['general_psychiatry'],
           isOnboarding: false,
         ),
-        clinic: ClinicAsset(
+        clinic: const ClinicAsset(
           officeId: 'office-1',
           tier: 2,
           isOwned: true,
           monthlyRentMicros: 0,
         ),
         ownedCases: {
-          'case-1': CaseHistoryEnvelope(
+          'case-1': const CaseHistoryEnvelope(
             carryOverDeltas: [
               StructuredDelta(
                 rulesetVersion: '0.5.0',
@@ -98,6 +101,55 @@ void main() {
         ],
       );
     }
+
+    test('concurrent terminal retries award exactly once', () async {
+      Future<CareerSessionRecord> complete(
+              [String sessionId = 'same-session']) =>
+          service.completeSession(
+            sessionId: sessionId,
+            manifest: testManifest(),
+            startState: const SessionStartState(
+                loadout: Loadout.empty(slotCap: 6),
+                library: CardLibrary.empty(),
+                controllers: TherapyControllerSettings(),
+                initialAxes: {},
+                rootSeed: 42),
+            actions: const [InteractionPattern.openQuestion],
+            outputs: const [
+              core.TurnOutput(
+                  nextState:
+                      core.SimState(seed: 42, turn: 1, sessionProgress: 100),
+                  deltas: [],
+                  requiredClueTokens: [],
+                  outcome: SessionOutcome.succeed,
+                  isTerminal: true,
+                  lifecycle: CaseLifecycle.cured)
+            ],
+            timestampSeconds: 100,
+            config: loadConfig(environment: 'test'),
+          );
+      final results = await Future.wait([complete(), complete()]);
+      expect(results.map((e) => e.sessionId).toSet(), {'same-session'});
+      final loaded = (await service.load())!;
+      expect(loaded.completedSessions, hasLength(1));
+      expect(
+          loaded.profile.eventTail.where((e) => e.currency == CurrencyType.xp),
+          hasLength(1));
+      await Future.wait([complete('second'), complete('third')]);
+      expect((await service.load())!.completedSessions, hasLength(3));
+    });
+
+    test('oversize writes fail before replacing the last readable save',
+        () async {
+      await service.save(sampleSave());
+      final oversize = sampleSave().copyWith(
+          profile: sampleSave().profile.copyWith(
+                profileId: 'x' * (CareerPersistenceService.maxImportBytes + 1),
+              ));
+      await expectLater(
+          service.save(oversize), throwsA(isA<ImportBudgetException>()));
+      expect((await service.load())!.profile.profileId, 'profile-1');
+    });
 
     test('round-trips a career save', () async {
       final save = sampleSave();

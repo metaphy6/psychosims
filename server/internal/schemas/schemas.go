@@ -7,6 +7,13 @@
 // canonical bytes.
 package schemas
 
+// Protocol count caps cover the bounded core's full 120-turn horizon.
+// Keep in sync with receipt.schema.json and the Dart configuration authority.
+const MaxReceiptActions = 120
+const MaxReceiptDeltas = 1024
+const MaxCanonicalReceiptBytes = 131072
+const MaxReceiptBatchBytes = 524288
+
 // InteractionPattern is the core-facing action played during a session.
 // Player-facing names are localization keys; this enum is never shown raw.
 type InteractionPattern string
@@ -114,11 +121,13 @@ type TherapyControllerSettings struct {
 // conditions. It is bound to the receipt so the server can validate that every
 // action references cards the player actually owns.
 type SessionStartState struct {
-	Loadout     Loadout                   `json:"loadout"`
-	Library     CardLibrary               `json:"library"`
-	Controllers TherapyControllerSettings `json:"controllers"`
-	InitialAxes map[string]int            `json:"initial_axes"`
-	RootSeed    int                       `json:"root_seed"`
+	CaseID           string                    `json:"case_id,omitempty"`
+	ManifestChecksum string                    `json:"manifest_checksum,omitempty"`
+	Loadout          Loadout                   `json:"loadout"`
+	Library          CardLibrary               `json:"library"`
+	Controllers      TherapyControllerSettings `json:"controllers"`
+	InitialAxes      map[string]int            `json:"initial_axes"`
+	RootSeed         int                       `json:"root_seed"`
 }
 
 // StructuredDelta is a single structured, deterministic state-axis movement.
@@ -184,3 +193,17 @@ type PatientManifest struct {
 // CurrentReceiptSchemaVersion is the schema version the server expects for
 // incoming receipts.
 const CurrentReceiptSchemaVersion = "0.3.0"
+
+// ValidIdentifier bounds opaque protocol identifiers to printable identifier
+// syntax. They are never general prose fields or transcript storage.
+func ValidIdentifier(value string) bool {
+	if len(value) == 0 || len(value) > 128 {
+		return false
+	}
+	for _, c := range []byte(value) {
+		if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == '-' || c == '.' || c == ':') {
+			return false
+		}
+	}
+	return true
+}

@@ -7,17 +7,19 @@ _per-manifest solvability · bot sweep · win-rate distributions · economy flag
 
 ## 1. Corpus solvability & content compliance (no model binary)
 
-| case id | memory_class | solvable? | content-compliant? |
-| --- | --- | --- | --- |
-| poc-vexa-001 | stateless | ✅ | ✅ |
-| siege.brumosis | persistent | ✅ | ✅ |
+| case id | memory_class | search result | winning turns | transitions searched | content-compliant? |
+| --- | --- | --- | --- | --- | --- |
+| poc-vexa-001 | stateless | solved | 100 | 100 | ✅ |
+| siege.brumosis | persistent | solved | 100 | 100 | ✅ |
+
+> A solved result has a replayable winning action sequence for seed 42. Search uses at most 120 turns and 20,000 transitions; other results are unproven within those bounds, not a claim of universal impossibility.
 
 
 ## 2. Bot sweep across skill levels
 
 - total runs: 72 · total turns: 6393
 - overall win rate: 83.3%
-- throughput: 2000 sessions/sec (36 ms)
+- throughput: 2323 sessions/sec (31 ms)
 
 
 ### Win-rate distribution by bot skill

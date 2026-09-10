@@ -13,7 +13,7 @@ import 'package:psycore/psycore.dart';
 /// Usage:
 ///   dart tools/balance_sandbox_cli.dart content/manifests
 ///
-/// Exits non-zero if any manifest is unsolvable or an inflation flag fires.
+/// Exits non-zero if no winning witness is found or an inflation flag fires.
 void main(List<String> args) async {
   final manifestDir = args.isNotEmpty ? args.first : 'content/manifests';
   final dir = Directory(manifestDir);
@@ -30,8 +30,10 @@ void main(List<String> args) async {
     if (entity is! File) continue;
     if (!entity.path.endsWith('.json')) continue;
     final manifest = loader.load(entity.readAsBytesSync());
-    if (!oracle.isSolvable(manifest)) {
-      stderr.writeln('❌ ${manifest.id} is not mechanically solvable');
+    final proof = oracle.analyze(manifest);
+    if (!proof.solved) {
+      stderr.writeln('❌ ${manifest.id}: no winning path proven '
+          '(${proof.status.name}, ${proof.exploredTransitions} transitions)');
       exit(3);
     }
     if (!oracle.isContentCompliant(manifest)) {
@@ -71,10 +73,6 @@ void main(List<String> args) async {
   const runner = ScenarioRunner(
     rulesetVersion: '0.1.0',
     clock: InjectedClock.replay(0),
-  );
-  const sandbox = BalanceSandbox(
-    runner: runner,
-    scenarios: [], // replaced below
   );
   final activeSandbox = BalanceSandbox(
     runner: runner,

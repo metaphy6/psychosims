@@ -2,6 +2,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:psychosims/shared/dialogue_sanitizer.dart';
 
 void main() {
+  test('clue matching and removal agree on case', () {
+    const sanitizer = DialogueSanitizer();
+    expect(
+        sanitizer
+            .hasRequiredClueTokens('A feeling. [FERVE-AXINE]', ['ferve-axine']),
+        isTrue);
+    expect(
+        sanitizer
+            .sanitize('A feeling. [FERVE-AXINE]', clueTokens: ['ferve-axine']),
+        'A feeling.');
+  });
+
   group('DialogueSanitizer', () {
     const sanitizer = DialogueSanitizer();
 

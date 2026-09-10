@@ -3,7 +3,7 @@
 > **Closes register item C-7** ([ROADMAP](../planning/ROADMAP.md#-conceptual-corrections-register)).
 > §1 PoC exit artifact + §6 tiered structure. The *methodology* is fixed here; the
 > measured worst-case number lands at the PoC (Phase 1.6) against the chosen model
-> (C-2). Section refs (§N) → [`STARTER.md`](../../STARTER.md).
+> (C-2). Section refs (§N) → [`STARTER.md`](../design/STARTER.md).
 
 - **Status:** methodology set (measured value recorded in Phase 1.6)
 - **Owner:** @maintainer

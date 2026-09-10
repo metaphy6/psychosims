@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import 'canonical_json.dart';
+import 'card.dart';
 import 'interaction_pattern.dart';
 import 'manifest.dart';
 import 'manifest_validation_error.dart';
@@ -89,7 +90,16 @@ class ManifestLoader {
 
     _verifyChecksum(decoded);
 
-    final manifest = _parseKnownFields(decoded);
+    late final PatientManifest manifest;
+    try {
+      manifest = _parseKnownFields(decoded);
+    } on TypeError {
+      throw const ManifestValidationError(
+          ManifestErrorKind.malformed, 'Invalid manifest field type');
+    } on ArgumentError {
+      throw const ManifestValidationError(
+          ManifestErrorKind.malformed, 'Invalid manifest field value');
+    }
 
     _validateLocalizationKeys(manifest);
 
@@ -103,6 +113,9 @@ class ManifestLoader {
         (raw['interaction_patterns'] as List<dynamic>? ?? []).cast<String>();
     final clueTokens =
         (raw['clue_tokens'] as List<dynamic>? ?? []).cast<String>();
+    final patterns =
+        interactionPatternNames.map(InteractionPatternJson.fromJson).toList();
+    final cards = _parseCards(raw['cards'], patterns);
 
     return PatientManifest(
       schemaVersion: raw['schema_version'] as String,
@@ -115,12 +128,34 @@ class ManifestLoader {
       styleArchetype:
           StyleArchetypeJson.fromJson(raw['style_archetype'] as String),
       initialState: initialState,
-      interactionPatterns:
-          interactionPatternNames.map(InteractionPatternJson.fromJson).toList(),
+      interactionPatterns: patterns,
+      cards: cards,
       clueTokens: clueTokens,
       maxHistoryTurns: raw['max_history_turns'] as int,
       modelFacingTemplate: raw['model_facing_template'] as String,
     );
+  }
+
+  List<Card>? _parseCards(Object? raw, List<InteractionPattern> patterns) {
+    if (raw == null) return null;
+    if (raw is! List) {
+      throw const ManifestValidationError(
+          ManifestErrorKind.malformed, 'Cards must be a list');
+    }
+    // Preserve the existing empty/absent-list legacy fallback contract.
+    if (raw.isEmpty) return null;
+    final cards =
+        raw.map((item) => Card.fromJson(item as Map<String, dynamic>)).toList();
+    final expected =
+        patterns.map((p) => cardFromInteractionPattern(p).id).toSet();
+    final actual = cards.map((c) => c.id).toSet();
+    if (actual.length != cards.length ||
+        actual.length != expected.length ||
+        !actual.containsAll(expected)) {
+      throw const ManifestValidationError(ManifestErrorKind.malformed,
+          'Explicit cards must define each executable action exactly once');
+    }
+    return cards;
   }
 
   void _verifyChecksum(Map<String, dynamic> raw) {
@@ -145,7 +180,11 @@ class ManifestLoader {
 
   void _validateLocalizationKeys(PatientManifest manifest) {
     if (catalog == null) return;
-    for (final key in [manifest.nameKey, manifest.displayNameKey]) {
+    for (final key in [
+      manifest.nameKey,
+      manifest.displayNameKey,
+      ...?manifest.cards?.map((card) => card.nameKey)
+    ]) {
       if (!catalog!.containsKey(key)) {
         throw ManifestValidationError(
           ManifestErrorKind.missingLocalization,

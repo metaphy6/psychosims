@@ -12,7 +12,7 @@
 - **Name**: Psychosims
 - **One-liner**: Fictional psychology-practice sim; on-device AI voices patients, a deterministic core owns outcomes, a small server owns trust.
 - **Primary language**: Dart / Flutter (client); server runtime finalized in Phase 3.
-- **Blueprint**: [`STARTER.md`](../../STARTER.md) (§1–§24).
+- **Blueprint**: [`STARTER.md`](../design/STARTER.md) (§1–§24).
 
 ## Key paths
 

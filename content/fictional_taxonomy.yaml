@@ -36,6 +36,6 @@ pharma_suffixes:
 
 # Forbidden exact terms and patterns (real DSM/ICD or drug brands).
 forbidden_patterns:
-  - "(?i)\\b(depression|schizophrenia|bipolar|ptsd|ocd|adhd|autism|dementia|alzheimer|parkinson|anxiety disorder|personality disorder)\\b"
+  - "(?i)\\b(depression|major depressive disorder|schizophrenia|bipolar|ptsd|ocd|adhd|autism|dementia|alzheimer|parkinson|anxiety disorder|personality disorder)\\b"
   - "(?i)\\b(prozac|zoloft|xanax|lexapro|abilify|adderall|ritalin|valium|klonopin|paxil|celexa|cymbalta|effexor|wellbutrin)\\b"
-  - "(?i)\\b(dsm[- ]?5|dsm[- ]?v|icd[- ]?10|icd[- ]?11)\\b"
+  - "(?i)\\b(dsm[- ]?5|dsm[- ]?v|dsm[- ]?iv|icd[- ]?10|icd[- ]?11)\\b"

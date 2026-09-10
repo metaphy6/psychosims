@@ -2,7 +2,7 @@
 
 > **Closes register item C-1** ([ROADMAP](../planning/ROADMAP.md#-conceptual-corrections-register)).
 > The concrete hardware floor the §1 device-viability gate measures against.
-> Without this, that gate is meaningless. Section refs (§N) → [`STARTER.md`](../../STARTER.md).
+> Without this, that gate is meaningless. Section refs (§N) → [`STARTER.md`](../design/STARTER.md).
 
 - **Status:** drafted (a *target floor*; confirmed on physical hardware in Phase 1.6)
 - **Owner:** @maintainer

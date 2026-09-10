@@ -28,15 +28,28 @@ void main() {
     if (entity is! File || !entity.path.endsWith('.json')) continue;
     final manifest = loader.load(entity.readAsBytesSync());
     manifests.add(manifest);
+    final proof = oracle.analyze(manifest);
     compRows.add([
       manifest.id,
       manifest.memoryClass.toJson(),
-      MarkdownReport.ok(oracle.isSolvable(manifest)),
+      proof.status.name,
+      '${proof.actions.length}',
+      '${proof.exploredTransitions}',
       MarkdownReport.ok(oracle.isContentCompliant(manifest)),
     ]);
   }
-  r.table(
-      ['case id', 'memory_class', 'solvable?', 'content-compliant?'], compRows);
+  r.table([
+    'case id',
+    'memory_class',
+    'search result',
+    'winning turns',
+    'transitions searched',
+    'content-compliant?'
+  ], compRows);
+  r.callout(
+      'A solved result has a replayable winning action sequence for seed 42. '
+      'Search uses at most 120 turns and 20,000 transitions; other results are '
+      'unproven within those bounds, not a claim of universal impossibility.');
 
   // 2. Bot sweep.
   r.h2('2. Bot sweep across skill levels');

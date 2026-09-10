@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"psychosims.dev/server/internal/psylog"
 )
 
 const outDir = "docs/reports/showcase/phase3"
@@ -37,7 +39,7 @@ func main() {
 	}
 
 	for _, d := range demos {
-		fmt.Printf("▶ %s\n", d.name)
+		(&psylog.Logger{MinLevel: psylog.Info}).Info("showcase", "generate", psylog.KV{"report": d.name})
 		if err := d.fn(filepath.Join(out, d.name)); err != nil {
 			fmt.Fprintf(os.Stderr, "%s: %v\n", d.name, err)
 			os.Exit(1)
@@ -70,8 +72,8 @@ func newReport(title string) *report {
 	return r
 }
 
-func (r *report) h1(s string)  { r.sb.WriteString("# " + s + "\n\n") }
-func (r *report) h2(s string)  { r.sb.WriteString("## " + s + "\n\n") }
+func (r *report) h1(s string)                { r.sb.WriteString("# " + s + "\n\n") }
+func (r *report) h2(s string)                { r.sb.WriteString("## " + s + "\n\n") }
 func (r *report) line(s string, args ...any) { r.sb.WriteString(fmt.Sprintf(s+"\n", args...)) }
 func (r *report) code(s string) {
 	r.sb.WriteString("```\n" + s + "\n```\n\n")

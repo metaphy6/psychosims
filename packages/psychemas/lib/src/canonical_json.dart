@@ -65,7 +65,7 @@ class CanonicalJson {
       final buffer = StringBuffer()..write('{');
       for (var i = 0; i < keys.length; i++) {
         if (i > 0) buffer.write(',');
-        buffer.write('"${keys[i]}":${_encode(value[keys[i]])}');
+        buffer.write('${jsonEncode(keys[i])}:${_encode(value[keys[i]])}');
       }
       buffer.write('}');
       return buffer.toString();

@@ -6,11 +6,11 @@
 
 | Tool | Version | Used by | Validation |
 |---|---|---|---|
-| Flutter / Dart | 3.22.x / 3.4.x | `app/`, `packages/`, `config/`, `tools/` | Linux desktop + x86 Android emulator (Phase 1) |
+| Flutter / Dart | 3.38.5 / 3.10.4 | `app/`, `packages/`, `config/`, `tools/` | Current Linux tests; CI pins Flutter; device acceptance remains pending |
 | Go | 1.26.x | `server/` | Linux desktop + CI |
 | clang / CMake | system latest stable | `native/` | Linux desktop + CI |
-| Android NDK | 26.x | `native/` Android build | x86 Android emulator (Phase 1) |
-| ffigen | 12.x | Dart FFI bindings | Linux desktop + CI |
+| Android NDK | `flutter.ndkVersion` in Gradle | `native/` Android build | Exact SDK/NDK and emulator acceptance remain to be verified |
+| ffigen | `^10.0.0` in `app/pubspec.yaml` | Dart FFI bindings | Generator lock/drift verification remains open |
 
 ## Build matrix
 
@@ -25,9 +25,11 @@
 
 ## Reproducibility
 
-- Dependency lockfiles are committed (`pubspec.lock` for Dart when stable,
-  `go.sum` for Go, `CMakeLists.txt` for native).
+- `server/go.sum` and the native gitlink/patch set are committed. Dart
+  `pubspec.lock` files are currently ignored; committing and checking their
+  reviewed dependency resolutions remains a supply-chain follow-up.
 - Build inputs (toolchain versions, llama.cpp commit, GGUF quantization) are
   recorded in this file and in [`ARCHITECTURE.md`](ARCHITECTURE.md).
-- The bootstrap script installs pinned SDKs where possible and prints the
-  expected versions.
+- The bootstrap script resolves project dependencies, installs the pinned
+  vulnerability scanner in `.tools/bin`, and prints available SDK versions.
+  It does not install operating-system packages or SDKs globally.

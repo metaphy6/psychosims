@@ -3,7 +3,7 @@
 > **Closes register item C-8** ([ROADMAP](../planning/ROADMAP.md#-conceptual-corrections-register)).
 > The authoritative state machine (the corrected §18, resolving audit finding GM-1),
 > so Phase 3.6 encodes it exactly rather than re-deriving it. Every transition is
-> **server-arbitrated**; the client only proposes. Section refs (§N) → [`STARTER.md`](../../STARTER.md).
+> **server-arbitrated**; the client only proposes. Section refs (§N) → [`STARTER.md`](../design/STARTER.md).
 
 - **Status:** spec complete (implemented in Phase 3.6)
 - **Owner:** @maintainer

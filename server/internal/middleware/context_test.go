@@ -3,11 +3,26 @@ package middleware
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"psychosims.dev/server/internal/api"
 	"psychosims.dev/server/internal/ctxutil"
 )
+
+func TestRejectsUnsupportedVersionAndOversizedIdentifiers(t *testing.T) {
+	h := RequestContext(APIVersion(RequireIdempotencyKey(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(204) }))))
+	for header, value := range map[string]string{api.VersionHeader: "v999", api.IdempotencyKeyHeader: strings.Repeat("a", 129), api.CorrelationIDHeader: strings.Repeat("a", 129)} {
+		r := httptest.NewRequest("POST", "/", nil)
+		r.Header.Set(api.IdempotencyKeyHeader, "valid")
+		r.Header.Set(header, value)
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		if w.Code != 400 {
+			t.Errorf("invalid %s accepted: %d", header, w.Code)
+		}
+	}
+}
 
 func TestRequestContext(t *testing.T) {
 	handler := RequestContext(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

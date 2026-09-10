@@ -55,6 +55,10 @@ func (a *SQLAppender) AppendDirect(ctx context.Context, rec Record) error {
 // Append records an action inside the supplied transaction. It chains the new
 // row to the most recent audit row in the table at commit time.
 func (a *SQLAppender) Append(ctx context.Context, tx *sql.Tx, rec Record) error {
+	// Serialize the predecessor read and insert across every writer, including an empty log.
+	if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(736002)`); err != nil {
+		return err
+	}
 	prevHash, err := a.lastHash(ctx, tx)
 	if err != nil {
 		return err

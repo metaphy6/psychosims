@@ -16,11 +16,11 @@ import (
 
 // Record is a certified device public key.
 type Record struct {
-	ID        string    `json:"id"`
-	AccountID string    `json:"account_id"`
-	PublicKey []byte    `json:"public_key"`
-	SuiteID   string    `json:"suite_id"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        string     `json:"id"`
+	AccountID string     `json:"account_id"`
+	PublicKey []byte     `json:"public_key"`
+	SuiteID   string     `json:"suite_id"`
+	CreatedAt time.Time  `json:"created_at"`
 	RevokedAt *time.Time `json:"revoked_at,omitempty"`
 }
 
@@ -116,13 +116,33 @@ func (s *Service) Register(ctx context.Context, accountID string, pub []byte, su
 	if accountID == "" {
 		return "", api.NewUnauthorized("account id required")
 	}
-	if suiteID == "" {
-		return "", api.NewUserError(api.CodeBadRequest, "suite id required")
+	if suiteID != "ed25519-v1" {
+		return "", api.NewUserError(api.CodeBadRequest, "unsupported suite id")
 	}
 	if len(pub) != ed25519.PublicKeySize {
 		return "", api.NewUserError(api.CodeBadRequest, "invalid ed25519 public key length")
 	}
 	return s.repo.Register(ctx, accountID, pub, suiteID)
+}
+
+// Replace performs durable explicit recovery; repositories without an atomic
+// replacement operation fail closed rather than exposing a partial key change.
+func (s *Service) Replace(ctx context.Context, accountID, oldID string, pub []byte, suiteID string) (string, error) {
+	if accountID == "" {
+		return "", api.NewUnauthorized("account id required")
+	}
+	if oldID == "" || suiteID != "ed25519-v1" || len(pub) != ed25519.PublicKeySize {
+		return "", api.NewUserError(api.CodeBadRequest, "invalid replacement key")
+	}
+	if s.limiter != nil && !s.limiter.Allow(accountID) {
+		return "", api.NewRateLimited(60)
+	}
+	if repo, ok := s.repo.(interface {
+		Replace(context.Context, string, string, []byte, string) (string, error)
+	}); ok {
+		return repo.Replace(ctx, accountID, oldID, pub, suiteID)
+	}
+	return "", api.NewServiceUnavailable("atomic key recovery unavailable")
 }
 
 // Lookup returns a key record by id (no account check).
@@ -146,12 +166,16 @@ func (s *Service) ResolveForAccount(ctx context.Context, accountID, keyID string
 	if rec.RevokedAt != nil {
 		return nil, api.NewUserError(api.CodeInvalidSignature, "device key revoked")
 	}
+	if rec.SuiteID != "ed25519-v1" || !s.VerifyRecord(rec, time.Now().UTC()) {
+		return nil, api.NewUserError(api.CodeInvalidSignature, "device key suite no longer supported")
+	}
 	return rec, nil
 }
+
 // RotationPolicy describes overlapping validity windows for signature suites.
 type RotationPolicy struct {
-	Active   string
-	Previous string
+	Active             string
+	Previous           string
 	PreviousValidUntil time.Time
 }
 
@@ -165,9 +189,10 @@ func (p *RotationPolicy) Valid(suiteID string, now time.Time) bool {
 	}
 	return false
 }
+
 // InMemoryRepository is a test implementation.
 type InMemoryRepository struct {
-	records map[string]*Record
+	records   map[string]*Record
 	byAccount map[string][]string
 }
 

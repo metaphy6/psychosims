@@ -43,6 +43,30 @@ void main() {
           actions.map((a) => cardFromInteractionPattern(a).id).toSet(),
     );
 
+    test('scripted replay stops at a terminal success or walkout', () {
+      for (final entry in {
+        const SimState(
+            seed: 42,
+            trustScore: 60,
+            agitationLevel: 20,
+            sessionProgress: 99): SessionOutcome.succeed,
+        const SimState(seed: 42, trustScore: 30, agitationLevel: 100):
+            SessionOutcome.fail,
+      }.entries) {
+        final outputs = const CoreRunPath().resolveScripted(
+            rulesetVersion: '0.1.0',
+            manifest: manifest,
+            actions: List.filled(5, InteractionPattern.openQuestion),
+            rootSeed: 42,
+            clock: const InjectedClock.replay(0),
+            loadout: loadout,
+            library: library,
+            startState: entry.key);
+        expect(outputs, hasLength(1));
+        expect(outputs.single.outcome, entry.value);
+      }
+    });
+
     test('matches the committed golden outcome vector', () {
       const path = '../../test_fixtures/golden_replay.json';
       final fixture = File(path);

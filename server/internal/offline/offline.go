@@ -7,6 +7,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -24,17 +26,26 @@ type BatchRequest struct {
 
 // ItemResult is the server verdict for one queued receipt.
 type ItemResult struct {
-	ID      string `json:"id"`
-	Status  string `json:"status"`
-	Code    string `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
+	ID             string `json:"id"`
+	IdempotencyKey string `json:"idempotency_key"`
+	ProfileVersion int    `json:"profile_version,omitempty"`
+	RewardStatus   string `json:"reward_status,omitempty"`
+	RewardReason   string `json:"reward_reason,omitempty"`
+	CertificateID  string `json:"certificate_id,omitempty"`
+	XPAwarded      int    `json:"xp_awarded,omitempty"`
+	StudyAwarded   int    `json:"study_points_awarded,omitempty"`
+	CashAwarded    int64  `json:"cash_micros_awarded,omitempty"`
+	Retryable      bool   `json:"retryable"`
+	Status         string `json:"status"`
+	Code           string `json:"code,omitempty"`
+	Message        string `json:"message,omitempty"`
 }
 
 // BatchResponse returns the per-item results.
 type BatchResponse struct {
-	Results     []ItemResult `json:"results"`
-	QueueDepthHint int       `json:"queue_depth_hint"`
-	Cursor      string       `json:"cursor,omitempty"`
+	Results        []ItemResult `json:"results"`
+	QueueDepthHint int          `json:"queue_depth_hint"`
+	Cursor         string       `json:"cursor,omitempty"`
 }
 
 // Submitter applies one signed envelope to authoritative state.
@@ -64,26 +75,55 @@ func (s *Service) SubmitBatch(ctx context.Context, accountID string, req BatchRe
 		return BatchResponse{}, api.NewUnauthorized("account id required")
 	}
 
+	if len(req.Envelopes) > 64 {
+		return BatchResponse{}, api.NewUserError(api.CodeOutOfBounds, "at most 64 receipts per batch")
+	}
 	resp := BatchResponse{Results: make([]ItemResult, 0, len(req.Envelopes))}
+	unresolved := false
 	for _, env := range req.Envelopes {
 		// Extract a display id from the canonical receipt bytes if possible.
 		id := extractID(env.CanonicalReceiptBytes)
 		result := ItemResult{ID: id}
 
-		receipt, err := s.submit(ctx, accountID, env)
+		// The enclosing request key identifies the batch, not each receipt.
+		// Submit authenticates these bytes and checks the lease atomically.
+		var metadata struct {
+			IdempotencyKey string `json:"idempotency_key"`
+		}
+		_ = json.Unmarshal(env.CanonicalReceiptBytes, &metadata)
+		if !schemas.ValidIdentifier(metadata.IdempotencyKey) {
+			metadata.IdempotencyKey = ""
+		}
+		result.IdempotencyKey = metadata.IdempotencyKey
+		itemCtx := ctxutil.WithIdempotencyKey(ctx, metadata.IdempotencyKey)
+		receipt, err := s.submit(itemCtx, accountID, env)
 		if err != nil {
 			result.Status = "rejected"
-			if he, ok := err.(api.HTTPError); ok {
+			var he api.HTTPError
+			if errors.As(err, &he) {
 				result.Code = string(he.Body.Code)
 				result.Message = he.Body.Message
+				result.Retryable = he.Status == 408 || he.Status == 429 || he.Status >= 500
 			} else {
 				result.Code = string(api.CodeInternalError)
-				result.Message = err.Error()
+				result.Message = "receipt could not be processed"
+				result.Retryable = true
+			}
+			if result.Retryable {
+				result.Status = "retryable"
+				unresolved = true
+				resp.QueueDepthHint++
 			}
 		} else {
 			result.Status = "accepted"
-			// Update cursor to the last accepted receipt id.
-			resp.Cursor = receipt.IdempotencyKey
+			if schemas.ValidIdentifier(receipt.IdempotencyKey) {
+				result.IdempotencyKey = receipt.IdempotencyKey
+			}
+		}
+		// Cursor acknowledges only the contiguous resolved prefix. A later
+		// accepted item cannot conceal an earlier transient failure.
+		if !unresolved && result.IdempotencyKey != "" {
+			resp.Cursor = result.IdempotencyKey
 		}
 		resp.Results = append(resp.Results, result)
 	}
@@ -94,29 +134,30 @@ func (s *Service) SubmitBatch(ctx context.Context, accountID string, req BatchRe
 // CheckLease returns an error if the requested patient action is past lease.
 func (s *Service) CheckLease(ctx context.Context, patientID string) error {
 	if s.ownership == nil {
-		return nil
+		return api.NewServiceUnavailable("ownership store unavailable")
 	}
 	rec, err := s.ownership.Get(ctx, patientID)
 	if err != nil {
-		return nil // no record means no lease violation
+		return err
 	}
 	if rec.LeaseExpiresAt == nil {
-		return nil
+		return api.NewConflict(api.CodeLeaseExpired, "ownership lease required")
 	}
-	if s.clock.Now().After(*rec.LeaseExpiresAt) {
+	if !s.clock.Now().Before(*rec.LeaseExpiresAt) {
 		return api.NewError(409, api.ErrUser, api.CodeLeaseExpired, "ownership lease expired")
 	}
 	return nil
 }
 
 func extractID(canonical []byte) string {
-	// Best-effort: the canonical JSON contains "id":"..."
-	var id string
-	fmt.Sscanf(string(canonical), `{"id":"%[^"]"`, &id)
-	if id == "" {
-		id = ctxutil.GenerateID()
+	var metadata struct {
+		ID string `json:"id"`
 	}
-	return id
+	if json.Unmarshal(canonical, &metadata) == nil && schemas.ValidIdentifier(metadata.ID) {
+		return metadata.ID
+	}
+	hash := sha256.Sum256(canonical)
+	return hex.EncodeToString(hash[:16])
 }
 
 // ActionKind classifies a pending offline action for race resolution.

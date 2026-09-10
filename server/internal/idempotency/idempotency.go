@@ -6,6 +6,7 @@
 package idempotency
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -112,7 +113,7 @@ func (r *SQLRepository) Store(ctx context.Context, accountID, k string, response
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO idempotency_keys (key, account_id, response_hash, expires_at)
 		VALUES ($1, $2, $3, $4)
-		ON CONFLICT (key) DO UPDATE SET
+		ON CONFLICT (account_id, key) DO UPDATE SET
 			response_hash = EXCLUDED.response_hash,
 			expires_at = EXCLUDED.expires_at
 	`, k, accountID, responseHash, expiresAt)
@@ -139,7 +140,8 @@ func NewService(repo Repository, defaultTTL time.Duration) *Service {
 	return &Service{repo: repo, defaultTTL: defaultTTL}
 }
 
-// CheckOrBegin returns an error if the idempotency key has already been used
+// CheckOrBegin is a legacy read-only preflight, not a reservation. Mutations
+// must use BeginInTx. It returns an error if the key has already been used
 // and the stored response matches the current request. The bool indicates
 // whether the caller should execute the request (true) or return a cached
 // result (false).
@@ -178,4 +180,36 @@ func (s *Service) Record(ctx context.Context, responseBody []byte) error {
 // GC removes expired idempotency keys older than before.
 func (s *Service) GC(ctx context.Context, before time.Time) (int64, error) {
 	return s.repo.GC(ctx, before)
+}
+
+// BeginInTx atomically reserves an account-scoped key. Concurrent callers wait
+// for the owning transaction; failed transactions leave no reservation behind.
+func (s *Service) BeginInTx(ctx context.Context, tx *sql.Tx, accountID, k string, requestHash []byte) (bool, error) {
+	if accountID == "" || k == "" {
+		return false, api.NewUserError(api.CodeBadRequest, "account and idempotency key required")
+	}
+	ttl := s.defaultTTL
+	if ttl <= 0 {
+		ttl = 24 * time.Hour
+	}
+	res, err := tx.ExecContext(ctx, `INSERT INTO idempotency_keys(account_id,key,request_hash,response_hash,expires_at)
+        VALUES($1,$2,$3,$3,$4) ON CONFLICT(account_id,key) DO NOTHING`, accountID, k, requestHash, time.Now().Add(ttl))
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	if n == 1 {
+		return true, nil
+	}
+	var previous []byte
+	if err := tx.QueryRowContext(ctx, `SELECT request_hash FROM idempotency_keys WHERE account_id=$1 AND key=$2`, accountID, k).Scan(&previous); err != nil {
+		return false, err
+	}
+	if !bytes.Equal(previous, requestHash) {
+		return false, api.NewConflict(api.CodeConflict, "idempotency key reused with different request")
+	}
+	return false, nil
 }

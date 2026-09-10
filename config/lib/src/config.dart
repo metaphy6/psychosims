@@ -1,3 +1,5 @@
+import 'progression_config.dart';
+
 /// Immutable, typed configuration object.
 ///
 /// All modules receive this via DI. No raw environment reads outside `config/`.
@@ -11,6 +13,7 @@ class Config {
   final ContentConfig content;
   final PromptBudgetConfig promptBudget;
   final BalanceConfig balance;
+  final ProgressionConfig progression;
   final FeatureFlags featureFlags;
   final SecretsRefs secretsRefs;
 
@@ -27,6 +30,7 @@ class Config {
     required this.content,
     required this.promptBudget,
     required this.balance,
+    this.progression = const ProgressionConfig(),
     required this.featureFlags,
     required this.secretsRefs,
     this.modelProfiles = const {},
@@ -41,6 +45,7 @@ class Config {
     ContentConfig? content,
     PromptBudgetConfig? promptBudget,
     BalanceConfig? balance,
+    ProgressionConfig? progression,
     FeatureFlags? featureFlags,
     SecretsRefs? secretsRefs,
     Map<String, ModelProfile>? modelProfiles,
@@ -53,6 +58,7 @@ class Config {
       content: content ?? this.content,
       promptBudget: promptBudget ?? this.promptBudget,
       balance: balance ?? this.balance,
+      progression: progression ?? this.progression,
       featureFlags: featureFlags ?? this.featureFlags,
       secretsRefs: secretsRefs ?? this.secretsRefs,
       modelProfiles: modelProfiles ?? this.modelProfiles,
@@ -64,12 +70,112 @@ class NetworkConfig {
   final String apiBaseUrl;
   final int connectTimeoutMillis;
   final int receiveTimeoutMillis;
+  final int readTimeoutMillis;
+  final int mutationTimeoutMillis;
+  final int maxRetries;
+  final int retryBaseDelayMillis;
+  final int retryMaxDelayMillis;
+  final int maxRateLimitRetries;
+  final int maxRetryAfterMillis;
+  final int maxResponseBytes;
+  final int maxCanonicalReceiptBytes;
+  final int maxReceiptActions;
+  final int maxReceiptDeltas;
+  final int maxBatchEnvelopes;
+  final int maxBatchBytes;
+  final int maxQueueEntries;
+  final int maxQueueBytes;
+  final bool allowInsecureLoopback;
+  final String secureStorageNamespace;
+  final int oauthStateTtlSeconds;
+  final String oauthChannel;
+  final String oauthRedirectUri;
+  final List<String> oauthAuthorizationOrigins;
 
   const NetworkConfig({
     required this.apiBaseUrl,
     required this.connectTimeoutMillis,
     required this.receiveTimeoutMillis,
+    this.readTimeoutMillis = 10000,
+    this.mutationTimeoutMillis = 30000,
+    this.maxRetries = 4,
+    this.retryBaseDelayMillis = 1000,
+    this.retryMaxDelayMillis = 8000,
+    this.maxRateLimitRetries = 1,
+    this.maxRetryAfterMillis = 60000,
+    this.maxResponseBytes = 1048576,
+    this.maxCanonicalReceiptBytes = 131072,
+    this.maxReceiptActions = 120,
+    this.maxReceiptDeltas = 1024,
+    this.maxBatchEnvelopes = 64,
+    this.maxBatchBytes = 524288,
+    this.maxQueueEntries = 10000,
+    this.maxQueueBytes = 524288,
+    this.allowInsecureLoopback = false,
+    this.secureStorageNamespace = 'psychosims.control_plane.v1',
+    this.oauthStateTtlSeconds = 600,
+    this.oauthChannel = '',
+    this.oauthRedirectUri = '',
+    this.oauthAuthorizationOrigins = const [],
   });
+
+  NetworkConfig copyWith({
+    String? apiBaseUrl,
+    int? connectTimeoutMillis,
+    int? receiveTimeoutMillis,
+    int? readTimeoutMillis,
+    int? mutationTimeoutMillis,
+    int? maxRetries,
+    int? retryBaseDelayMillis,
+    int? retryMaxDelayMillis,
+    int? maxRateLimitRetries,
+    int? maxRetryAfterMillis,
+    int? maxResponseBytes,
+    int? maxCanonicalReceiptBytes,
+    int? maxReceiptActions,
+    int? maxReceiptDeltas,
+    int? maxBatchEnvelopes,
+    int? maxBatchBytes,
+    int? maxQueueEntries,
+    int? maxQueueBytes,
+    bool? allowInsecureLoopback,
+    String? secureStorageNamespace,
+    int? oauthStateTtlSeconds,
+    String? oauthChannel,
+    String? oauthRedirectUri,
+    List<String>? oauthAuthorizationOrigins,
+  }) =>
+      NetworkConfig(
+        apiBaseUrl: apiBaseUrl ?? this.apiBaseUrl,
+        connectTimeoutMillis: connectTimeoutMillis ?? this.connectTimeoutMillis,
+        receiveTimeoutMillis: receiveTimeoutMillis ?? this.receiveTimeoutMillis,
+        readTimeoutMillis: readTimeoutMillis ?? this.readTimeoutMillis,
+        mutationTimeoutMillis:
+            mutationTimeoutMillis ?? this.mutationTimeoutMillis,
+        maxRetries: maxRetries ?? this.maxRetries,
+        retryBaseDelayMillis: retryBaseDelayMillis ?? this.retryBaseDelayMillis,
+        retryMaxDelayMillis: retryMaxDelayMillis ?? this.retryMaxDelayMillis,
+        maxRateLimitRetries: maxRateLimitRetries ?? this.maxRateLimitRetries,
+        maxRetryAfterMillis: maxRetryAfterMillis ?? this.maxRetryAfterMillis,
+        maxResponseBytes: maxResponseBytes ?? this.maxResponseBytes,
+        maxCanonicalReceiptBytes:
+            maxCanonicalReceiptBytes ?? this.maxCanonicalReceiptBytes,
+        maxReceiptActions: maxReceiptActions ?? this.maxReceiptActions,
+        maxReceiptDeltas: maxReceiptDeltas ?? this.maxReceiptDeltas,
+        maxBatchEnvelopes: maxBatchEnvelopes ?? this.maxBatchEnvelopes,
+        maxBatchBytes: maxBatchBytes ?? this.maxBatchBytes,
+        maxQueueEntries: maxQueueEntries ?? this.maxQueueEntries,
+        maxQueueBytes: maxQueueBytes ?? this.maxQueueBytes,
+        allowInsecureLoopback:
+            allowInsecureLoopback ?? this.allowInsecureLoopback,
+        secureStorageNamespace:
+            secureStorageNamespace ?? this.secureStorageNamespace,
+        oauthStateTtlSeconds: oauthStateTtlSeconds ?? this.oauthStateTtlSeconds,
+        oauthChannel: oauthChannel ?? this.oauthChannel,
+        oauthRedirectUri: oauthRedirectUri ?? this.oauthRedirectUri,
+        oauthAuthorizationOrigins: List.unmodifiable(
+            oauthAuthorizationOrigins ?? this.oauthAuthorizationOrigins),
+      );
 }
 
 class ModelConfig {
@@ -204,11 +310,29 @@ class PromptBudgetConfig {
   final int maxOutputTokens;
   final int prefixCacheTokens;
 
+  /// Corrective generations after the initial reply, bounded to 0..2.
+  final int maxRegenerationRetries;
+
   const PromptBudgetConfig({
     required this.maxInputTokens,
     required this.maxOutputTokens,
     required this.prefixCacheTokens,
+    this.maxRegenerationRetries = 2,
   });
+
+  PromptBudgetConfig copyWith({
+    int? maxInputTokens,
+    int? maxOutputTokens,
+    int? prefixCacheTokens,
+    int? maxRegenerationRetries,
+  }) =>
+      PromptBudgetConfig(
+        maxInputTokens: maxInputTokens ?? this.maxInputTokens,
+        maxOutputTokens: maxOutputTokens ?? this.maxOutputTokens,
+        prefixCacheTokens: prefixCacheTokens ?? this.prefixCacheTokens,
+        maxRegenerationRetries:
+            maxRegenerationRetries ?? this.maxRegenerationRetries,
+      );
 }
 
 class BalanceConfig {

@@ -13,7 +13,7 @@ func TestClaimFromPool(t *testing.T) {
 	repo := NewInMemoryRepository()
 	ctx := context.Background()
 
-	if err := repo.Claim(ctx, "p-1", "acc-1", 0); err != nil {
+	if err := repo.Claim(ctx, "p-1", "acc-1", 0, MemoryClassPersistent); err != nil {
 		t.Fatalf("claim: %v", err)
 	}
 	rec, err := repo.Get(ctx, "p-1")
@@ -29,7 +29,7 @@ func TestDoubleClaimRejected(t *testing.T) {
 	repo := NewInMemoryRepository()
 	ctx := context.Background()
 
-	repo.Claim(ctx, "p-1", "acc-1", 0)
+	repo.Claim(ctx, "p-1", "acc-1", 0, MemoryClassPersistent)
 	if err := repo.Claim(ctx, "p-1", "acc-2", 1); err == nil {
 		t.Fatal("expected double claim rejected")
 	}
@@ -39,7 +39,7 @@ func TestLegalTransition(t *testing.T) {
 	repo := NewInMemoryRepository()
 	ctx := context.Background()
 
-	repo.Claim(ctx, "p-1", "acc-1", 0)
+	repo.Claim(ctx, "p-1", "acc-1", 0, MemoryClassPersistent)
 	if err := repo.Transition(ctx, "p-1", "acc-1", StateOwned, StateHospitalized, 1); err != nil {
 		t.Fatalf("transition: %v", err)
 	}
@@ -53,7 +53,7 @@ func TestIllegalTransition(t *testing.T) {
 	repo := NewInMemoryRepository()
 	ctx := context.Background()
 
-	repo.Claim(ctx, "p-1", "acc-1", 0)
+	repo.Claim(ctx, "p-1", "acc-1", 0, MemoryClassPersistent)
 	err := repo.Transition(ctx, "p-1", "acc-1", StateHospitalized, StateArchived, 1)
 	if err == nil {
 		t.Fatal("expected illegal transition error")
@@ -67,7 +67,7 @@ func TestHospitalizedDirectToArchivedRejected(t *testing.T) {
 	repo := NewInMemoryRepository()
 	ctx := context.Background()
 
-	repo.Claim(ctx, "p-1", "acc-1", 0)
+	repo.Claim(ctx, "p-1", "acc-1", 0, MemoryClassPersistent)
 	repo.Transition(ctx, "p-1", "acc-1", StateOwned, StateHospitalized, 1)
 	if err := repo.Transition(ctx, "p-1", "acc-1", StateHospitalized, StateArchived, 2); err == nil {
 		t.Fatal("expected hospitalized→archived rejected")
@@ -80,7 +80,7 @@ func TestServiceRejectsExpiredLease(t *testing.T) {
 	now := time.Now().UTC()
 	expired := now.Add(-time.Hour)
 
-	repo.Claim(ctx, "p-1", "acc-1", 0)
+	repo.Claim(ctx, "p-1", "acc-1", 0, MemoryClassPersistent)
 	rec, _ := repo.Get(ctx, "p-1")
 	rec.LeaseExpiresAt = &expired
 	repo.records["p-1"] = rec
@@ -99,7 +99,7 @@ func TestMemoryClassGuardBlocksHospitalization(t *testing.T) {
 	repo := NewInMemoryRepository()
 	ctx := context.Background()
 
-	repo.Claim(ctx, "p-1", "acc-1", 0)
+	repo.Claim(ctx, "p-1", "acc-1", 0, MemoryClassPersistent)
 	rec, _ := repo.Get(ctx, "p-1")
 	rec.MemoryClass = MemoryClassStateless
 	repo.records["p-1"] = rec

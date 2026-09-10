@@ -5,11 +5,17 @@ cd "$(dirname "$0")/.."
 
 echo "▶️  Vulnerability check"
 
-if command -v govulncheck &>/dev/null; then
-  (cd server && govulncheck ./...) || true
+if [[ -x .tools/bin/govulncheck ]]; then
+  scanner="$PWD/.tools/bin/govulncheck"
+elif command -v govulncheck &>/dev/null; then
+  scanner="$(command -v govulncheck)"
 else
-  echo "ℹ️  govulncheck not installed; running 'go vet' as a fallback"
-  (cd server && go vet ./...) || true
+  echo "❌ govulncheck is required; run scripts/bootstrap.sh to install the pinned project-local scanner" >&2
+  exit 127
 fi
 
-echo "✅ Vulnerability check complete (govulncheck may not be installed)"
+(cd server && "$scanner" ./...)
+bash scripts/sbom.sh
+python3 scripts/dependency_scan.py
+
+echo "✅ Vulnerability check passed"

@@ -3,19 +3,43 @@ package offline
 import (
 	"context"
 	"fmt"
+	"psychosims.dev/server/internal/api"
 	"testing"
 	"time"
 
+	"psychosims.dev/server/internal/ctxutil"
 	"psychosims.dev/server/internal/ownership"
 	"psychosims.dev/server/internal/schemas"
 	"psychosims.dev/server/internal/timeutil"
 )
 
+func TestBatchTransientGapStopsCursor(t *testing.T) {
+	calls := 0
+	svc := NewService(func(ctx context.Context, _ string, _ schemas.SignedEnvelope) (*schemas.SessionReceipt, error) {
+		calls++
+		if calls == 2 {
+			return nil, api.NewServiceUnavailable("temporary")
+		}
+		return &schemas.SessionReceipt{IdempotencyKey: ctxutil.IdempotencyKey(ctx)}, nil
+	}, nil, timeutil.RealClock{}, time.Hour)
+	envs := []schemas.SignedEnvelope{}
+	for _, id := range []string{"a", "b", "c"} {
+		envs = append(envs, schemas.SignedEnvelope{CanonicalReceiptBytes: []byte(fmt.Sprintf(`{"id":%q,"idempotency_key":%q}`, id, id))})
+	}
+	out, err := svc.SubmitBatch(context.Background(), "account", BatchRequest{Envelopes: envs})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out.Results[1].Status != "retryable" || out.Cursor != "a" || out.QueueDepthHint != 1 {
+		t.Fatalf("transient receipt was acknowledged past: %+v", out)
+	}
+}
+
 func TestSubmitBatchAcceptsAndRejects(t *testing.T) {
 	calls := 0
 	submit := func(ctx context.Context, accountID string, env schemas.SignedEnvelope) (*schemas.SessionReceipt, error) {
 		calls++
-		return &schemas.SessionReceipt{IdempotencyKey: "idem-" + string(env.CanonicalReceiptBytes)}, nil
+		return &schemas.SessionReceipt{IdempotencyKey: fmt.Sprintf("idem-%d", calls)}, nil
 	}
 
 	svc := NewService(submit, nil, timeutil.RealClock{}, time.Hour)
@@ -34,7 +58,7 @@ func TestSubmitBatchAcceptsAndRejects(t *testing.T) {
 	if len(resp.Results) != 2 {
 		t.Errorf("results = %d, want 2", len(resp.Results))
 	}
-	if resp.Cursor != "idem-{\"id\":\"r2\"}" {
+	if resp.Cursor != "idem-2" {
 		t.Errorf("cursor = %q", resp.Cursor)
 	}
 }
@@ -151,4 +175,35 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func TestBatchIDsAndPerReceiptKeys(t *testing.T) {
+	submit := func(ctx context.Context, accountID string, env schemas.SignedEnvelope) (*schemas.SessionReceipt, error) {
+		if ctxutil.IdempotencyKey(ctx) != "item-key" {
+			t.Errorf("forwarded batch header instead of receipt key: %q", ctxutil.IdempotencyKey(ctx))
+		}
+		return &schemas.SessionReceipt{ID: "r1", IdempotencyKey: "item-key"}, nil
+	}
+	svc := NewService(submit, nil, timeutil.RealClock{}, time.Hour)
+	ctx := ctxutil.WithIdempotencyKey(context.Background(), "batch-key")
+	resp, err := svc.SubmitBatch(ctx, "a", BatchRequest{Envelopes: []schemas.SignedEnvelope{{CanonicalReceiptBytes: []byte(`{"id":"r1","idempotency_key":"item-key"}`)}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.Results[0].ID != "r1" {
+		t.Fatalf("unstable receipt id: %q", resp.Results[0].ID)
+	}
+}
+
+func TestBatchDoesNotEchoDialogueIdentifiers(t *testing.T) {
+	svc := NewService(func(context.Context, string, schemas.SignedEnvelope) (*schemas.SessionReceipt, error) {
+		return nil, api.NewUserError(api.CodeBadRequest, "invalid receipt")
+	}, nil, timeutil.RealClock{}, time.Hour)
+	out, err := svc.SubmitBatch(context.Background(), "account", BatchRequest{Envelopes: []schemas.SignedEnvelope{{CanonicalReceiptBytes: []byte(`{"id":"private patient dialogue","idempotency_key":"private patient dialogue"}`)}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if out.Results[0].ID == "private patient dialogue" || out.Results[0].IdempotencyKey != "" || out.Cursor != "" {
+		t.Fatalf("untrusted dialogue echoed in batch metadata: %+v", out)
+	}
 }

@@ -53,6 +53,17 @@ void main() {
   group('MultiSessionDigestCompiler', () {
     const compiler = MultiSessionDigestCompiler();
 
+    test('model-facing drug spelling matches the required clue marker', () {
+      final digest = compiler.compile(
+          envelope: const CaseHistoryEnvelope(
+              priorSessionCount: 1,
+              inheritedMedication:
+                  MedicationState(drug: FictionalDrug.ferveAxine)),
+          state: const SimState(seed: 1));
+      expect(digest, contains('ferve-axine'));
+      expect(digest, isNot(contains('ferveAxine')));
+    });
+
     test('emit is bounded regardless of envelope size', () {
       final envelope = CaseHistoryEnvelope(
         priorSessionCount: 5,

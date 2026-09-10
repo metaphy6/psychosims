@@ -77,6 +77,9 @@
       "items": {
         "type": "string",
         "enum": [
+          "open_question",
+          "set_boundary",
+          "disclose_parallel",
           "openQuestion",
           "validate",
           "reframe",
@@ -84,6 +87,22 @@
           "reflect",
           "discloseParallel"
         ]
+      }
+    },
+    "cards": {
+      "type": "array",
+      "description": "Explicit executable definitions. Runtime validation also requires unique IDs covering the action whitelist exactly.",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "signature", "name_key"],
+        "properties": {
+          "id": {"enum": ["open_question", "validate", "reframe", "set_boundary", "reflect", "disclose_parallel"]},
+          "type": {"enum": ["disclosing", "relatable", "postponing", "manipulative"]},
+          "signature": {"enum": ["breaker", "buffer", "freeze", "gambit"]},
+          "name_key": {"type": "string", "maxLength": 256},
+          "model_facing_hint": {"type": "string", "maxLength": 4096}
+        }
       }
     },
     "clue_tokens": {

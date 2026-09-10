@@ -5,6 +5,7 @@
 #include <atomic>
 #include <cctype>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -310,6 +311,42 @@ struct Utf8Accumulator {
 };
 
 #if PSYCHOSIMS_WITH_LLAMA_CPP
+llama_sampler* create_sampler(const llama_vocab* vocab, int32_t n_vocab,
+        const std::vector<llama_token>& prompt_tokens, float temperature,
+        float top_p, int top_k, uint32_t seed, const std::string& grammar,
+        float repetition_penalty) {
+    llama_sampler_chain_params sparams = llama_sampler_chain_default_params();
+    llama_sampler* smpl = llama_sampler_chain_init(sparams);
+    // Bounded per-generation history. Prime only the penalties sampler: accepting
+    // prompt tokens into a grammar sampler would consume its output grammar.
+    llama_sampler* penalties = llama_sampler_init_penalties(
+        n_vocab, 64, repetition_penalty, 0.0f, 0.0f);
+    const size_t first = prompt_tokens.size() > 64 ? prompt_tokens.size() - 64 : 0;
+    for (size_t i = first; i < prompt_tokens.size(); ++i) {
+        llama_sampler_accept(penalties, prompt_tokens[i]);
+    }
+    llama_sampler_chain_add(smpl, penalties);
+    if (temperature <= 0.0f) {
+        llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
+    } else {
+        llama_sampler_chain_add(smpl, llama_sampler_init_temp(temperature));
+        if (top_k > 0) {
+            llama_sampler_chain_add(smpl, llama_sampler_init_top_k(top_k));
+        }
+        if (top_p > 0.0f && top_p < 1.0f) {
+            llama_sampler_chain_add(smpl, llama_sampler_init_top_p(top_p, 1));
+        }
+        if (!grammar.empty()) {
+            llama_sampler* grmr = llama_sampler_init_grammar(
+                vocab, grammar.c_str(), nullptr);
+            if (grmr) llama_sampler_chain_add(smpl, grmr);
+        }
+        llama_sampler_chain_add(
+            smpl, llama_sampler_init_dist(seed == 0xFFFFFFFFu ? 12345u : seed));
+    }
+
+    return smpl;
+}
 // Parse [{"role":"...","content":"..."}, ...] into llama_chat_message array.
 // Uses std::list for stable storage because llama_chat_message holds raw
 // c_str() pointers that must remain valid while the array is consumed.
@@ -381,11 +418,28 @@ bool parse_chat_messages(const char* json,
 
 struct GenerateStats {
     int prompt_tokens = 0;
+    int evaluated_prompt_tokens = 0;
+    int reused_prompt_tokens = 0;
     int64_t prompt_eval_ms = 0;
     int generated_tokens = 0;
     int64_t generation_ms = 0;
     int64_t total_ms = 0;
 };
+
+namespace {
+// Counts model samples independently of how UTF-8 bytes are delivered.
+struct GenerationOutput {
+    GenerateStats& stats;
+    Utf8Accumulator utf8;
+    void feed(const std::string& piece, PsyToken token, PsyTokenCallback callback, void* data) {
+        ++stats.generated_tokens;
+        utf8.feed(piece, token, callback, data);
+    }
+    void flush(PsyToken token, PsyTokenCallback callback, void* data) {
+        utf8.flush(token, callback, data);
+    }
+};
+} // namespace
 
 struct PsyContext {
     std::atomic<bool> cancelled{false};
@@ -399,8 +453,12 @@ struct PsyContext {
     int n_batch = 512;
     int n_threads = 4;
     GenerateStats last_generate_stats;
-    std::vector<llama_token> cached_prompt_tokens;
+    std::vector<PsyToken> cached_prompt_tokens;
 #if PSYCHOSIMS_WITH_LLAMA_CPP
+    // Exact prefill logits belong to the prompt, never to its generated suffix.
+    // Keeping them avoids recomputing the final prompt KV row with a different
+    // batch shape, which can change Phi's later greedy choices on the same build.
+    std::vector<float> cached_prompt_logits;
     llama_model* model = nullptr;
     llama_context* lctx = nullptr;
     const llama_vocab* vocab = nullptr;
@@ -428,11 +486,24 @@ PsyContext* psy_context_load(const char* model_path, const char* params) {
     ctx->n_threads = json_get_int(params, "n_threads", 4);
     const bool use_mmap = json_get_bool(params, "use_mmap", true);
     ctx->kv_cache_type = json_get_string(params, "kv_cache_type", "f16");
+    const std::string backend = json_get_string(params, "backend", "llama.cpp");
+    if (ctx->n_ctx < 8 || ctx->n_batch <= 0 || ctx->n_threads <= 0 ||
+        (backend != "llama.cpp" && backend != "stub")) {
+        psy_log(PSY_LOG_ERROR, "native:inference", "load_failed", corr_id,
+                "reason=invalid_params", "invalid model load parameters");
+        delete ctx;
+        return nullptr;
+    }
+    if (backend == "stub") {
+        psy_log(PSY_LOG_WARN, "native:inference", "stub_loaded", corr_id,
+                "backend=stub", "explicit development backend selected");
+        return ctx;
+    }
 
 #if PSYCHOSIMS_WITH_LLAMA_CPP
     {
         llama_model_params mparams = llama_model_default_params();
-        mparams.use_mmap = use_mmap;
+        mparams.load_mode = use_mmap ? LLAMA_LOAD_MODE_MMAP : LLAMA_LOAD_MODE_NONE;
         llama_model* model = llama_model_load_from_file(model_path, mparams);
         if (model) {
             llama_context_params cparams = llama_context_default_params();
@@ -441,6 +512,11 @@ PsyContext* psy_context_load(const char* model_path, const char* params) {
             cparams.n_ubatch = static_cast<uint32_t>(ctx->n_batch);
             cparams.n_threads = ctx->n_threads;
             cparams.n_threads_batch = ctx->n_threads;
+            cparams.abort_callback = [](void* data) {
+                return static_cast<PsyContext*>(data)->cancelled.load(
+                    std::memory_order_acquire);
+            };
+            cparams.abort_callback_data = ctx;
 #if __has_include(<ggml.h>)
             if (ctx->kv_cache_type == "f32") {
                 cparams.type_k = GGML_TYPE_F32;
@@ -472,16 +548,13 @@ PsyContext* psy_context_load(const char* model_path, const char* params) {
             }
             llama_model_free(model);
         }
-        psy_log(PSY_LOG_WARN, "native:inference", "load_failed", corr_id,
-                "reason=llama_load_failed,falling_back=stub",
-                "real backend failed; using stub backend");
+        psy_log(PSY_LOG_ERROR, "native:inference", "load_failed", corr_id,
+                "reason=llama_load_failed", "real backend failed to load");
     }
 #endif
 
-    const std::string kv = "n_ctx=" + std::to_string(ctx->n_ctx);
-    psy_log(PSY_LOG_SUCCESS, "native:inference", "model_loaded", corr_id,
-            kv.c_str(), "stub backend loaded (no llama.cpp linked)");
-    return ctx;
+    delete ctx;
+    return nullptr;
 }
 
 void psy_context_destroy(PsyContext* ctx) {
@@ -627,7 +700,7 @@ const char* psy_model_metadata(PsyContext* ctx) {
             ",\"size_bytes\":" + std::to_string(llama_model_size(ctx->model)) +
             ",\"n_params\":" + std::to_string(llama_model_n_params(ctx->model)) +
             ",\"description\":\"" + std::string(desc) + "\"" +
-            ",\"quantization\":\"unknown\"}";
+            ",\"backend\":\"llama.cpp\",\"quantization\":\"unknown\"}";
         return ctx->last_metadata.c_str();
     }
 #endif
@@ -639,7 +712,7 @@ const char* psy_model_metadata(PsyContext* ctx) {
         ",\"n_vocab\":32000" +
         ",\"n_embd\":4096" +
         ",\"n_layer\":32" +
-        ",\"quantization\":\"stub\"}";
+        ",\"backend\":\"stub\",\"quantization\":\"stub\"}";
     return ctx->last_metadata.c_str();
 }
 
@@ -659,6 +732,21 @@ int32_t psy_generate(
     const uint32_t seed = json_get_uint32(params_json, "seed", 0xFFFFFFFFu);
     const std::string grammar = json_get_string(params_json, "grammar", "");
     const std::vector<std::string> stop_strings = json_get_string_array(params_json, "stop");
+    // Zero is the existing test/config spelling for disabled repetition control;
+    // llama.cpp requires a strictly positive factor, with 1.0 as neutral.
+    float repetition_penalty = 1.0f;
+    if (const char* raw = json_find_value(params_json, "repetition_penalty")) {
+        char* end = nullptr;
+        repetition_penalty = std::strtof(raw, &end);
+        const char* tail = json_skip_ws(end);
+        if (end == raw || !tail || (*tail != ',' && *tail != '}' && *tail != '\0') ||
+            !std::isfinite(repetition_penalty) || repetition_penalty < 0.0f || repetition_penalty > 2.0f) {
+            psy_log(PSY_LOG_ERROR, "native:inference", "generate", corr_id,
+                    "reason=invalid_repetition_penalty", "repetition penalty must be finite and between 0 and 2");
+            return -1;
+        }
+        if (repetition_penalty == 0.0f) repetition_penalty = 1.0f;
+    }
     if (max_tokens <= 0) max_tokens = 1;
 
 #if PSYCHOSIMS_WITH_LLAMA_CPP
@@ -691,40 +779,18 @@ int32_t psy_generate(
         }
         prompt_tokens.resize(static_cast<size_t>(n_tokens));
 
-        // Respect context window.
+        // Reject overflow before sampler setup or any KV mutation. Subtraction
+        // avoids max_tokens + prompt_tokens integer overflow on hostile input.
         const int n_ctx = static_cast<int>(llama_n_ctx(ctx->lctx));
-        const int reserve = max_tokens + 4;
-        if (static_cast<int>(prompt_tokens.size()) > n_ctx - reserve) {
-            const size_t keep = static_cast<size_t>(std::max(0, n_ctx - reserve));
-            prompt_tokens.erase(
-                prompt_tokens.begin(),
-                prompt_tokens.end() - static_cast<ptrdiff_t>(keep));
-            psy_log(PSY_LOG_WARN, "native:inference", "generate", corr_id,
-                    ("truncated_to=" + std::to_string(prompt_tokens.size())).c_str(),
-                    "prompt truncated to fit context window");
+        if (n_tokens > n_ctx || max_tokens > n_ctx - n_tokens) {
+            psy_log(PSY_LOG_ERROR, "native:inference", "generate", corr_id,
+                    "reason=context_overflow", "prompt and output exceed loaded context");
+            return -2;
         }
 
-        // Build sampler chain.
-        llama_sampler_chain_params sparams = llama_sampler_chain_default_params();
-        llama_sampler* smpl = llama_sampler_chain_init(sparams);
-        if (temperature <= 0.0f) {
-            llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
-        } else {
-            llama_sampler_chain_add(smpl, llama_sampler_init_temp(temperature));
-            if (top_k > 0) {
-                llama_sampler_chain_add(smpl, llama_sampler_init_top_k(top_k));
-            }
-            if (top_p > 0.0f && top_p < 1.0f) {
-                llama_sampler_chain_add(smpl, llama_sampler_init_top_p(top_p, 1));
-            }
-            if (!grammar.empty()) {
-                llama_sampler* grmr = llama_sampler_init_grammar(
-                    ctx->vocab, grammar.c_str(), nullptr);
-                if (grmr) llama_sampler_chain_add(smpl, grmr);
-            }
-            llama_sampler_chain_add(
-                smpl, llama_sampler_init_dist(seed == 0xFFFFFFFFu ? 12345u : seed));
-        }
+        llama_sampler* smpl = create_sampler(ctx->vocab, llama_vocab_n_tokens(ctx->vocab),
+            prompt_tokens, temperature, top_p, top_k, seed, grammar,
+            repetition_penalty);
 
         // Prepare batch.
         const int32_t n_batch = ctx->n_batch;
@@ -751,8 +817,23 @@ int32_t psy_generate(
             }
         }
 
-        // Trim any divergent KV cells so new positions stay consecutive.
-        if (common_prefix > 0 && ctx->lctx) {
+        const int32_t n_vocab = llama_vocab_n_tokens(ctx->vocab);
+        // A strict prefix of the old prompt had a different prefill batch
+        // shape. Re-evaluate it fully rather than reuse longer-prompt KV rows
+        // or its endpoint logits; this is also the safe truncation boundary.
+        if (common_prefix == prompt_tokens.size() &&
+            ctx->cached_prompt_tokens.size() > prompt_tokens.size()) {
+            common_prefix = 0;
+        }
+        const bool reuse_prompt_logits = common_prefix == prompt_tokens.size() &&
+            ctx->cached_prompt_tokens.size() == prompt_tokens.size() &&
+            common_prefix > 0 && ctx->cached_prompt_logits.size() == static_cast<size_t>(n_vocab);
+        // A legacy/incomplete cache has no valid prompt logits: recompute its
+        // final row. Otherwise keep every prompt KV row exactly as evaluated.
+        if (common_prefix == prompt_tokens.size() && common_prefix > 0 && !reuse_prompt_logits) {
+            --common_prefix;
+        }
+        if (ctx->lctx) {
             llama_memory_seq_rm(
                 llama_get_memory(ctx->lctx), 0,
                 static_cast<llama_pos>(common_prefix), -1);
@@ -788,35 +869,77 @@ int32_t psy_generate(
         ctx->cached_prompt_tokens = prompt_tokens;
         ctx->last_generate_stats.prompt_tokens =
             static_cast<int>(prompt_tokens.size());
+        ctx->last_generate_stats.evaluated_prompt_tokens =
+            static_cast<int>(prompt_tokens.size() - common_prefix);
+        ctx->last_generate_stats.reused_prompt_tokens =
+            static_cast<int>(common_prefix);
         ctx->last_generate_stats.prompt_eval_ms =
             to_ms(SteadyClock::now() - prompt_start);
 
         if (!decode_ok) {
             llama_batch_free(batch);
             llama_sampler_free(smpl);
+            ctx->cached_prompt_tokens.clear();
+            ctx->cached_prompt_logits.clear();
+            if (ctx->cancelled.exchange(false, std::memory_order_acq_rel)) {
+                return 1;
+            }
             psy_log(PSY_LOG_ERROR, "native:inference", "generate", corr_id,
                     "reason=decode_failed", "prompt decode failed");
             return -1;
+        }
+
+        if (!reuse_prompt_logits) {
+            const float* logits = llama_get_logits_ith(ctx->lctx, -1);
+            if (!logits) {
+                llama_batch_free(batch);
+                llama_sampler_free(smpl);
+                ctx->cached_prompt_tokens.clear();
+                ctx->cached_prompt_logits.clear();
+                return -1;
+            }
+            ctx->cached_prompt_logits.assign(logits, logits + n_vocab);
         }
 
         // Sampling loop.
         const auto generation_start = SteadyClock::now();
         llama_token token = prompt_tokens.empty() ? -1 : prompt_tokens.back();
         std::string generated;
-        Utf8Accumulator utf8;
-        int emitted = 0;
+        GenerationOutput output{ctx->last_generate_stats};
         for (int i = 0; i < max_tokens; ++i) {
             if (ctx->cancelled.load(std::memory_order_acquire)) {
                 ctx->cancelled.store(false, std::memory_order_release);
                 llama_batch_free(batch);
                 llama_sampler_free(smpl);
+                ctx->cached_prompt_tokens.clear();
+                ctx->cached_prompt_logits.clear();
                 psy_log(PSY_LOG_INFO, "native:inference", "generate", corr_id,
                         "status=cancelled", "generation cancelled");
                 return 1;
             }
 
             if (i == 0) {
-                token = llama_sampler_sample(smpl, ctx->lctx, -1);
+                // Same public CPU sampler path as llama_sampler_sample, using
+                // an owned candidate copy so sampler transforms cannot mutate
+                // the cached logits reused by subsequent requests.
+                std::vector<llama_token_data> candidates(static_cast<size_t>(n_vocab));
+                for (llama_token id = 0; id < n_vocab; ++id) {
+                    candidates[static_cast<size_t>(id)] = {
+                        id, ctx->cached_prompt_logits[static_cast<size_t>(id)], 0.0f};
+                }
+                llama_token_data_array distribution = {
+                    candidates.data(), candidates.size(), -1, false};
+                llama_sampler_apply(smpl, &distribution);
+                if (distribution.selected < 0 ||
+                    static_cast<size_t>(distribution.selected) >= distribution.size) {
+                    llama_batch_free(batch);
+                    llama_sampler_free(smpl);
+                    ctx->cached_prompt_tokens.clear();
+                    ctx->cached_prompt_logits.clear();
+                    return -1;
+                }
+                token = distribution.data[distribution.selected].id;
+                llama_sampler_accept(smpl, token);
             } else {
                 batch.n_tokens = 1;
                 batch.token[0] = token;
@@ -847,7 +970,7 @@ int32_t psy_generate(
                 if (n > 0) piece.resize(static_cast<size_t>(n));
             }
             generated += piece;
-            if (utf8.feed(piece, token, callback, user_data)) ++emitted;
+            output.feed(piece, token, callback, user_data);
 
             // Stop-string check.
             bool stopped = false;
@@ -861,23 +984,37 @@ int32_t psy_generate(
             if (stopped) break;
         }
 
-        utf8.flush(token, callback, user_data);
+        output.flush(token, callback, user_data);
         llama_batch_free(batch);
         llama_sampler_free(smpl);
 
-        ctx->last_generate_stats.generated_tokens = emitted;
         ctx->last_generate_stats.generation_ms = to_ms(SteadyClock::now() - generation_start);
         ctx->last_generate_stats.total_ms = to_ms(SteadyClock::now() - total_start);
 
         psy_log(PSY_LOG_SUCCESS, "native:inference", "generate", corr_id,
-                ("tokens=" + std::to_string(emitted)).c_str(),
+                ("tokens=" + std::to_string(ctx->last_generate_stats.generated_tokens)).c_str(),
                 decode_ok ? "llama.cpp generate completed"
                           : "llama.cpp generate failed during sampling");
+        if (!decode_ok) {
+            ctx->cached_prompt_tokens.clear();
+            ctx->cached_prompt_logits.clear();
+            if (ctx->cancelled.exchange(false, std::memory_order_acq_rel)) return 1;
+        }
         return decode_ok ? 0 : -1;
     }
 #endif
 
-    // Stub generate path for fallback / builds without llama.cpp.
+    // Explicit development backend; statistics still describe this request.
+    if (max_tokens > ctx->n_ctx ||
+        prompt.size() > static_cast<size_t>(ctx->n_ctx - max_tokens)) {
+        psy_log(PSY_LOG_ERROR, "native:inference", "generate", corr_id,
+                "reason=context_overflow", "prompt and output exceed loaded context");
+        return -2;
+    }
+    const auto stub_start = SteadyClock::now();
+    ctx->last_generate_stats = GenerateStats();
+    ctx->last_generate_stats.prompt_tokens = static_cast<int>(prompt.size());
+    ctx->last_generate_stats.evaluated_prompt_tokens = static_cast<int>(prompt.size());
     psy_log(PSY_LOG_INFO, "native:inference", "generate", corr_id,
             ("prompt_len=" + std::to_string(prompt.size())).c_str(),
             "stub generate started");
@@ -933,6 +1070,10 @@ int32_t psy_generate(
         ++emitted;
     }
 
+    ctx->last_generate_stats.generated_tokens = emitted;
+    ctx->last_generate_stats.generation_ms = to_ms(SteadyClock::now() - stub_start);
+    ctx->last_generate_stats.total_ms = ctx->last_generate_stats.generation_ms;
+
     psy_log(PSY_LOG_SUCCESS, "native:inference", "generate", corr_id,
             ("tokens=" + std::to_string(emitted)).c_str(),
             "stub generate completed");
@@ -945,8 +1086,10 @@ void psy_cancel(PsyContext* ctx) {
 
 void psy_reset_kv(PsyContext* ctx) {
     if (!ctx) return;
+    ctx->cancelled.store(false, std::memory_order_release);
     ctx->cached_prompt_tokens.clear();
 #if PSYCHOSIMS_WITH_LLAMA_CPP
+    ctx->cached_prompt_logits.clear();
     if (ctx->real_mode && ctx->lctx) {
         llama_memory_clear(llama_get_memory(ctx->lctx), true);
         psy_log(PSY_LOG_INFO, "native:inference", "kv_cache_reset",
@@ -965,6 +1108,8 @@ const char* psy_last_generate_stats(PsyContext* ctx) {
     const GenerateStats& s = ctx->last_generate_stats;
     ctx->last_stats =
         std::string("{\"prompt_tokens\":") + std::to_string(s.prompt_tokens) +
+        ",\"evaluated_prompt_tokens\":" + std::to_string(s.evaluated_prompt_tokens) +
+        ",\"reused_prompt_tokens\":" + std::to_string(s.reused_prompt_tokens) +
         ",\"prompt_eval_ms\":" + std::to_string(s.prompt_eval_ms) +
         ",\"generated_tokens\":" + std::to_string(s.generated_tokens) +
         ",\"generation_ms\":" + std::to_string(s.generation_ms) +

@@ -4,6 +4,8 @@ Charter, decision log, glossary. The "what is this project even" docs.
 
 ## Files
 
+- [Data lifecycle and classification](DATA-LIFECYCLE.md) — permitted durable data, privacy acceptance, erasure and restore obligations.
+
 - [`CHARTER.template.md`](CHARTER.template.md) — vision, scope, audience, success criteria.
 - [`DECISION_LOG.template.md`](DECISION_LOG.template.md) — append-only log of meta-decisions (not code-level ADRs — those live in `docs/design/`).
 - [`GLOSSARY.template.md`](GLOSSARY.template.md) — terminology used across this repo.

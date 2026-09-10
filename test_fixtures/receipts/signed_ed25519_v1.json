@@ -1,0 +1,50 @@
+{
+  "purpose": "PUBLIC TEST VECTOR ONLY. Never use this seed in an application.",
+  "test_seed_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "public_key": "A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg=",
+  "wire_sha256": "65899de5abf25d3a631667c613658af122a3be50c1d67863b994148192092df1",
+  "receipt": {
+    "id": "session_fixture_v1",
+    "schema_version": "0.3.0",
+    "ruleset_version": "0.1.0",
+    "patient_id": "patient_fixture",
+    "idempotency_key": "rcp_fixture_v1",
+    "correlation_id": "psy_fixture_v1",
+    "turn_count": 1,
+    "start_state": {
+      "loadout": {
+        "card_ids": [
+          "core.disclosing.breaker"
+        ],
+        "slot_cap": 6
+      },
+      "library": {
+        "owned_card_ids": [
+          "core.disclosing.breaker"
+        ]
+      },
+      "controllers": {
+        "focus": "balanced",
+        "emotional_delivery": "balanced"
+      },
+      "initial_axes": {
+        "trust": 40,
+        "agitation": 10,
+        "resistance": 35,
+        "trauma": 0,
+        "session_progress": 0
+      },
+      "root_seed": 42
+    },
+    "actions": [
+      "open_question"
+    ],
+    "deltas": []
+  },
+  "envelope": {
+    "canonical_receipt_bytes": "eyJhY3Rpb25zIjpbIm9wZW5fcXVlc3Rpb24iXSwiY29ycmVsYXRpb25faWQiOiJwc3lfZml4dHVyZV92MSIsImRlbHRhcyI6W10sImlkIjoic2Vzc2lvbl9maXh0dXJlX3YxIiwiaWRlbXBvdGVuY3lfa2V5IjoicmNwX2ZpeHR1cmVfdjEiLCJwYXRpZW50X2lkIjoicGF0aWVudF9maXh0dXJlIiwicnVsZXNldF92ZXJzaW9uIjoiMC4xLjAiLCJzY2hlbWFfdmVyc2lvbiI6IjAuMy4wIiwic3RhcnRfc3RhdGUiOnsiY29udHJvbGxlcnMiOnsiZW1vdGlvbmFsX2RlbGl2ZXJ5IjoiYmFsYW5jZWQiLCJmb2N1cyI6ImJhbGFuY2VkIn0sImluaXRpYWxfYXhlcyI6eyJhZ2l0YXRpb24iOjEwLCJyZXNpc3RhbmNlIjozNSwic2Vzc2lvbl9wcm9ncmVzcyI6MCwidHJhdW1hIjowLCJ0cnVzdCI6NDB9LCJsaWJyYXJ5Ijp7Im93bmVkX2NhcmRfaWRzIjpbImNvcmUuZGlzY2xvc2luZy5icmVha2VyIl19LCJsb2Fkb3V0Ijp7ImNhcmRfaWRzIjpbImNvcmUuZGlzY2xvc2luZy5icmVha2VyIl0sInNsb3RfY2FwIjo2fSwicm9vdF9zZWVkIjo0Mn0sInR1cm5fY291bnQiOjF9",
+    "signature": "NqngWLqUSqjWU67EgxxbkQ8j3RWu6809Gj7TjGf0JKTwgrQQB1NjXM/5Rw2rIZJOQ8MDtH5Xnk0vdDZHPHoqDg==",
+    "suite_id": "ed25519-v1",
+    "signing_key_id": "key_fixture_v1"
+  }
+}

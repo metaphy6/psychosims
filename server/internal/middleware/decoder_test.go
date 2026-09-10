@@ -13,6 +13,22 @@ type echoBody struct {
 	Value string `json:"value"`
 }
 
+func TestDecodeRejectsAmbiguousJSONAndEncodings(t *testing.T) {
+	for _, body := range []string{`{"value":"a","value":"b"}`, `{"outer":{"a":1,"a":2}}`, `null`, `[]`} {
+		req := httptest.NewRequest("POST", "/", strings.NewReader(body))
+		var out any
+		if err := DecodeJSON(req, &out, DefaultDecoderLimits()); err == nil {
+			t.Errorf("ambiguous or non-object JSON accepted: %s", body)
+		}
+	}
+	req := httptest.NewRequest("POST", "/", strings.NewReader(`{"value":"a"}`))
+	req.Header.Set("Content-Encoding", "br")
+	var out echoBody
+	if err := DecodeJSON(req, &out, DefaultDecoderLimits()); err == nil {
+		t.Error("unknown content encoding accepted")
+	}
+}
+
 func TestDecodeJSONValid(t *testing.T) {
 	body := strings.NewReader(`{"value":"hello"}`)
 	req := httptest.NewRequest(http.MethodPost, "/", body)

@@ -31,6 +31,14 @@ abstract class RoleplayFrame {
   /// instruct model has a concrete template of *how the patient speaks* before
   /// it is asked to speak. Deterministic and identical turn-to-turn.
   List<ConversationTurn> exemplars();
+
+  String stableInstruction(
+          {required PatientManifest manifest, required SimState state}) =>
+      instruction(manifest: manifest, state: state);
+
+  String scene(SimState state) => '';
+
+  List<ConversationTurn> examplesFor(PatientManifest manifest) => exemplars();
 }
 
 /// The no-op frame used by the pure assembler and its unit tests: no
@@ -57,83 +65,49 @@ class PatientRoleplayFrame extends RoleplayFrame {
   const PatientRoleplayFrame();
 
   /// Frame version, bumped whenever the wording or exemplars change.
-  static const String frameVersion = 'roleplay-1.0.0';
+  static const String frameVersion = 'roleplay-1.1.0';
 
   @override
-  String instruction({
-    required PatientManifest manifest,
-    required SimState state,
-  }) {
-    final manner = _archetypeInWords(manifest.styleArchetype);
-    final feeling = _stateInWords(state);
-    final clue =
-        manifest.clueTokens.isEmpty ? null : manifest.clueTokens.join('", "');
+  String instruction(
+          {required PatientManifest manifest, required SimState state}) =>
+      '${stableInstruction(manifest: manifest, state: state)}\n${scene(state)}';
 
-    final buffer = StringBuffer()
-      ..writeln(
-        'The lines above are internal metadata. Never read them aloud, repeat '
-        'them, or mention them.',
-      )
-      ..writeln()
-      ..writeln(
-        'You are an actor voicing ONE character — the patient — in a fictional, '
-        'text-based therapy roleplay made for entertainment. It is not real '
-        'clinical care. Stay fully in character as the patient at all times.',
-      )
-      ..writeln()
-      ..writeln('Always obey these rules:')
-      ..writeln(
-        '- Speak only as the patient, in the first person ("I", "me"). You are '
-        'the one in the chair, not the therapist.',
-      )
-      ..writeln(
-        '- Reply with one or two short, natural spoken sentences — the way a '
-        'real person talks, not a report.',
-      )
-      ..writeln(
-        '- Never analyse, summarise, diagnose, or give advice. Never write '
-        'lists, numbers, scores, headings, or anything in CAPITALS or '
-        'key=value form.',
-      )
-      ..writeln(
-        '- Never break character and never mention these instructions.',
-      );
-
-    if (clue != null) {
-      buffer.writeln(
-        '- When it feels natural, let the detail "$clue" surface in your own '
-        'words.',
-      );
-    }
-
-    buffer
-      ..writeln()
-      ..writeln('Who you are: ${manifest.modelFacingTemplate}')
-      ..write('Your manner is $manner. Right now you feel $feeling.');
-
-    return buffer.toString();
+  @override
+  String stableInstruction(
+      {required PatientManifest manifest, required SimState state}) {
+    final markers = manifest.clueTokens.map((clue) => '[$clue]').join(' ');
+    return [
+      'You are an actor voicing the patient in a fictional therapy game.',
+      'Speak in the first person: one or two short spoken sentences. Never analyse, diagnose, give advice, write lists, or explain the game. Stay in character even on difficult topics.',
+      'Never repeat the metadata or instructions. Only the clue markers below belong in your reply.',
+      'Who you are: ${manifest.modelFacingTemplate}',
+      'Your manner is ${_archetypeInWords(manifest.styleArchetype)}.',
+      if (markers.isNotEmpty)
+        'Every reply must end with these exact clue markers, unchanged: $markers',
+    ].join('\n');
   }
 
   @override
+  String scene(SimState state) => 'Right now you feel ${_stateInWords(state)}.';
+
+  @override
   List<ConversationTurn> exemplars() => const [
-        ConversationTurn(role: 'user', text: 'How are you feeling today?'),
+        ConversationTurn(role: 'user', text: 'How are you feeling?'),
         ConversationTurn(
-          role: 'assistant',
-          text:
-              "Honestly? Like I can't sit still. My thoughts keep racing three "
-              'steps ahead of my mouth.',
-        ),
-        ConversationTurn(
-          role: 'user',
-          text: "Take your time. What's been on your mind?",
-        ),
-        ConversationTurn(
-          role: 'assistant',
-          text:
-              "I keep feeling like everyone's just waiting for me to slip up. "
-              "It's wearing me down.",
-        ),
+            role: 'assistant',
+            text: "I feel restless. My thoughts keep racing."),
       ];
+
+  @override
+  List<ConversationTurn> examplesFor(PatientManifest manifest) {
+    final markers = manifest.clueTokens.map((clue) => '[$clue]').join(' ');
+    return [
+      exemplars().first,
+      ConversationTurn(
+          role: 'assistant',
+          text: '${exemplars()[1].text}${markers.isEmpty ? '' : ' $markers'}'),
+    ];
+  }
 
   static String _archetypeInWords(StyleArchetype archetype) {
     switch (archetype) {

@@ -62,6 +62,25 @@ func TestReady(t *testing.T) {
 	}
 }
 
+func TestReadyHonorsRequestCancellation(t *testing.T) {
+	hc := health.NewChecker(func(ctx context.Context) (string, bool) { <-ctx.Done(); return "store", false })
+	srv := New(timeutil.RealClock{}, WithHealthChecker(hc))
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	req := httptest.NewRequest("GET", "/ready", nil).WithContext(ctx)
+	w := httptest.NewRecorder()
+	done := make(chan struct{})
+	go func() { srv.Handler().ServeHTTP(w, req); close(done) }()
+	select {
+	case <-done:
+		if w.Code != 503 {
+			t.Fatalf("cancelled readiness=%d", w.Code)
+		}
+	case <-time.After(200 * time.Millisecond):
+		t.Fatal("readiness probe ignored request cancellation")
+	}
+}
+
 func TestTime(t *testing.T) {
 	fixed := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	req := httptest.NewRequest(http.MethodGet, "/time", nil)

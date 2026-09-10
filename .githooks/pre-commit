@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Local pre-commit hook mirroring CI gates.
-# Install with: git config core.hooksPath .githooks
+# Deterministic local gates; real model acceptance remains a separate gate.
+# Installed by full bootstrap or scripts/install_git_hooks.sh.
 
 cd "$(dirname "$0")/.."
 
-make format.check
-make lint
-make test
+make verify.contracts

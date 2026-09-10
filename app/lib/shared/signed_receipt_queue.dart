@@ -1,6 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
+import 'dart:convert';
+import 'api_client.dart';
+import 'secure_storage.dart';
 
 import 'package:psychemas/psychemas.dart';
 
@@ -37,6 +39,93 @@ class SignedReceiptQueue {
     await persistence.append(entry);
   }
 
+  /// Resolves only a contiguous prefix. A permanent verdict is written in the
+  /// same transaction as its cursor; transient errors leave the receipt pending.
+  Future<String?> reconcile(
+          Future<ReceiptVerdict> Function(SignedEnvelope) submit) =>
+      SerialOperations.run('${persistence.scope}.drain', () async {
+        var cursor = await persistence.cursor;
+        for (final entry in await persistence.readAfter(cursor)) {
+          ReceiptVerdict verdict;
+          try {
+            verdict = await submit(entry.envelope);
+          } on ApiException catch (error) {
+            if (error.retryable || error.statusCode == 401) return cursor;
+            if (![400, 403, 404, 409, 410, 413, 422]
+                .contains(error.statusCode)) {
+              rethrow;
+            }
+            final receipt = SessionReceipt.fromJson(
+                jsonDecode(utf8.decode(entry.envelope.canonicalReceiptBytes))
+                    as Map<String, Object?>);
+            verdict = ReceiptVerdict(
+                id: receipt.id,
+                idempotencyKey: entry.id,
+                status: 'rejected',
+                rewardStatus: 'held_unproven',
+                code: error.kind);
+          }
+          if (verdict.retryable || verdict.status == 'retryable') return cursor;
+          await persistence.resolve(entry.id, verdict);
+          cursor = entry.id;
+        }
+        return cursor;
+      });
+
+  Future<String?> reconcileBatch(
+          Future<ReceiptBatch> Function(List<SignedEnvelope>) submit,
+          {int maxEnvelopes = 64,
+          int maxBytes = 524288}) =>
+      SerialOperations.run('${persistence.scope}.drain', () async {
+        if (maxEnvelopes < 1 || maxEnvelopes > 64 || maxBytes < 1) {
+          throw ArgumentError('Invalid batch bounds');
+        }
+        var cursor = await persistence.cursor;
+        final remaining = await persistence.readAfter(cursor);
+        var offset = 0;
+        while (offset < remaining.length) {
+          final entries = <QueueEntry>[];
+          for (final entry in remaining.skip(offset).take(maxEnvelopes)) {
+            final candidate = [...entries, entry];
+            final bytes = utf8
+                .encode(jsonEncode({
+                  'envelopes':
+                      candidate.map((e) => e.envelope.toJson()).toList()
+                }))
+                .length;
+            if (bytes > maxBytes) break;
+            entries.add(entry);
+          }
+          if (entries.isEmpty) {
+            throw StateError('A receipt exceeds the batch transport budget');
+          }
+          ReceiptBatch batch;
+          try {
+            batch = await submit(
+                entries.map((e) => e.envelope).toList(growable: false));
+          } on ApiException catch (error) {
+            if (error.retryable || error.statusCode == 401) return cursor;
+            rethrow;
+          }
+          if (batch.results.length != entries.length) {
+            throw const FormatException('Batch result count mismatch');
+          }
+          for (var i = 0; i < entries.length; i++) {
+            final entry = entries[i], verdict = batch.results[i];
+            if (verdict.idempotencyKey != entry.id) {
+              throw const FormatException('Batch result order mismatch');
+            }
+            if (verdict.retryable || verdict.status == 'retryable') {
+              return cursor;
+            }
+            await persistence.resolve(entry.id, verdict);
+            cursor = entry.id;
+            offset++;
+          }
+        }
+        return cursor;
+      });
+
   /// Drains the queue by calling [submit] for each entry in order.
   ///
   /// Returns the id of the last successfully-acknowledged entry (the cursor).
@@ -71,6 +160,9 @@ class SignedReceiptQueue {
 
 /// Persistence seam for the durable queue.
 abstract interface class QueuePersistence {
+  String get scope;
+  Future<List<ReceiptVerdict>> get verdicts;
+  Future<void> resolve(String id, ReceiptVerdict verdict);
   Future<String?> get cursor;
   Future<void> advanceCursor(String id);
   Future<void> append(QueueEntry entry);
@@ -80,6 +172,18 @@ abstract interface class QueuePersistence {
 /// A memory-backed queue persistence implementation for tests.
 class MemoryQueuePersistence implements QueuePersistence {
   final List<QueueEntry> _entries = [];
+  final List<ReceiptVerdict> _verdicts = [];
+  @override
+  String get scope => 'memory-queue-${identityHashCode(this)}';
+  @override
+  Future<List<ReceiptVerdict>> get verdicts async =>
+      List.unmodifiable(_verdicts);
+  @override
+  Future<void> resolve(String id, ReceiptVerdict verdict) async {
+    _verdicts.add(verdict);
+    _cursor = id;
+  }
+
   String? _cursor;
 
   @override
@@ -141,7 +245,7 @@ class RetryPolicy {
   Duration delayFor(int attempt) {
     final exponential = baseDelay.inMilliseconds * (1 << (attempt - 1));
     final capped = exponential.clamp(0, maxDelay.inMilliseconds);
-    final jitter = Random().nextInt(capped ~/ 4 + 1);
-    return Duration(milliseconds: capped + jitter);
+    final jitter = Random().nextInt(capped + 1);
+    return Duration(milliseconds: jitter);
   }
 }

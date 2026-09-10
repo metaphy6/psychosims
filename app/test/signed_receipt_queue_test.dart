@@ -4,14 +4,14 @@ import 'package:psychosims/shared/device_key_store.dart';
 import 'package:psychosims/shared/signed_receipt_queue.dart';
 
 SessionReceipt _receipt(String idempotencyKey) {
-  final state = SessionStartState(
-    loadout: const Loadout(cardIds: [], slotCap: 6),
-    library: const CardLibrary(ownedCardIds: {}),
-    controllers: const TherapyControllerSettings(
+  const state = SessionStartState(
+    loadout: Loadout(cardIds: [], slotCap: 6),
+    library: CardLibrary(ownedCardIds: {}),
+    controllers: TherapyControllerSettings(
       focus: FocusAxis.balanced,
       emotionalDelivery: EmotionalDelivery.balanced,
     ),
-    initialAxes: const {},
+    initialAxes: {},
     rootSeed: 42,
   );
   return SessionReceipt(

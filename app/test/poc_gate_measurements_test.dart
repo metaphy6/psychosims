@@ -1,113 +1,53 @@
 // ignore_for_file: avoid_print
 
+@Tags(['model_acceptance'])
+library;
+
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:psyconfig/psyconfig.dart';
 
-import 'package:psychosims/shared/headless_harness.dart';
-import 'package:psychosims/shared/inference_service.dart';
-import 'package:psychosims/shared/logger.dart';
-import 'package:psychosims/shared/metrics_service.dart';
-
+import '../tools/model_acceptance.dart';
 import 'test_manifest_data.dart';
 
-String _libraryPath() =>
-    p.join('..', 'native', 'build', 'libpsychosims_native.so');
-
-String _modelPath(String fileName) =>
-    p.join('..', 'assets', 'models', fileName);
-
-Future<_ModelMetrics> _measureModel(
-  String label,
-  String modelFile,
-  Config config,
-) async {
-  final logger = PsyLog(minLevel: LogLevel.warn);
-  final inference = InferenceService.load(
-    libraryPath: _libraryPath(),
-    logger: logger,
-  );
-  final stopwatch = Stopwatch()..start();
-  await inference.loadModel(_modelPath(modelFile));
-  final loadMillis = stopwatch.elapsed.inMilliseconds;
-
-  final harness = HeadlessHarness(
-    config: config,
-    inference: inference,
-    metrics: MetricsService(),
-    logger: logger,
-  );
-
-  final manifest = testManifest();
-  final result = await harness.runTurn(
-    manifest: manifest,
-    state: manifest.initialSimState(),
-    action: manifest.interactionPatterns.first,
-    modelPath: _modelPath(modelFile),
-  );
-
-  final metrics = _ModelMetrics(
-    label: label,
-    loadMillis: loadMillis,
-    promptChars: result.prompt.length,
-    responseChars: result.rawResponse.length,
-  );
-
-  print(
-    '[$label] load=${loadMillis}ms prompt_chars=${result.prompt.length} '
-    'response_chars=${result.rawResponse.length} total_ms=${stopwatch.elapsed.inMilliseconds}',
-  );
-  print('[$label] response:\n${result.rawResponse}\n');
-
-  return metrics;
-}
-
 void main() {
-  // NOTE: the prefix-cache reuse benefit is measured authoritatively by the
-  // "warm vs cold first-token latency" test in poc_gate_exit_report_test.dart
-  // (wall-clock first-token timing), which is the working, recorded gate. A
-  // token-count benchmark would need native psy_last_generate_stats to report
-  // prompt_tokens through the runTurn path; that is deferred, not skipped here.
-
-  test(
-    'measure Tier A primary (Qwen2.5-1.5B) on Linux desktop',
-    () async {
-      final config = loadConfig(environment: 'dev');
-      final qwen = await _measureModel(
-        'Qwen2.5-1.5B-Q4_K_M',
-        'qwen2.5-1.5b-instruct-q4_k_m.gguf',
-        config,
+  final config = loadConfig(environment: 'dev');
+  final candidates = {
+    'Tier A primary (Qwen2.5-1.5B)': config.model.tierAPrimaryUrl,
+    'comparator (Phi-3.5-mini)': config.model.tierAFallbackUrl,
+    'Tier B fallback (SmolLM2-1.7B)': config.model.tierBUrl,
+  };
+  for (final entry in candidates.entries) {
+    test('diagnose ${entry.key} prompt direction on Linux desktop', () async {
+      final report = await diagnoseCandidate(
+          config: config,
+          candidate: ModelCandidate.fromConfig(
+              config, entry.value, Directory(p.join('..', 'assets', 'models'))),
+          manifest: testManifest(),
+          libraryPath:
+              p.join('..', 'native', 'build', 'libpsychosims_native.so'));
+      expect(report['kind'], 'diagnostic_only');
+      expect(report['acceptance'], 'not established');
+      expect(report['mature_probes'], hasLength(3));
+      print('MODEL_DIAGNOSTIC ${jsonEncode(report)}');
+    }, timeout: const Timeout(Duration(minutes: 20)));
+    test('measure ${entry.key} on Linux desktop', () async {
+      final report = await measureCandidate(
+        config: config,
+        candidate: ModelCandidate.fromConfig(
+            config, entry.value, Directory(p.join('..', 'assets', 'models'))),
+        manifest: testManifest(),
+        libraryPath: p.join('..', 'native', 'build', 'libpsychosims_native.so'),
       );
-      expect(qwen.responseChars, greaterThan(0));
-    },
-    timeout: const Timeout(Duration(minutes: 2)),
-  );
-
-  test(
-    'measure comparator (Phi-3.5-mini) on Linux desktop',
-    () async {
-      final config = loadConfig(environment: 'dev');
-      final phi = await _measureModel(
-        'Phi-3.5-mini-Q4_K_M',
-        'Phi-3.5-mini-instruct-Q4_K_M.gguf',
-        config,
-      );
-      expect(phi.responseChars, greaterThan(0));
-    },
-    timeout: const Timeout(Duration(minutes: 5)),
-  );
-}
-
-class _ModelMetrics {
-  final String label;
-  final int loadMillis;
-  final int promptChars;
-  final int responseChars;
-
-  _ModelMetrics({
-    required this.label,
-    required this.loadMillis,
-    required this.promptChars,
-    required this.responseChars,
-  });
+      expect(report['deterministic_pairs'], 20);
+      expect(report['raw_quality_n'], 20);
+      expect(report['mature_probes'], hasLength(3));
+      // A complete host measurement is distinct from passing the reference
+      // device's performance targets. Target misses remain explicit in JSON.
+      print('MODEL_ACCEPTANCE ${jsonEncode(report)}');
+    }, timeout: const Timeout(Duration(minutes: 60)));
+  }
 }

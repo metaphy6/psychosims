@@ -69,7 +69,7 @@ Config _baseDefaults() {
       greedyDecode: false,
     ),
     content: ContentConfig(
-      bundledManifestPath: 'content/manifests/poc_sample.json',
+      bundledManifestPath: '../content/manifests/poc_sample.json',
       maxManifestBytes: 128 * 1024,
       maxManifestDepth: 8,
     ),
@@ -134,6 +134,7 @@ Config _environmentOverlay(String environment) {
           apiBaseUrl: 'http://localhost:8080',
           connectTimeoutMillis: 1000,
           receiveTimeoutMillis: 1000,
+          allowInsecureLoopback: true,
         ),
         model: ModelConfig(
           tierAPrimaryUrl: '',
@@ -163,7 +164,7 @@ Config _environmentOverlay(String environment) {
           greedyDecode: true,
         ),
         content: ContentConfig(
-          bundledManifestPath: 'content/manifests/poc_sample.json',
+          bundledManifestPath: '../content/manifests/poc_sample.json',
           maxManifestBytes: 128 * 1024,
           maxManifestDepth: 8,
         ),
@@ -204,6 +205,7 @@ Config _environmentOverlay(String environment) {
           apiBaseUrl: 'http://localhost:8080',
           connectTimeoutMillis: 5000,
           receiveTimeoutMillis: 15000,
+          allowInsecureLoopback: true,
         ),
         model: ModelConfig(
           tierAPrimaryUrl: '',
@@ -233,7 +235,7 @@ Config _environmentOverlay(String environment) {
           greedyDecode: false,
         ),
         content: ContentConfig(
-          bundledManifestPath: 'content/manifests/poc_sample.json',
+          bundledManifestPath: '../content/manifests/poc_sample.json',
           maxManifestBytes: 128 * 1024,
           maxManifestDepth: 8,
         ),
@@ -339,7 +341,7 @@ Config _merge(Config base, Config overlay) {
     schemaVersion: overlay.schemaVersion.isEmpty
         ? base.schemaVersion
         : overlay.schemaVersion,
-    network: NetworkConfig(
+    network: overlay.network.copyWith(
       apiBaseUrl: _pick(base.network.apiBaseUrl, overlay.network.apiBaseUrl),
       connectTimeoutMillis: _pick(
         base.network.connectTimeoutMillis,
@@ -422,6 +424,8 @@ Config _merge(Config base, Config overlay) {
           overlay.promptBudget.maxOutputTokens),
       prefixCacheTokens: _pick(base.promptBudget.prefixCacheTokens,
           overlay.promptBudget.prefixCacheTokens),
+      // Zero explicitly disables corrections; it is not an absent overlay.
+      maxRegenerationRetries: overlay.promptBudget.maxRegenerationRetries,
     ),
     balance: BalanceConfig(
       startingClinicCurrency: _pick(base.balance.startingClinicCurrency,
@@ -465,6 +469,7 @@ Config _merge(Config base, Config overlay) {
     modelProfiles: overlay.modelProfiles.isEmpty
         ? base.modelProfiles
         : overlay.modelProfiles,
+    progression: overlay.progression,
   );
 }
 

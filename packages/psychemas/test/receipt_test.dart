@@ -33,6 +33,26 @@ void main() {
       expect(restored.deltas.first.axis, equals(StateAxis.trust));
     });
 
+    test('preserves additive typed ledger events for validation', () {
+      final wire = {
+        ...receipt.toJson(),
+        'ledger_events': [
+          const LedgerEvent(
+            kind: 'fixture',
+            idempotencyKey: 'event',
+            timestampSeconds: 1,
+            currency: CurrencyType.xp,
+            amountMicros: 1000000,
+            reasonKey: 'fixture',
+          ).toJson()
+        ]
+      };
+      final parsed = SessionReceipt.fromJson(wire);
+      expect(parsed.ledgerEvents.single.currency, CurrencyType.xp);
+      expect(parsed.toJson()['ledger_events'], wire['ledger_events']);
+      expect(receipt.toJson().containsKey('ledger_events'), isFalse);
+    });
+
     test('canonical bytes are deterministic', () {
       final a = receipt.toCanonicalBytes();
       final b = receipt.toCanonicalBytes();

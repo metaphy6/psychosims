@@ -24,9 +24,9 @@ type VersionInfo struct {
 
 // Config loads ruleset policy from server configuration.
 type Config struct {
-	KnownVersions   []string
-	SunsetWindow    time.Duration
-	KillSwitchAll   bool
+	KnownVersions []string
+	SunsetWindow  time.Duration
+	KillSwitchAll bool
 }
 
 // NewRegistry builds a registry from config.

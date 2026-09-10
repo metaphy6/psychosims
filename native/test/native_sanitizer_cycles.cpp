@@ -30,6 +30,7 @@ void run_cycle(const char* model_path, int cycle, bool cancel_midway) {
     const char* metadata = psy_model_metadata(ctx);
     assert(metadata != nullptr);
     assert(std::strlen(metadata) > 2);
+    assert(std::strstr(metadata, "\"backend\":\"llama.cpp\"") != nullptr);
 
     const char* gen_params =
         "{\"prompt\":\"What is 2+2?\",\"max_tokens\":32,"
@@ -45,22 +46,39 @@ void run_cycle(const char* model_path, int cycle, bool cancel_midway) {
     if (cancel_midway) {
         // Start generation on a separate thread and cancel it partway through
         // to exercise the cancellation path under the sanitizer.
-        std::atomic<bool> started{false};
+        std::atomic<bool> emitted{false};
+        std::atomic<bool> cancelled{false};
+        struct CancelState {
+            std::atomic<bool>& emitted;
+            std::atomic<bool>& cancelled;
+        } state{emitted, cancelled};
+        auto cancel_callback = [](const char*, int32_t, int, void* user) {
+            auto* state = static_cast<CancelState*>(user);
+            state->emitted.store(true, std::memory_order_release);
+            while (!state->cancelled.load(std::memory_order_acquire)) {
+                std::this_thread::yield();
+            }
+        };
+        int32_t result = -1;
         std::thread gen_thread([&]() {
-            started.store(true, std::memory_order_release);
-            psy_generate(ctx, gen_params, callback, &generated);
+            result = psy_generate(ctx, gen_params, cancel_callback, &state);
+            emitted.store(true, std::memory_order_release);
         });
-        while (!started.load(std::memory_order_acquire)) {
+        while (!emitted.load(std::memory_order_acquire)) {
             std::this_thread::yield();
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         psy_cancel(ctx);
+        cancelled.store(true, std::memory_order_release);
         gen_thread.join();
-        std::cout << "cancelled after " << generated << " token(s)"
-                  << std::endl;
+        assert(result == 1);
+        psy_reset_kv(ctx);
+        assert(psy_generate(ctx, gen_params, callback, &generated) == 0);
+        assert(generated > 0);
+        std::cout << "active cancellation and regeneration passed" << std::endl;
     } else {
         int32_t result = psy_generate(ctx, gen_params, callback, &generated);
         assert(result == 0);
+        assert(generated > 0);
         std::cout << "generated " << generated << " token(s)" << std::endl;
     }
 
@@ -69,12 +87,13 @@ void run_cycle(const char* model_path, int cycle, bool cancel_midway) {
 
 } // namespace
 
-int main() {
-    const char* primary_model = "assets/models/qwen2.5-1.5b-instruct-q4_k_m.gguf";
+int main(int argc, char** argv) {
+    const char* primary_model = argc == 2 ? argv[1] :
+        "assets/models/qwen2.5-1.5b-instruct-q4_k_m.gguf";
     if (!file_exists(primary_model)) {
         std::cout << "real model not present at " << primary_model
-                  << "; skipping sanitizer cycles" << std::endl;
-        return 0;
+                  << "; sanitizer acceptance cannot run" << std::endl;
+        return 1;
     }
 
     std::cout << "running load->generate->unload cycles under sanitizer"

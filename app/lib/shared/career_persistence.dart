@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart' as p;
 import 'package:psychemas/psychemas.dart';
+import 'package:psyconfig/psyconfig.dart';
+import 'package:psycore/psycore.dart' as core;
 
 /// Exception raised when career save operations fail.
 sealed class CareerPersistenceException implements Exception {
@@ -33,6 +35,41 @@ class ImportBudgetException extends CareerPersistenceException {
   ImportBudgetException(super.message);
 }
 
+/// A completed local practice session. Contains structured mechanics only.
+class CareerSessionRecord {
+  const CareerSessionRecord(
+      {required this.sessionId,
+      required this.manifestId,
+      required this.outcome,
+      required this.receipt,
+      required this.rewards});
+  final String sessionId;
+  final String manifestId;
+  final SessionOutcome outcome;
+  final SessionReceipt receipt;
+  final List<LedgerEvent> rewards;
+
+  Map<String, Object?> toJson() => {
+        'session_id': sessionId,
+        'manifest_id': manifestId,
+        'outcome': outcome.toJson(),
+        'receipt': receipt.toJson(),
+        'rewards': rewards.map((e) => e.toJson()).toList(),
+      };
+  factory CareerSessionRecord.fromJson(Map<String, Object?> json) =>
+      CareerSessionRecord(
+        sessionId: json['session_id']! as String,
+        manifestId: json['manifest_id']! as String,
+        outcome: SessionOutcomeJson.fromJson(json['outcome']! as String),
+        receipt:
+            SessionReceipt.fromJson(json['receipt']! as Map<String, Object?>),
+        rewards: (json['rewards']! as List)
+            .map(
+                (e) => LedgerEvent.fromJson((e as Map).cast<String, Object?>()))
+            .toList(),
+      );
+}
+
 /// A full snapshot of offline career state.
 ///
 /// Keeps the profile atomic (<0.5 KB of primitive metrics), the owned clinic,
@@ -44,24 +81,28 @@ class CareerSave {
     this.clinic,
     this.ownedCases = const {},
     this.receiptQueue = const [],
+    this.completedSessions = const [],
   });
 
   final CareerProfile profile;
   final ClinicAsset? clinic;
   final Map<String, CaseHistoryEnvelope> ownedCases;
   final List<SignedEnvelope> receiptQueue;
+  final List<CareerSessionRecord> completedSessions;
 
   CareerSave copyWith({
     CareerProfile? profile,
     ClinicAsset? clinic,
     Map<String, CaseHistoryEnvelope>? ownedCases,
     List<SignedEnvelope>? receiptQueue,
+    List<CareerSessionRecord>? completedSessions,
   }) {
     return CareerSave(
       profile: profile ?? this.profile,
       clinic: clinic ?? this.clinic,
       ownedCases: ownedCases ?? this.ownedCases,
       receiptQueue: receiptQueue ?? this.receiptQueue,
+      completedSessions: completedSessions ?? this.completedSessions,
     );
   }
 
@@ -72,6 +113,7 @@ class CareerSave {
           (caseId, envelope) => MapEntry(caseId, envelope.toJson()),
         ),
         'receipt_queue': receiptQueue.map((e) => e.toJson()).toList(),
+        'completed_sessions': completedSessions.map((e) => e.toJson()).toList(),
       };
 
   static CareerSave fromJson(Map<String, Object?> json) {
@@ -79,6 +121,10 @@ class CareerSave {
     return CareerSave(
       profile: CareerProfile.fromJson(json['profile']! as Map<String, Object?>),
       clinic: clinicJson == null ? null : ClinicAsset.fromJson(clinicJson),
+      completedSessions: ((json['completed_sessions'] ?? const []) as List)
+          .map((e) =>
+              CareerSessionRecord.fromJson((e as Map).cast<String, Object?>()))
+          .toList(),
       ownedCases: (json['owned_cases']! as Map<String, dynamic>).map(
         (caseId, value) => MapEntry(
           caseId,
@@ -112,12 +158,13 @@ class CareerPersistenceService {
   CareerPersistenceService({required this.directory});
 
   final Directory directory;
+  Future<void> _completionQueue = Future.value();
 
   static const String _saveFileName = 'career_save.json';
   static const String _backupFileName = 'career_save.json.bak';
   static const String _receiptQueueFileName = 'receipt_queue.jsonl';
 
-  static const int currentSchemaVersion = 1;
+  static const int currentSchemaVersion = 2;
   static const int maxImportBytes = 5 * 1024 * 1024;
   static const int maxNestingDepth = 32;
   static const int maxReceiptQueueLength = 10000;
@@ -159,6 +206,11 @@ class CareerPersistenceService {
     final envelope = Map<String, Object?>.of(payload)
       ..['checksum'] = _computeChecksum(payload);
 
+    if (utf8.encode(CanonicalJson.encodeString(envelope)).length >
+        maxImportBytes) {
+      throw ImportBudgetException(
+          'Encoded career exceeds $maxImportBytes bytes');
+    }
     final temp = File('${_file.path}.tmp');
     await _writeAtomic(temp, envelope);
     await temp.rename(_file.path);
@@ -227,6 +279,114 @@ class CareerPersistenceService {
             rulesetVersion: rulesetVersion,
           ),
         );
+  }
+
+  /// Completes an offline practice session exactly once within this app instance.
+  /// Terminal checkpoints remain durable until this snapshot has committed, so
+  /// restarting after interruption can retry with the same session id.
+  Future<CareerSessionRecord> completeSession({
+    required String sessionId,
+    required PatientManifest manifest,
+    required SessionStartState startState,
+    required List<InteractionPattern> actions,
+    required List<core.TurnOutput> outputs,
+    required int timestampSeconds,
+    required Config config,
+  }) {
+    final result = _completionQueue.then((_) => _completeSession(
+          sessionId: sessionId,
+          manifest: manifest,
+          startState: startState,
+          actions: List.of(actions),
+          outputs: List.of(outputs),
+          timestampSeconds: timestampSeconds,
+          config: config,
+        ));
+    // Preserve the error on the caller's result while allowing the next
+    // queued operation to recover after an I/O failure.
+    _completionQueue =
+        result.then<void>((_) {}, onError: (Object _, StackTrace __) {});
+    return result;
+  }
+
+  Future<CareerSessionRecord> _completeSession({
+    required String sessionId,
+    required PatientManifest manifest,
+    required SessionStartState startState,
+    required List<InteractionPattern> actions,
+    required List<core.TurnOutput> outputs,
+    required int timestampSeconds,
+    required Config config,
+  }) async {
+    if (outputs.isEmpty || !outputs.last.isTerminal) {
+      throw ArgumentError('Only a terminal session can be recorded.');
+    }
+    final saved = await loadOrCreate('local-practice', manifest.rulesetVersion);
+    for (final record in saved.completedSessions) {
+      if (record.sessionId == sessionId) return record;
+    }
+    final outcome = outputs.last.outcome;
+    final rewards = <LedgerEvent>[];
+    if (outcome == SessionOutcome.succeed) {
+      final progression = config.progression;
+      final xp = core.XpCurve(core.XpCurveConfig(
+        baseXpPerSession: progression.baseXpPerSession,
+        difficultyXpExponentMillis: progression.difficultyXpExponentMillis,
+        trivialGrindSessionThreshold: progression.trivialGrindSessionThreshold,
+        grindPenaltyMultiplierMillis: progression.grindPenaltyMultiplierMillis,
+      )).reward(
+          difficultyTier: 1, sessionCount: saved.completedSessions.length);
+      final amounts = {
+        CurrencyType.xp: xp * 1000000,
+        CurrencyType.study: progression.baseStudyPointsPerSession * 1000000,
+        CurrencyType.cash: config.balance.sessionFeeClinicCurrency * 1000000,
+      };
+      for (final entry in amounts.entries) {
+        if (entry.value == 0) continue;
+        rewards.add(LedgerEvent(
+          kind: 'offline_session_reward',
+          idempotencyKey: '$sessionId:${entry.key.name}',
+          timestampSeconds: timestampSeconds,
+          currency: entry.key,
+          amountMicros: entry.value,
+          reasonKey: 'offline.session.succeed',
+        ));
+      }
+    }
+    final record = CareerSessionRecord(
+      sessionId: sessionId,
+      manifestId: manifest.id,
+      outcome: outcome,
+      receipt: SessionReceipt(
+        id: sessionId,
+        rulesetVersion: manifest.rulesetVersion,
+        patientId: manifest.id,
+        idempotencyKey: sessionId,
+        correlationId: sessionId,
+        turnCount: actions.length,
+        startState: startState.toJson(),
+        actions: List.of(actions),
+        deltas: outputs.expand((o) => o.deltas).toList(),
+      ),
+      rewards: rewards,
+    );
+    final ownedCases = Map<String, CaseHistoryEnvelope>.of(saved.ownedCases);
+    if (manifest.memoryClass == MemoryClass.persistent) {
+      ownedCases[manifest.id] =
+          const core.MultiSessionResolver().buildNextEnvelope(
+        memoryClass: manifest.memoryClass,
+        previous: ownedCases[manifest.id] ?? CaseHistoryEnvelope.empty,
+        sessionOutputs: outputs,
+        manifestClueTokens: manifest.clueTokens,
+      );
+    }
+    await save(saved.copyWith(
+      profile: saved.profile
+          .copyWith(eventTail: [...saved.profile.eventTail, ...rewards]),
+      ownedCases: ownedCases,
+      completedSessions: [...saved.completedSessions, record],
+    ));
+    return record;
   }
 
   /// Appends [envelope] to the durable signed receipt queue if its
@@ -355,8 +515,8 @@ class CareerPersistenceService {
     if (!await file.exists()) return null;
     try {
       final bytes = await file.readAsBytes();
-      final json = jsonDecode(utf8.decode(bytes)) as Map<String, Object?>;
-      return importSave(file);
+      jsonDecode(utf8.decode(bytes));
+      return await importSave(file);
     } on FormatException catch (e) {
       throw CorruptSaveException('malformed JSON: $e');
     }
@@ -435,6 +595,9 @@ class CareerPersistenceService {
       throw ImportBudgetException(
         'event tail ${save.profile.eventTail.length} > $maxEventTailLength',
       );
+    }
+    if (save.completedSessions.length > maxEventTailLength) {
+      throw ImportBudgetException('Too many completed sessions');
     }
     if (save.ownedCases.length > maxOwnedCases) {
       throw ImportBudgetException(

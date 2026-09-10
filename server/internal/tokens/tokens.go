@@ -37,6 +37,7 @@ const (
 
 // Claims is the parsed content of a token.
 type Claims struct {
+	SessionID string    `json:"session_id,omitempty"`
 	AccountID string    `json:"account_id"`
 	Kind      TokenKind `json:"kind"`
 	TokenID   string    `json:"token_id"`

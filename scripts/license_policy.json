@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "reviewed_components": {
+    "pkg:pub/gtk@2.2.0": {
+      "license_sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "additional_ids": ["MPL-2.0"],
+      "source": "https://github.com/ubuntu-flutter-community/gtk.dart",
+      "obligation": "Retain MPL notices and provide the exact covered source, including any modifications, with a future distributed build. Local development only; distribution acceptance is pending."
+    },
+    "sdk:flutter/sky_engine@3.38.5": {
+      "license_sha256": "66f37204b91a314563d3261efdd4b1858a49684ed99c267e0ee4ad5f00f74ea0",
+      "additional_ids": ["MPL-2.0", "SGI-B-2.0", "Unlicense", "FTL", "BSD-2-Clause-NetBSD"],
+      "source": "https://github.com/flutter/flutter",
+      "source_revision": "1527ae0ec577a4ef50e65f6fefcfc1326707d9bf",
+      "obligation": "Preserve the complete Flutter engine notice bundle and upstream covered-source availability in each target build. This exact SDK notice inventory is not evidence that all platform binary dependencies have been enumerated; distribution acceptance is pending."
+    }
+  }
+}

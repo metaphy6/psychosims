@@ -1,0 +1,311 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Session receipt 0.3.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "schema_version",
+    "ruleset_version",
+    "patient_id",
+    "idempotency_key",
+    "correlation_id",
+    "turn_count",
+    "start_state",
+    "actions",
+    "deltas"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "ruleset_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "patient_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "correlation_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "schema_version": {
+      "const": "0.3.0"
+    },
+    "turn_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "start_state": {
+      "type": "object",
+      "required": [
+        "loadout",
+        "library",
+        "controllers",
+        "initial_axes",
+        "root_seed"
+      ],
+      "properties": {
+        "case_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "manifest_checksum": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-fA-F]{64}$"
+        },
+        "loadout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "card_ids",
+            "slot_cap"
+          ],
+          "properties": {
+            "card_ids": {
+              "type": "array",
+              "maxItems": 6,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              }
+            },
+            "slot_cap": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            }
+          }
+        },
+        "library": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "owned_card_ids"
+          ],
+          "properties": {
+            "owned_card_ids": {
+              "type": "array",
+              "maxItems": 64,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              }
+            }
+          }
+        },
+        "controllers": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "focus",
+            "emotional_delivery"
+          ],
+          "properties": {
+            "focus": {
+              "enum": [
+                "balanced",
+                "childhood",
+                "workspace"
+              ]
+            },
+            "emotional_delivery": {
+              "enum": [
+                "balanced",
+                "warm",
+                "objective"
+              ]
+            }
+          }
+        },
+        "initial_axes": {
+          "type": "object",
+          "maxProperties": 8,
+          "propertyNames": {
+            "enum": [
+              "trust",
+              "agitation",
+              "resistance",
+              "trauma",
+              "session_progress",
+              "freeze_turns",
+              "medication_tolerance",
+              "medication_dependency",
+              "activeDefense",
+              "sessionProgress",
+              "freezeTurns",
+              "medicationTolerance",
+              "medicationDependency"
+            ]
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "root_seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      },
+      "additionalProperties": false
+    },
+    "actions": {
+      "type": "array",
+      "maxItems": 120,
+      "items": {
+        "enum": [
+          "open_question",
+          "validate",
+          "reframe",
+          "set_boundary",
+          "reflect",
+          "disclose_parallel"
+        ]
+      }
+    },
+    "deltas": {
+      "type": "array",
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ruleset_version",
+          "axis",
+          "delta_millis",
+          "reason_key",
+          "card_type",
+          "card_signature",
+          "context_fit"
+        ],
+        "properties": {
+          "ruleset_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "axis": {
+            "enum": [
+              "trust",
+              "agitation",
+              "activeDefense",
+              "trauma",
+              "freezeTurns",
+              "sessionProgress",
+              "medicationTolerance",
+              "medicationDependency"
+            ]
+          },
+          "delta_millis": {
+            "type": "integer",
+            "minimum": -1000,
+            "maximum": 1000
+          },
+          "reason_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "card_type": {
+            "enum": [
+              "disclosing",
+              "relatable",
+              "postponing",
+              "manipulative"
+            ]
+          },
+          "card_signature": {
+            "enum": [
+              "breaker",
+              "buffer",
+              "freeze",
+              "gambit"
+            ]
+          },
+          "context_fit": {
+            "enum": [
+              "aligned",
+              "partial",
+              "mismatched"
+            ]
+          }
+        }
+      }
+    },
+    "ledger_events": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "maxItems": 64,
+      "description": "Additive typed ledger events are preserved for validation. Current online authorities reject any nonempty client economy claims.",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "idempotency_key",
+          "timestamp_seconds",
+          "currency",
+          "amount_micros",
+          "reason_key"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          },
+          "timestamp_seconds": {
+            "type": "integer"
+          },
+          "currency": {
+            "enum": [
+              "cash",
+              "study",
+              "subspecialty",
+              "xp",
+              "reputation",
+              "prestige"
+            ]
+          },
+          "amount_micros": {
+            "type": "integer"
+          },
+          "reason_key": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

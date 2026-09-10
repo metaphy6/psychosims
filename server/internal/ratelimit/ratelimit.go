@@ -3,6 +3,7 @@
 package ratelimit
 
 import (
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -18,6 +19,66 @@ type Limits struct {
 	Window         time.Duration
 }
 
+type authPeer struct {
+	failures, inFlight int
+	expires            time.Time
+}
+
+// AuthAttemptGate reserves a bounded peer allowance before expensive bearer
+// verification. Only failed authentication consumes the window's budget;
+// successful verification and dependency outages release their reservation.
+type AuthAttemptGate struct {
+	mu              sync.Mutex
+	peers           map[string]*authPeer
+	limit, maxPeers int
+	window          time.Duration
+	now             func() time.Time
+}
+
+func NewAuthAttemptGate(limit int, window time.Duration) *AuthAttemptGate {
+	return &AuthAttemptGate{peers: make(map[string]*authPeer), limit: limit, maxPeers: 4096, window: window, now: time.Now}
+}
+
+// Begin returns nil when admission is denied. A permitted caller must invoke
+// the returned completion once (true when no authentication failure occurred).
+func (g *AuthAttemptGate) Begin(peer string) (func(bool), time.Duration) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	now := g.now()
+	for key, p := range g.peers {
+		if p.inFlight == 0 && !now.Before(p.expires) {
+			delete(g.peers, key)
+		}
+	}
+	p := g.peers[peer]
+	if p == nil {
+		if len(g.peers) >= g.maxPeers {
+			return nil, g.window
+		}
+		p = &authPeer{expires: now.Add(g.window)}
+		g.peers[peer] = p
+	}
+	if p.failures+p.inFlight >= g.limit {
+		return nil, g.window
+	}
+	p.inFlight++
+	var once sync.Once
+	return func(success bool) {
+		once.Do(func() {
+			g.mu.Lock()
+			defer g.mu.Unlock()
+			p.inFlight--
+			if !success {
+				p.failures++
+				p.expires = g.now().Add(g.window)
+			}
+			if p.inFlight == 0 && p.failures == 0 {
+				delete(g.peers, peer)
+			}
+		})
+	}, 0
+}
+
 // DefaultLimits returns the policy from the server config defaults.
 func DefaultLimits() Limits {
 	return Limits{
@@ -29,10 +90,10 @@ func DefaultLimits() Limits {
 
 // bucket tracks requests in a sliding window.
 type bucket struct {
-	mu      sync.Mutex
-	window  time.Duration
-	limit   int
-	events  []time.Time
+	mu     sync.Mutex
+	window time.Duration
+	limit  int
+	events []time.Time
 }
 
 func newBucket(limit int, window time.Duration) *bucket {
@@ -60,10 +121,10 @@ func (b *bucket) allow(now time.Time) bool {
 
 // Service is the in-memory rate limiter.
 type Service struct {
-	limits  Limits
-	ipBuckets   map[string]*bucket
+	limits         Limits
+	ipBuckets      map[string]*bucket
 	accountBuckets map[string]*bucket
-	mu          sync.Mutex
+	mu             sync.Mutex
 }
 
 // NewService builds a rate limiter.
@@ -111,8 +172,8 @@ func Middleware(svc *Service) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			accountID := ctxutil.AccountID(r.Context())
 			clientIP := r.RemoteAddr
-			if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
-				clientIP = forwarded
+			if host, _, err := net.SplitHostPort(clientIP); err == nil {
+				clientIP = host
 			}
 			ok, retry := svc.Allow(accountID, clientIP)
 			if !ok {

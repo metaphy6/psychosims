@@ -4,6 +4,7 @@ package middleware
 
 import (
 	"net/http"
+	"strconv"
 	"sync"
 
 	"psychosims.dev/server/internal/api"
@@ -17,8 +18,8 @@ type QueueDepth interface {
 
 // BackpressureLimits configures the fast-reject threshold.
 type BackpressureLimits struct {
-	MaxDepth     int
-	RetryAfter   int
+	MaxDepth   int
+	RetryAfter int
 }
 
 // DefaultBackpressureLimits returns a sensible production default.
@@ -71,6 +72,7 @@ func Backpressure(limits BackpressureLimits, depth QueueDepth) func(http.Handler
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if depth.Depth() >= limits.MaxDepth {
+				w.Header().Set("Retry-After", strconv.Itoa(max(1, limits.RetryAfter)))
 				api.NewServiceUnavailable("server queue depth exceeded").Write(w, ctxutil.RequestID(r.Context()))
 				return
 			}
@@ -84,6 +86,7 @@ func InFlightMiddleware(counter *InFlightCounter) func(http.Handler) http.Handle
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if !counter.Acquire() {
+				w.Header().Set("Retry-After", "1")
 				api.NewError(http.StatusServiceUnavailable, api.ErrExternal, api.CodeServiceUnavailable,
 					"too many in-flight requests").Write(w, ctxutil.RequestID(r.Context()))
 				return

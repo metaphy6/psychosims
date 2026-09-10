@@ -8,8 +8,8 @@ import 'package:psychemas/psychemas.dart';
 import 'package:psycore/psycore.dart' as core;
 
 /// Returns a valid PoC manifest JSON string for tests.
-String testManifestJson() {
-  const base = {
+String testManifestJson({Map<String, int>? initialState}) {
+  final base = {
     'schema_version': '1.0.0',
     'ruleset_version': '0.1.0',
     'id': 'poc-vexa-001',
@@ -18,7 +18,8 @@ String testManifestJson() {
     'name_key': 'manifests.poc_vexa_001.name',
     'display_name_key': 'manifests.poc_vexa_001.display_name',
     'style_archetype': 'vexa',
-    'initial_state': {'agitation': 45, 'resistance': 20, 'trust': 30},
+    'initial_state':
+        initialState ?? {'agitation': 45, 'resistance': 20, 'trust': 30},
     'interaction_patterns': ['open_question', 'validate', 'reframe'],
     'clue_tokens': ['ferve-axine'],
     'max_history_turns': 4,

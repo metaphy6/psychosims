@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
@@ -6,6 +7,22 @@ import 'package:psychemas/psychemas.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('published manifest schema recognizes canonical executable tokens', () {
+    final schema =
+        jsonDecode(File('schema/manifest.schema.json').readAsStringSync())
+            as Map<String, dynamic>;
+    final properties = schema['properties'] as Map<String, dynamic>;
+    expect(properties['interaction_patterns']['items']['enum'],
+        containsAll(InteractionPattern.values.map((v) => v.toJson())));
+    expect(properties['memory_class']['enum'],
+        containsAll(MemoryClass.values.map((v) => v.toJson())));
+    final card = properties['cards']['items']['properties'];
+    expect(card['type']['enum'],
+        containsAll(CardType.values.map((v) => v.toJson())));
+    expect(card['signature']['enum'],
+        containsAll(CardSignature.values.map((v) => v.toJson())));
+  });
+
   group('PatientManifest', () {
     const manifest = PatientManifest(
       id: 'poc-vexa-001',
@@ -70,6 +87,49 @@ void main() {
       final loaded = loader.load(encode(json));
       expect(loaded.id, equals('poc-vexa-001'));
       expect(loaded.styleArchetype, equals(StyleArchetype.vexa));
+    });
+
+    test('preserves explicit card mechanics and canonical manifest bytes', () {
+      final json = _validJson();
+      json['interaction_patterns'] = [InteractionPattern.openQuestion.toJson()];
+      json['cards'] = [
+        cardFromInteractionPattern(InteractionPattern.openQuestion)
+            .copyWith(
+                type: CardType.postponing, signature: CardSignature.freeze)
+            .toJson()
+      ];
+      json['content_checksum'] = _computeChecksum(json);
+      final loaded = loader.load(encode(json));
+      expect(loaded.resolvedCards.single.type, CardType.postponing);
+      expect(loaded.resolvedCards.single.signature, CardSignature.freeze);
+      expect(loaded.toCanonicalBytes(), CanonicalJson.encode(json));
+      expect(loaded.toCanonicalBytes(),
+          PatientManifest.fromJson(json).toCanonicalBytes());
+    });
+
+    test('rejects malformed or ambiguous explicit executable cards', () {
+      final card = cardFromInteractionPattern(InteractionPattern.openQuestion);
+      for (final cards in <Object?>[
+        'not a card list',
+        [17],
+        [card.toJson(), card.toJson()],
+        [card.copyWith(id: 'unreachable_card').toJson()],
+        [
+          {...card.toJson(), 'type': 'unknown'}
+        ],
+        [
+          {...card.toJson(), 'signature': null}
+        ],
+      ]) {
+        final json = _validJson();
+        json['cards'] = cards;
+        json['content_checksum'] = _computeChecksum(json);
+        expect(
+            () => loader.load(encode(json)),
+            throwsA(isA<ManifestValidationError>()
+                .having((e) => e.kind, 'kind', ManifestErrorKind.malformed)),
+            reason: 'invalid executable card shape');
+      }
     });
 
     test('rejects malformed JSON', () {

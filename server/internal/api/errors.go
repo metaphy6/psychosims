@@ -79,6 +79,9 @@ func (e HTTPError) Write(w http.ResponseWriter, requestID string) {
 	body := e.Body
 	body.RequestID = requestID
 	w.Header().Set("Content-Type", "application/json")
+	if body.RetryAfter != nil {
+		w.Header().Set("Retry-After", fmt.Sprint(*body.RetryAfter))
+	}
 	w.WriteHeader(e.Status)
 	_ = json.NewEncoder(w).Encode(body)
 }

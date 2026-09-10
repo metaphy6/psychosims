@@ -11,27 +11,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Dart
-        uses: dart-lang/setup-dart@v1
         with:
-          sdk: '3.4.0'
+          submodules: recursive
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.38.5'
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.26'
+          go-version: '1.26.7'
 
       - name: Install native toolchain
         run: sudo apt-get update && sudo apt-get install -y g++
 
-      - name: Verify
-        run: make verify
+      - name: Verify contracts (real-model acceptance runs separately)
+        run: |
+          scripts/bootstrap.sh --tools-only
+          make security.secrets
+          make verify.contracts
+
+      - name: Dependency integrity, licenses and vulnerability scan
+        run: |
+          make security.dependencies
+
+      - name: Durable data privacy acceptance
+        run: |
+          docker pull postgres@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416
+          make security.privacy
+
+      - name: Dart signed-receipt HTTP and PostgreSQL acceptance
+        run: make server.integration
+
+      - name: Local PostgreSQL backup and restore acceptance
+        run: |
+          make server.restore
+
+      - name: Local control-plane load and startup acceptance
+        run: make server.load
 
       - name: No raw print/stdout gate
         run: scripts/no_raw_print_check.sh

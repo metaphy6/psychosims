@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:psyconfig/psyconfig.dart';
 
@@ -155,9 +156,8 @@ abstract class DeviceCapabilityProvider {
 /// Best-effort [DeviceCapabilityProvider] using `dart:io` platform signals.
 ///
 /// RAM is read from `/proc/meminfo` when available. ABI is inferred from
-/// [Platform.version]. AVX2 detection on desktop is deferred to a future
-/// `/proc/cpuinfo` parse and currently defaults to `true` on Linux desktop to
-/// match the dev baseline.
+/// [Platform.version]. Linux AVX2 support requires flags on every advertised CPU;
+/// unavailable platform probes conservatively select a smaller tier.
 class DefaultDeviceCapabilityProvider implements DeviceCapabilityProvider {
   static const int _fallbackRamBytes = 4294967296; // 4 GiB
 
@@ -172,10 +172,27 @@ class DefaultDeviceCapabilityProvider implements DeviceCapabilityProvider {
       totalRamBytes: memInfo.total,
       availableRamBytes: memInfo.available,
       abi: abi,
-      hasAvx2: isDesktop && Platform.isLinux ? true : false,
+      hasAvx2: isDesktop && Platform.isLinux && _readAvx2(),
       cpuCount: Platform.numberOfProcessors,
       isEmulator: false,
     );
+  }
+
+  static bool hasAvx2InCpuInfo(String text) {
+    final flags = const LineSplitter()
+        .convert(text)
+        .where((line) => RegExp(r'^flags\s*:').hasMatch(line.trimLeft()))
+        .map((line) => line.split(':').last.trim().split(RegExp(r'\s+')))
+        .toList();
+    return flags.isNotEmpty && flags.every((values) => values.contains('avx2'));
+  }
+
+  bool _readAvx2() {
+    try {
+      return hasAvx2InCpuInfo(File('/proc/cpuinfo').readAsStringSync());
+    } on FileSystemException {
+      return false;
+    }
   }
 
   ({int total, int available}) _readMemInfo() {

@@ -3,7 +3,7 @@
 > **Closes register item C-6** ([ROADMAP](../planning/ROADMAP.md#-conceptual-corrections-register)).
 > §8 schedules this: the manipulate-a-patient-into-derangement loop (§16) will be
 > read harshly by store reviewers and press. Direction is set now; finalized before
-> submission (Phase 7.5). Section refs (§N) → [`STARTER.md`](../../STARTER.md).
+> submission (Phase 7.5). Section refs (§N) → [`STARTER.md`](../design/STARTER.md).
 
 - **Status:** direction set (finalized in Phase 7.5)
 - **Owner:** @maintainer

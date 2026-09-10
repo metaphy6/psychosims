@@ -1,28 +1,146 @@
+import 'dart:collection';
+
 import 'package:psychemas/psychemas.dart';
 
-/// Checks whether a case manifest is mechanically solvable on the core-only
-/// path without a model binary present (Phase 2.8 gate).
-///
-/// A manifest is solvable if it defines at least one interaction pattern and
-/// its clue tokens (if any) are reachable through the card taxonomy. This is a
-/// conservative static check; full playout validation happens in the sandbox.
+import 'card_balance.dart';
+import 'clock.dart';
+import 'sim_state.dart';
+import 'turn_input.dart';
+import 'turn_resolver.dart';
+
+enum SolvabilityStatus {
+  solved,
+  noSolutionWithinBounds,
+  budgetExceeded,
+  invalid
+}
+
+/// A successful result contains actions that replay through the actual core.
+/// Unsuccessful bounded search is not a claim of universal impossibility.
+class SolvabilityResult {
+  final SolvabilityStatus status;
+  final List<InteractionPattern> actions;
+  final SimState? finalState;
+  final int exploredTransitions;
+
+  SolvabilityResult._(this.status, this.exploredTransitions,
+      [List<InteractionPattern> actions = const [], this.finalState])
+      : actions = List.unmodifiable(actions);
+
+  bool get solved => status == SolvabilityStatus.solved;
+}
+
+/// Bounded deterministic gameplay search for one manifest, seed and loadout.
+/// Uses the production resolver with injected time; never an inference model.
 class SolvabilityOracle {
-  const SolvabilityOracle();
+  final CardBalance balance;
+  final int maxTurns;
+  final int maxTransitions;
 
-  /// Returns true when [manifest] passes the mechanical solvability gate.
-  bool isSolvable(PatientManifest manifest) {
-    if (manifest.interactionPatterns.isEmpty) return false;
+  const SolvabilityOracle({
+    this.balance = const CardBalance(),
+    this.maxTurns = 120,
+    this.maxTransitions = 20000,
+  });
 
-    // Every interaction pattern must resolve to a known card.
-    for (final pattern in manifest.interactionPatterns) {
-      try {
-        cardFromInteractionPattern(pattern);
-      } on ArgumentError {
-        return false;
+  /// Fail closed unless a complete winning path has actually been found.
+  bool isSolvable(PatientManifest manifest) => analyze(manifest).solved;
+
+  SolvabilityResult analyze(
+    PatientManifest manifest, {
+    int rootSeed = 42,
+    Loadout? loadout,
+    CardLibrary? library,
+    SimState? startState,
+    TherapyControllerSettings controllers = const TherapyControllerSettings(),
+  }) {
+    if (maxTurns <= 0 || maxTransitions <= 0) {
+      throw ArgumentError('Solvability search budgets must be positive');
+    }
+    final cards = manifest.resolvedCards.map((card) => card.id).toSet();
+    final equipped = loadout ??
+        Loadout(
+            cardIds: cards.toList()..sort(), slotCap: balance.activeCardSlots);
+    final owned = library ?? CardLibrary(ownedCardIds: cards);
+    if (!equipped.isValidForLibrary(owned.ownedCardIds) ||
+        equipped.cardIds.length > balance.activeCardSlots) {
+      return SolvabilityResult._(SolvabilityStatus.invalid, 0);
+    }
+    final legal = manifest.interactionPatterns
+        .where((action) =>
+            equipped.contains(cardFromInteractionPattern(action).id))
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+    if (legal.isEmpty) {
+      return SolvabilityResult._(SolvabilityStatus.invalid, 0);
+    }
+    final resolver =
+        TurnResolver(const InjectedClock.replay(0), balance: balance);
+    final initial = startState ??
+        SimState.fromInitialState(rootSeed, manifest.initialState);
+    final root = _SearchNode(initial, null, null, 0);
+    var explored = 0;
+
+    // Cheap deterministic policies often produce a witness without expanding
+    // a search tree. Every attempted transition still consumes the budget.
+    for (final action in legal) {
+      var node = root;
+      for (var turn = 0; turn < maxTurns; turn++) {
+        if (explored >= maxTransitions) {
+          return SolvabilityResult._(
+              SolvabilityStatus.budgetExceeded, explored);
+        }
+        final output = resolver.resolve(TurnInput(
+          rulesetVersion: manifest.rulesetVersion,
+          manifest: manifest,
+          state: node.state,
+          action: action,
+          loadout: equipped,
+          library: owned,
+          controllers: controllers,
+        ));
+        explored++;
+        node = _SearchNode(output.nextState, node, action, node.depth + 1);
+        if (output.outcome == SessionOutcome.succeed) {
+          return SolvabilityResult._(
+              SolvabilityStatus.solved, explored, node.actions(), node.state);
+        }
+        if (output.isTerminal) break;
       }
     }
 
-    return true;
+    final queue = ListQueue<_SearchNode>()..add(root);
+    final seen = <SimState>{initial};
+    while (queue.isNotEmpty) {
+      final node = queue.removeFirst();
+      if (node.depth >= maxTurns) continue;
+      for (final action in legal) {
+        if (explored >= maxTransitions) {
+          return SolvabilityResult._(
+              SolvabilityStatus.budgetExceeded, explored);
+        }
+        final output = resolver.resolve(TurnInput(
+          rulesetVersion: manifest.rulesetVersion,
+          manifest: manifest,
+          state: node.state,
+          action: action,
+          loadout: equipped,
+          library: owned,
+          controllers: controllers,
+        ));
+        explored++;
+        final next =
+            _SearchNode(output.nextState, node, action, node.depth + 1);
+        if (output.outcome == SessionOutcome.succeed) {
+          return SolvabilityResult._(
+              SolvabilityStatus.solved, explored, next.actions(), next.state);
+        }
+        if (!output.isTerminal && seen.add(next.state)) queue.add(next);
+      }
+    }
+    return SolvabilityResult._(
+        SolvabilityStatus.noSolutionWithinBounds, explored);
   }
 
   /// Verifies the manifest passes content-integrity lint: no real labels and
@@ -39,5 +157,22 @@ class SolvabilityOracle {
       caseSensitive: false,
     );
     return forbidden.hasMatch(token);
+  }
+}
+
+class _SearchNode {
+  final SimState state;
+  final _SearchNode? parent;
+  final InteractionPattern? action;
+  final int depth;
+
+  const _SearchNode(this.state, this.parent, this.action, this.depth);
+
+  List<InteractionPattern> actions() {
+    final reversed = <InteractionPattern>[];
+    for (_SearchNode? node = this; node?.action != null; node = node.parent) {
+      reversed.add(node!.action!);
+    }
+    return reversed.reversed.toList();
   }
 }

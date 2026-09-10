@@ -11,6 +11,10 @@ dependencies:
     sdk: flutter
   convert: ^3.1.1
   crypto: ^3.0.3
+  cryptography: 2.9.0
+  flutter_secure_storage: 11.0.0
+  url_launcher: 6.3.2
+  app_links: 6.4.1
   ffi: ^2.1.0
   get: ^4.6.6
   path: ^1.8.0

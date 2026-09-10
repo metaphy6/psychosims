@@ -9,6 +9,9 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Skip optional llama.cpp targets we do not need.
 set(LLAMA_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(LLAMA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(LLAMA_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(LLAMA_BUILD_COMMON OFF CACHE BOOL "" FORCE)
+set(PSY_NATIVE_LIBRARY_DIR "${CMAKE_BINARY_DIR}" CACHE PATH "Native library output directory")
 
 find_package(Threads REQUIRED)
 
@@ -30,6 +33,8 @@ target_link_libraries(psychosims_native PRIVATE
 
 set_target_properties(psychosims_native PROPERTIES
     POSITION_INDEPENDENT_CODE ON
+    LIBRARY_OUTPUT_DIRECTORY "${PSY_NATIVE_LIBRARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${PSY_NATIVE_LIBRARY_DIR}"
 )
 
 enable_testing()

@@ -1,5 +1,12 @@
 # Phase 3.7 Data Retention Policy
 
+> Historical proposal, superseded for implemented behavior by
+> [Local retention and account erasure](../../../server/MAINTENANCE.md) and
+> [Data lifecycle](../../project/DATA-LIFECYCLE.md). In particular, the blanket
+> token TTL and jurisdiction-specific deletion timetable below are not enforced
+> policy or claims of compliance. Actual expiry/retry protection, permanent
+> replay fences and independently replayed erasure journals govern local code.
+
 ## Goals
 
 - Keep enough history to reconstruct account state, audit chains, and support

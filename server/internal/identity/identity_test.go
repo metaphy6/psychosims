@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"strings"
 	"testing"
 
 	"psychosims.dev/server/internal/api"
@@ -83,7 +84,7 @@ func TestPKCEAuthSession(t *testing.T) {
 	svc := NewService(repo)
 	svc.RegisterProvider("google", &StubVerifier{Identity: ProviderIdentity{ProviderID: "g-1", Email: "a@b.com"}})
 
-	state, nonce, err := svc.StartAuthSession(context.Background(), "google", "steam", "challenge", "S256")
+	state, nonce, err := svc.StartAuthSession(context.Background(), "google", "steam", strings.Repeat("a", 43), "S256")
 	if err != nil {
 		t.Fatalf("start auth session: %v", err)
 	}
@@ -91,7 +92,7 @@ func TestPKCEAuthSession(t *testing.T) {
 		t.Fatal("expected state and nonce")
 	}
 
-	verifier := "mysecretverifier"
+	verifier := strings.Repeat("a", 43)
 	h := sha256.Sum256([]byte(verifier))
 	challenge := base64.RawURLEncoding.EncodeToString(h[:])
 
@@ -138,6 +139,10 @@ func TestPKCEAuthSession(t *testing.T) {
 	if _, err := svc.ExchangeCode(context.Background(), "google", "token", state4, verifier); err == nil {
 		t.Fatal("expected reused state to be rejected")
 	}
+}
+
+func (s *StubVerifier) Exchange(ctx context.Context, code, redirect, verifier string) (string, error) {
+	return code, s.Err
 }
 
 func TestDesktopChannelConfig(t *testing.T) {

@@ -8,12 +8,117 @@ class L10n implements StringCatalog {
   const L10n();
 
   static const String appTitle = 'Psychosims';
-  static const String homeStartPocSession = 'home.start_poc_session';
+  static const String onlineTitle = 'Online practice';
+  static const String onlineDescription =
+      'Keep signed sessions and your server profile in sync across devices.';
+  static const String onlineHeld =
+      'This completed path is not covered by current verification. Rewards remain held.';
+  static const String onlineCoverage =
+      'Only some completion paths are covered by server verification. Rewards are not guaranteed.';
+  static const String onlineConditional =
+      'This session may qualify for verified rewards. Only supported completion paths are covered.';
+  static const String onlineUncoveredStart =
+      'This session is outside current verification coverage. Online rewards will be held.';
+  static const String onlineQueued =
+      'Session saved for sync. The server will confirm verification and any rewards.';
+  static const String onlineNotConfigured =
+      'Online sign-in is not configured for this build. Local practice is available.';
+  static const String onlineGoogle = 'Continue with Google';
+  static const String onlineApple = 'Continue with Apple';
+  static const String onlineRecoverKey = 'Replace this device’s signing key';
+  static const String onlineSignOut = 'Sign out';
+  static const String onlineSync = 'Sync now';
+  static const String onlineStart = 'Start online session';
+  static const String onlineSignedOut = 'Sign in to start online sessions.';
+  static const String onlineExpired =
+      'This online session expired. Return to Online practice to start a new session.';
+  static const String onlineDiscardExpired = 'Discard expired session';
+  static const String onlineRejection =
+      'The server could not accept this session. Its result is saved here for review.';
+  static const String onlineProfileStale =
+      'Showing the last saved server profile.';
+  static const String onlineProfileCurrent = 'Server profile is up to date.';
+  static String onlinePending(int count) => '$count sessions waiting to sync';
+  static String onlineProfile(int level, int xp) => 'Level $level · $xp XP';
+  static String onlineVerdict(String status,
+      {String rewardStatus = 'held_unproven'}) {
+    if (status != 'accepted') return 'Not accepted';
+    return switch (rewardStatus) {
+      'certified' => 'Synced · result verified',
+      'certified_unrewarded' => 'Synced · verified without reward',
+      _ => 'Synced · rewards held',
+    };
+  }
 
-  static const String homeFetchModel = 'home.fetch_model';
+  static String onlineRewardDetail(ReceiptVerdict verdict) {
+    if (verdict.status != 'accepted') return onlineRejection;
+    if (verdict.rewardStatus == 'certified') {
+      final whole = verdict.cashMicrosAwarded ~/ 1000000;
+      final fraction = (verdict.cashMicrosAwarded % 1000000)
+          .toString()
+          .padLeft(6, '0')
+          .replaceFirst(RegExp(r'0+$'), '');
+      final cash = fraction.isEmpty ? '$whole' : '$whole.$fraction';
+      return 'Server rewards: ${verdict.xpAwarded} XP · ${verdict.studyPointsAwarded} study points · $cash cash';
+    }
+    if (verdict.rewardStatus == 'certified_unrewarded') {
+      return switch (verdict.rewardReason) {
+        'cooldown' => 'Result verified. The reward cooldown is still active.',
+        'window_budget' =>
+          'Result verified. The reward limit for this time window has been reached.',
+        'economy_disabled' =>
+          'Result verified. Online rewards are currently disabled.',
+        'balance_limit' =>
+          'Result verified. Your balance has reached its limit.',
+        'already_cured' =>
+          'Result verified. This patient has already received completion rewards.',
+        _ => 'Result verified without a reward.',
+      };
+    }
+    return onlineHeld;
+  }
+
+  static String onlineError(String kind) {
+    if (kind == 'expired_permit') return onlineExpired;
+    if (kind == 'sign_in_not_configured') return onlineNotConfigured;
+    if (kind == 'offline' || kind == 'timeout') {
+      return 'Connection unavailable. Saved sessions will retry when you reconnect.';
+    }
+    if (kind == 'signed_out' ||
+        kind == 'session_expired' ||
+        kind == 'account_mismatch') {
+      return 'Sign in again to continue with this account.';
+    }
+    if (kind == 'content_mismatch') {
+      return 'This case changed on the server. Update the case before starting.';
+    }
+    return 'Online practice is unavailable. Check your connection and secure storage, then retry.';
+  }
+
+  static const String sessionSuccess = 'Session complete';
+  static const String sessionFailure = 'Session ended';
+  static const String sessionSaved =
+      'Your practice history and progress are saved on this device.';
+  static const String sessionNext = 'Next session';
+  static const String sessionRetry = 'Retry';
+  static const String homeStartPocSession = 'Prepare session';
+  static const String careerTitle = 'Local practice career';
+  static const String careerEmpty =
+      'Complete a session to build your practice history.';
+  static const String careerLoadError =
+      'Your saved career could not be read. Retry after checking device storage.';
+  static const String careerStudy = 'Study';
+  static const String careerCash = 'Cash';
+  static String careerSessions(int count) => '$count sessions completed';
+  static String careerTurns(int count) => '$count turns';
+  static String careerBalances(
+          {required int xp, required int study, required int cash}) =>
+      'XP: $xp · $careerStudy: $study · $careerCash: $cash';
+
+  static const String homeFetchModel = 'Download model';
   static const String modelFetchTitle = 'Download Model';
   static const String modelFetchDescription =
-      'A small local model is required for the PoC. Downloads resume if interrupted.';
+      'A local model is required for private, offline dialogue. Downloads resume if interrupted.';
   static const String modelFetchStart = 'Download';
   static const String modelFetchPause = 'Pause';
   static const String modelFetchResume = 'Resume';
@@ -50,6 +155,8 @@ class L10n implements StringCatalog {
   static const String loadoutDeliveryObjective = 'Objective';
   static const String loadoutDeliveryBalanced = 'Balanced';
   static const String loadoutStartSession = 'Start Session';
+  static const String loadoutInvalid =
+      'Equip at least one available card within the session slot limit.';
 
   static const _catalog = <String, String>{
     'manifests.poc_vexa_001.name': 'The Restless Hour',

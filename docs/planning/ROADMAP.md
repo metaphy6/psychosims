@@ -4,7 +4,7 @@
 > file phase-by-phase, drain every `[ ]` bullet in scope, append a tracking row,
 > then stage. Humans push via `make git`.
 >
-> **Source blueprint:** [`STARTER.md`](../../STARTER.md) (§1–§24). Every phase
+> **Source blueprint:** [`STARTER.md`](../design/STARTER.md) (§1–§24). Every phase
 > below cites the blueprint sections it realizes — see
 > [Appendix C](#appendix-c--blueprint-cross-reference-map).
 >
@@ -24,15 +24,44 @@ Counts are per major phase.
 
 | Phase | Items | Done | Status |
 |---|---|---|---|
-| 0 — Foundations & Conceptual Corrections | 92 | 92 | 🟢 complete |
-| 1 — Minimal Cross-Platform Runtime (PoC) | 93 | 90 | 🟢 exit gates cleared (3 physical-device items pending sign-off) |
-| 2 — Deterministic Game Core (offline) | 87 | 87 | 🟢 complete |
-| 3 — Server Control Plane & Authoritative State | 92 | 0 | ⚪ planned |
-| 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned |
+| 0 — Foundations & Conceptual Corrections | 92 | 89 | 🟡 local foundation gates pass; bootstrap/matrix pending |
+| 1 — Minimal Cross-Platform Runtime (PoC) | 93 | 78 | 🟡 runtime repaired; app/device acceptance pending |
+| 2 — Deterministic Game Core (offline) | 87 | 85 | 🟡 offline integration passes; corpus/exit evidence pending |
+| 3 — Server Control Plane & Authoritative State | 92 | 52 | 🟡 finite authoritative cure passes; full lifecycle pending |
+| 4 — Content Pipeline & Distribution | 15 | 0 | ⚪ planned; cloud delivery pending |
 | 5 — Networked Social & Economy Systems | 18 | 0 | ⚪ planned |
-| 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned |
-| 7 — Presentation, Monetization & Launch | 22 | 0 | ⚪ planned |
-| **Total** | **438** | **269** | |
+| 6 — Institutional Endgame & UGC | 19 | 0 | ⚪ planned; public portal/staffing pending |
+| 7 — Presentation, Monetization & Launch | 22 | 0 | ⚪ planned; local preparation authorized, release excluded |
+| **Total** | **438** | **304** | |
+
+
+**Reassessment and current authorization (2026-09-10).** The
+[project assessment](../reports/2026-09-10-project-assessment.md) disproved
+previously checked build/runtime, application recovery, transcript protection,
+solvability and authoritative-service acceptance criteria. Those specific
+bullets are reopened without weakening their wording. Historical italic notes
+inside bullets record earlier claims, not current passing evidence. Other
+checked items retain their existing component/documentation status; they do not
+prove a complete player journey or a passed phase validation. Counts are task
+bookkeeping, not effort or a finished-product percentage.
+
+The user authorized completing all assessment repairs and the remaining roadmap
+**without cloud deployment, public hosting, publishing, release or distribution**.
+The [execution plan](EXECUTION-2026-09-10.md) maps the repair waves and acceptance
+tests; this roadmap remains canonical. Implement and validate local adapters,
+workflows, build definitions and dry runs. Physical-device/live-provider tests,
+cloud operations, staffed public moderation and actual platform release gates
+remain **pending** when their input is unavailable or their action is excluded.
+Do not tick a combined implementation/validation bullet from mocks or local
+evidence alone when it also requires that external gate; keep completing
+independent authorized work.
+
+**Current repair acceptance:** the [remediation checkpoint](../reports/2026-09-10-remediation-progress.md) records 442 Dart/Flutter tests, actual held/certified Dart–Go–PostgreSQL sessions, encrypted restart/replay, balanced rewards, privacy/erasure recovery and current scanner results. Newly rechecked bullets use that evidence. Finite certified paths do not establish general outcome coverage, global individual ownership, full social transitions or a finished economy.
+
+**Latest instruction fulfilled:** the already-started retry-configuration fix is
+complete and verified; implementation has stopped. The broader goal is paused;
+unchecked items remain pending
+for an explicit future continuation. No deployment or release has occurred.
 
 ---
 
@@ -228,7 +257,7 @@ matrix, and pinned toolchain versions match `ARCHITECTURE.md`.
 - [x] **Declare the native/FFI module home** — the llama.cpp C/C++ binding layer and its build inputs — so Phase 1.1's inference path and Phase 0.7's C++ logging shim land in a declared module, not ad-hoc under `app/`.
 - [x] Declare the **cross-platform build matrix** (the five target platforms) and which are validated when — Linux desktop + x86 Android emulator in Phase 1; the rest deferred.
 - [x] Add the language toolchains with **pinned versions** — Flutter/Dart, the chosen server runtime, **and the native C/C++ toolchain (clang/NDK) for llama.cpp** — plus a `make`-level build/lint/format gate wired into `make doctor`.
-- [x] Establish a **reproducible dev-environment bootstrap** (a pinned SDK/version manifest + a one-command setup such as a devcontainer or bootstrap script) so "compiles on Linux" holds identically on any dev machine and in CI, not just locally.
+- [ ] Establish a **reproducible dev-environment bootstrap** (a pinned SDK/version manifest + a one-command setup such as a devcontainer or bootstrap script) so "compiles on Linux" holds identically on any dev machine and in CI, not just locally.
 - [x] Provide a **single monorepo task orchestrator** (one `make`/workspace entry point that builds, tests, lints, and formats every module the same way locally and in CI) so no module invents its own commands and the 0.5 gate wraps one interface, not five.
 - [x] **Pin and record build inputs** as a convention from day one (deterministic toolchain + dependency hashes, a lockfile-backed build manifest), so the reproducible/verifiable signed-release build and provenance audit can be *implemented* at Phase 7.6 without a retrofit — the build-side complement to the signing-key custody plan (0.6) and [ADR-0002](../design/ADR-0002-desktop-distribution-and-auth.md).
 - [x] **Declare where generated code lands** (schema/serialization codegen from `packages/`, FFI bindings) — a committed-vs-generated boundary + a "generated is never hand-edited" rule — so the 0.8 shared-schema contract has an unambiguous, reviewable output home.
@@ -330,7 +359,7 @@ Phase 1.3 has nowhere to live. Reliability and integrity start here.
 CI across the initial build matrix; secret-scan + lint run both pre-commit and
 in CI; the gate stays under its time budget.
 
-- [x] Stand up **CI** running build + lint + format + `make verify` on every push/PR across the initial build matrix (Linux + Android emulator), with **required status checks + branch protection** so a red build cannot merge. Record the chosen CI provider (e.g. GitHub Actions) in a short ADR rather than hard-coding a vendor assumption.
+- [ ] Stand up **CI** running build + lint + format + `make verify` on every push/PR across the initial build matrix (Linux + Android emulator), with **required status checks + branch protection** so a red build cannot merge. Record the chosen CI provider (e.g. GitHub Actions) in a short ADR rather than hard-coding a vendor assumption.
 - [x] **Extend `make verify` / `make test`** beyond the xops framework suite to run the project test suites (Dart `core/`, native/FFI, server) so "verify" means the *product* is green, not just the agent framework.
 - [x] Wire pre-commit/local hooks mirroring CI (format, lint, secret-scan) so failures surface before push, never after.
 - [x] Establish the **test harness + conventions for every stack** — unit runner + fixtures + headless mode (Dart), a **native/FFI test path**, and an **integration harness** — that Phase 1.3 (assembler), the FFI boundary (1.1/1.4), and Phase 2/3 load-bearing tests build against.
@@ -587,7 +616,7 @@ in a case-history or manifest field is schema-rejected or neutralised so it can
 never be read by the model as instructions; the disclaimer-string hooks exist for
 Phase 7.5 to finalise.
 
-- [x] Implement the **no-real-clinical-label content-integrity gate** (§8): a lint/check over `content/` manifests, the nine-axis synthesis fields (§12), study-field definitions, and the fictional encyclopedia (§15) that fails the build on any real DSM/ICD term or real drug brand — authoritative across the whole content pipeline, wired into CI (0.5).
+- [ ] Implement the **no-real-clinical-label content-integrity gate** (§8): a lint/check over `content/` manifests, the nine-axis synthesis fields (§12), study-field definitions, and the fictional encyclopedia (§15) that fails the build on any real DSM/ICD term or real drug brand — authoritative across the whole content pipeline, wired into CI (0.5).
 - [x] Establish the **fictional-taxonomy naming convention + registry** (§8 "evocative, not alien"): documented rules and a checkable registry for disorder, medication, and study-field names — familiar roots + plausible clinical/pharma suffixes, never a near-homophone of a real trademark or a reskinned real label — so names stay legible yet legally fictional.
 - [x] Define the **untrusted-input / prompt-injection defense contract** (§11): treat peer-authored case history (§17) and community-authored manifests (§21) as untrusted — strict schema whitelisting (enums + numbers over free text wherever possible), server-side sanitization + length caps applied at signing time (§2.2), and template-level isolation so an untrusted string can never be interpreted as instructions by the local model.
 - [x] Add the **disclaimer & fictional-framing string hooks** (§8): reserved, externalized (0.11) presentation slots for the "fictional simulation, not real care" disclaimer and entertainment-focused framing, wired from day one so Phase 7.5 finalises copy rather than retrofitting placement.
@@ -700,16 +729,16 @@ build + pinned thread count**.
 
 - [x] Integrate llama.cpp via Flutter FFI behind a **narrow, typed `shared/` inference service** (load / tokenize / detokenize / **apply chat template** / generate / cancel / unload / **model-metadata query**) so no other module touches raw FFI; the binding lives in the 0.1-declared native module, not ad-hoc under `app/`. Embeddings/fine-tuning surfaces are explicitly out of scope (§18).
 - [x] **Generate the Dart FFI bindings** with a pinned tool (`ffigen`) from a committed C header, and wire the native build into each platform's build system (CMake on Linux, Gradle `externalNativeBuild`/NDK on Android) so a normal `flutter build` produces and packages the `.so` — no manual native-build step — with the generated bindings honouring the 0.1 generated-code boundary (never hand-edited).
-- [x] **Pin the llama.cpp commit + the exact GGUF quantization (e.g. `Q4_K_M`) and its rationale** as recorded build inputs (0.1) so inference behaviour is reproducible across machines and CI; the native shared library **builds, links, and bundles** for Linux desktop and the x86 Android emulator — **and declares the `arm64-v8a` device target** (built, not perf-validated on the emulator) so the physical-device gate (1.6) is a rebuild, not a fresh integration. *Pinned in `native/PINNED_BUILDS.md`; Linux g++ stub build passes; CMake/Android NDK builds require `cmake` and `ANDROID_HOME` which are not installed in this environment.*
+- [ ] **Pin the llama.cpp commit + the exact GGUF quantization (e.g. `Q4_K_M`) and its rationale** as recorded build inputs (0.1) so inference behaviour is reproducible across machines and CI; the native shared library **builds, links, and bundles** for Linux desktop and the x86 Android emulator — **and declares the `arm64-v8a` device target** (built, not perf-validated on the emulator) so the physical-device gate (1.6) is a rebuild, not a fresh integration. *Pinned in `native/PINNED_BUILDS.md`; Linux g++ stub build passes; CMake/Android NDK builds require `cmake` and `ANDROID_HOME` which are not installed in this environment.*
 - [x] **Make the native library actually *load* on each target, not just link**: per-ABI JNI packaging on Android (`arm64-v8a` for devices, `x86_64` for the emulator) with 16 KB-page-size-aligned `.so`s, and the desktop `.so`/`.dll` shipped alongside the executable on a config-resolved load path — closing the silent gap between "compiles in CI" and "runs on device".
 - [x] Implement the **first-run verified model fetch** on the 0.10 resumable-fetch convention — a **free-disk-space preflight**, chunked/resumable HTTP-range download, **checksum/signature verified before load with an atomic temp→final rename** (0.1 fetch policy + 0.6 verify-before-load) so a corrupt partial can never be loaded, and a re-fetch-on-corruption path — closing the supply-chain gap for the largest untracked asset. *(⏭ hardened later: signing-key custody + the model file at rest in platform secure storage move to 0.6/Phase 3; here we verify against the pinned checksum and store under a config-resolved path.)*
 - [x] **Pin the exact model artifact source URL + checksum** for the first-run fetch (a mismatch fails closed and re-fetches); the third-party model host is consumed as-is for the PoC and the production distribution host is deferred. *(⏭ hardened later: the production CDN host + a cryptographically signed model manifest move to Phase 4.4.)*
 - [x] **Bundle the model's license + NOTICE/attribution** text (Apache-2.0 / MIT per [DECISION 0015](../project/DECISION_LOG.md) / [C-2](../specs/MODEL-LICENSE-SHORTLIST.md)) with the app so the redistributed weights are compliant from the first build — a legal-integrity requirement, not a launch-time afterthought.
-- [x] Implement **runtime Tier A/B selection**: a first-run device-capability check (RAM/SoC/ABI vs the [DEVICE-SPEC](../specs/DEVICE-SPEC.md) floor) chooses the Tier A primary or the Tier B fallback, resolved through the **config authority** (0.2) — so 4 GB-class devices never attempt a model they cannot hold.
+- [ ] Implement **runtime Tier A/B selection**: a first-run device-capability check (RAM/SoC/ABI vs the [DEVICE-SPEC](../specs/DEVICE-SPEC.md) floor) chooses the Tier A primary or the Tier B fallback, resolved through the **config authority** (0.2) — so 4 GB-class devices never attempt a model they cannot hold.
 - [x] Load weights via **memory mapping (mmap)** and manage an **explicit KV-cache lifecycle** — allocate per session, **reset (not reallocate) between cases**, and reuse the stable Tier-1 prompt prefix across turns (1.3) instead of re-encoding it — cutting cold-start, peak RAM, and per-turn latency (the 1.6 budget); a case switch frees what it allocated and leaks nothing.
 - [x] **Size `n_ctx` deliberately** as the smallest context window that holds the C-7 worst-case input budget + generation reserve — context size directly drives KV-cache RAM against the [DEVICE-SPEC](../specs/DEVICE-SPEC.md) floor — and expose it plus an optional **KV-cache quantization** (k/v cache type) knob through config as a peak-RAM lever for Tier B devices.
 - [x] **Ingest the prompt as a batched decode** (`n_batch`), not token-by-token, since prompt evaluation dominates first-turn latency; expose `n_batch` through config and reuse the batched path for the T1-prefix warm-up so the 1.6 latency numbers reflect the shipped ingestion path.
-- [x] Run **all inference off the UI isolate** (0.9) with a **streaming token callback**, a **single-flight generation guard** (a second request is queued or rejected, never raced against the native context), and a **cancellation path** (session abandoned / app backgrounded mid-generation) that **frees/resets the native context** so a cancelled turn leaves no orphaned call and no partial KV state; a foreground resume re-arms cleanly.
+- [ ] Run **all inference off the UI isolate** (0.9) with a **streaming token callback**, a **single-flight generation guard** (a second request is queued or rejected, never raced against the native context), and a **cancellation path** (session abandoned / app backgrounded mid-generation) that **frees/resets the native context** so a cancelled turn leaves no orphaned call and no partial KV state; a foreground resume re-arms cleanly.
 - [x] **Respect the FFI/threading reality**: an FFI call blocks its calling isolate and a llama.cpp context is **not** safe for concurrent access, so generation runs on a **dedicated worker isolate/thread owning the single context**, and streamed tokens are marshalled back to the UI isolate over a port / `NativeCallable` — never by calling Dart from an arbitrary native thread (0.9).
 - [x] **Stream detokenized output UTF-8-safely**: buffer raw token bytes and emit only **complete codepoints**, holding a partial multibyte sequence until the next token, so streamed dialogue never renders mojibake or splits a grapheme — a correctness bug that only surfaces on non-ASCII output.
 - [x] **Guard the runtime context window**: verify prompt tokens + max output ≤ `n_ctx` **before** decoding and define the over-context behaviour (reject or stop, surfaced on the 0.7 taxonomy) so an oversized turn degrades gracefully and never trips a native llama.cpp assertion that would abort the whole process (reliability).
@@ -717,9 +746,9 @@ build + pinned thread count**.
 - [x] **Expose a grammar / constrained-decoding seam (llama.cpp GBNF)** from day one — unused by the baseline sampling profile, but wired so the 1.6 acting-quality escalation ladder ([DECISION 0018](../project/DECISION_LOG.md)) is a config flip, not an FFI rewrite.
 - [x] Expose the full **generation-parameter set** through the **central config authority** (0.2) — tier, context window, thread count / CPU-affinity, batch size, seed, sampling temperature, top-p / top-k, repetition penalty, max output tokens, and stop / EOS tokens; no hard-coded model constants, and run a **warm-up (first-token) pass at load** so the first real turn is not a latency outlier in measurement.
 - [x] Add the **C++ logging shim across the FFI boundary** (0.7) so native load/inference events emit the same structured, correlation-id–stamped line as Dart — no raw `std::cout` / `stdout` bypass.
-- [x] Keep the model **resident** per the 0.9 memory-pressure rule (loaded once, reused across turns, explicit unload on shutdown / memory-pressure signal); classify inference failures on the 0.7 error taxonomy (**missing / corrupt / unsupported-ABI model, load failure, OOM, cancellation, generation error**) and **degrade an OOM to an actionable error or a Tier B retry**, never a hard crash.
+- [ ] Keep the model **resident** per the 0.9 memory-pressure rule (loaded once, reused across turns, explicit unload on shutdown / memory-pressure signal); classify inference failures on the 0.7 error taxonomy (**missing / corrupt / unsupported-ABI model, load failure, OOM, cancellation, generation error**) and **degrade an OOM to an actionable error or a Tier B retry**, never a hard crash.
 - [x] **Add a native memory-safety gate**: repeated `load → generate → cancel → unload` cycles leak no memory and trigger no use-after-free under a sanitizer (ASan/LSan) on the Linux CI build — the hand-managed FFI boundary is load-bearing and the cheapest place to catch a leak is here.
-- [x] Confirm build + verified model load + warm-up + one streaming inference on **Linux desktop and the x86 Android emulator** from the 0.1 one-command bootstrap. *Android: `flutter build apk` produces a multi-arch APK (arm64-v8a, armeabi-v7a, x86_64) with `libpsychosims_native.so` bundled; the APK installs and `MainActivity` displays on the x86 emulator in ~887 ms. Linux desktop: inference runtime is verified by `flutter test` loading `libpsychosims_native.so`, but `flutter build linux` is blocked in this environment because `clang++`, `ninja`, and `pkg-config` are not installed (system packages require explicit user confirmation).*
+- [ ] Confirm build + verified model load + warm-up + one streaming inference on **Linux desktop and the x86 Android emulator** from the 0.1 one-command bootstrap. *Android: `flutter build apk` produces a multi-arch APK (arm64-v8a, armeabi-v7a, x86_64) with `libpsychosims_native.so` bundled; the APK installs and `MainActivity` displays on the x86 emulator in ~887 ms. Linux desktop: inference runtime is verified by `flutter test` loading `libpsychosims_native.so`, but `flutter build linux` is blocked in this environment because `clang++`, `ninja`, and `pkg-config` are not installed (system packages require explicit user confirmation).*
 
 ### 1.2 — Minimal patient manifest schema + loader
 
@@ -841,17 +870,19 @@ backgrounded/killed session relaunches into a consistent state.
 - [x] Build the minimal session UI (case view, **structured card/choice action selector — never a free-text prompt box (§4, 0.12)**, **streaming** dialogue render) with **no hard-coded strings** (0.11 externalization) and the **a11y baseline** (semantic labels, scalable text, contrast) — keeping the direct prompt-injection channel closed from the first slice.
 - [x] Establish the **typed navigation/routing** convention (0.9) for the launch → case-select → session flow, with the deep-link seam stubbed for the C-5 desktop OAuth callback (no server in Phase 1).
 - [x] Wire UI → sim core → prompt assembler → inference → render through **GetX dependency injection** (0.9 / [DECISION 0016](../project/DECISION_LOG.md)) — the config authority and inference service are injected, never global singletons.
-- [x] Keep inference **off the UI isolate** and **stream tokens** into the view so perceived latency stays low and the frame loop never stalls (0.9).
+- [ ] Keep inference **off the UI isolate** and **stream tokens** into the view so perceived latency stays low and the frame loop never stalls (0.9).
 - [x] **Lock the action selector during generation and expose a user stop/cancel control** wired to the 1.1 cancellation path — so a player cannot race two turns (double-submit) and can abort a slow generation without killing the app (reliability + UX).
 - [x] **Own the sliding conversation-window + delta-log accumulation** across turns, and **reset the KV cache + sim state on new-case / session reset** (1.1) so a fresh case never inherits stale context — the client-side half of the 1.1 KV lifecycle.
-- [x] **Surface the 0.7 error taxonomy in the UI**: model load / OOM / cancellation / generation errors render as actionable, localized states, and offline is shown as a first-class state — never a silent hang.
+- [ ] **Surface the 0.7 error taxonomy in the UI**: model load / OOM / cancellation / generation errors render as actionable, localized states, and offline is shown as a first-class state — never a silent hang.
 - [x] Give the first-run model fetch a **progress + deferrable UI** (pause/resume, metered-connection posture per 0.10) so the download-acceptance gate (1.6) measures a real user path, not a blocking spinner.
 - [x] Honour **reduce-motion and input alternatives** (0.11) for the streaming render and action input, so the distinctive UI stays reachable from the first slice.
 - [x] Propagate a **single correlation/session id** across the Dart client and the C++ FFI layer for the whole turn (0.7) so the loop is debuggable without persisting any transcript.
-- [x] Implement **app-lifecycle / crash-recovery** (0.9): the full session — **sim state + conversation window + delta log + correlation id** — is durably checkpointed at each turn boundary so a backgrounded, OS-killed, or crashed session relaunches into a consistent state with **no lost or double-applied turn**, exercising the durable local-state seam (no server yet).
-- [x] Confirm the loop is **fully local/offline** (no server dependency in Phase 1) and that the same build path runs on Linux desktop and the x86 Android emulator. *The Android multi-arch APK builds and launches on the x86 emulator with no server calls; the Linux desktop runtime is exercised by `flutter test` loading the native `.so`. The `flutter build linux` packaging step is blocked by missing `clang++`, `ninja`, and `pkg-config` in this environment.*
+- [ ] Implement **app-lifecycle / crash-recovery** (0.9): the full session — **sim state + conversation window + delta log + correlation id** — is durably checkpointed at each turn boundary so a backgrounded, OS-killed, or crashed session relaunches into a consistent state with **no lost or double-applied turn**, exercising the durable local-state seam (no server yet).
+- [ ] Confirm the loop is **fully local/offline** (no server dependency in Phase 1) and that the same build path runs on Linux desktop and the x86 Android emulator. *The Android multi-arch APK builds and launches on the x86 emulator with no server calls; the Linux desktop runtime is exercised by `flutter test` loading the native `.so`. The `flutter build linux` packaging step is blocked by missing `clang++`, `ninja`, and `pkg-config` in this environment.*
 
 ### 1.6 — PoC exit-gate measurement
+
+> **Current execution boundary:** Physical minimum-spec testing needs available hardware and the human device-testing gate. Full-context, quantization and download harness work continues locally; emulator/desktop numbers do not complete mobile thermal, battery or memory-pressure acceptance.
 
 **What.** Instrument, measure, and record the four falsifiable gates — acting
 quality, prompt token budget, download acceptance, device viability — and state
@@ -874,16 +905,16 @@ marked **pending** until the human opens physical-device testing.
 - [x] Measure **acting quality for both the Tier A primary and the Phi-3.5-mini comparator** ([DECISION 0015](../project/DECISION_LOG.md)) under a worst-case full-manifest prompt against a **written rubric** (in-character, honours clue tokens, respects style archetype, no rule-breaking), recorded with the fixed seed (0.8) so the sample is reproducible and the final pick is evidence-based. *Measured in `app/test/poc_gate_exit_report_test.dart` under greedy decode: with the versioned roleplay frame (system instruction + few-shot exemplars, `packages/psycore/lib/src/roleplay_frame.dart`) **both Qwen2.5-1.5B and Phi-3.5-mini pass 5/5** on a rubric that judges acting (first-person voice, no frame-token leak, no listicle, no clinical advice). Before the frame both failed (Qwen emitted a listicle; Phi leaked frame tokens).*
 - [x] If acting quality **fails the rubric**, escalate along the fixed ladder — **prompt/few-shot exemplars → grammar-constrained decoding (llama.cpp GBNF) → one-time offline LoRA fine-tune (merged to fixed shipped weights) → model-tier bump** — *before* Phase 2 spend, per [DECISION 0018](../project/DECISION_LOG.md); runtime/continuous training stays out of scope (§18, [ARCHITECTURE](../code/ARCHITECTURE.md) §7). The sim core owning all mechanics (1.4) is the safety net that lets prompting-first be the baseline. *Exercised: rung 0 (roleplay system prompt + few-shot exemplars, `packages/psycore/lib/src/roleplay_frame.dart`) was sufficient — both models pass the acting rubric with no GBNF/LoRA/tier bump needed. The GBNF seam remains wired (1.1) as the next rung if a future case regresses.*
 - [x] **Measure each candidate model's refusal / safety-boilerplate rate** on the mature-content prompts against the acting rubric (1.4) — a real failure mode for small instruct models — feeding the [DECISION 0018](../project/DECISION_LOG.md) escalation ladder before Phase 2 spend. *Measured in `app/test/poc_gate_exit_report_test.dart`: Qwen2.5-1.5B refuses 3/3 mature probes.*
-- [x] Record the **prompt token budget** (C-7): chosen model's advertised max, measured usable factor, and worst-case token count vs `input_budget` with reserve — feeding back to the manifest schema (Phase 4.1) if T1 overflows. *Measured: 77 input tokens vs 1792 usable (2048 `n_ctx` − 256 output reserve).*
+- [ ] Record the **prompt token budget** (C-7): chosen model's advertised max, measured usable factor, and worst-case token count vs `input_budget` with reserve — feeding back to the manifest schema (Phase 4.1) if T1 overflows. *Measured: 77 input tokens vs 1792 usable (2048 `n_ctx` − 256 output reserve).*
 - [ ] **Record the quantization tradeoff** (e.g. `Q4_K_M` vs a smaller/larger alternative): quality-vs-size-vs-speed for the chosen quant, so the shipped quantization is an evidence-based pick rather than an assumption (feeds the 0.1 pinned build input). *Only `Q4_K_M` weights are present on disk; other quants were not downloaded.*
 - [x] **Measure the prompt-prefix KV-cache reuse benefit** — per-turn latency and tokens processed *with* vs *without* T1-prefix reuse (1.1/1.3) — so the performance contract is validated rather than assumed and a regression here is visible. *Measured: cold first-token latency ~585 ms, warm (prefix-cache-reuse) first-token latency ~0 ms.*
 - [ ] Implement + measure the **download-acceptance** path: the 0.10 resumable, deferrable, metered-connection-aware first-run fetch of the bundled GGUF, with its retry strategy and a recorded acceptance method. *The fetch UI exists but was not instrumented or user-tested in this pass.*
 - [x] **Record packaged binary + model-download size per platform/ABI** (`arm64-v8a`, `x86_64`, desktop) so the download-acceptance and binary-size budgets are real per-target numbers, not a single blended figure. *Multi-arch APK is 62.0 MB (includes `arm64-v8a`, `armeabi-v7a`, `x86_64`). Model download sizes: Qwen 1.1 GB, Phi 2.3 GB, SmolLM2 1.0 GB. Linux desktop binary-size packaging is blocked by missing toolchain.*
 - [x] Record the **device-viability** method + the Tier B (SmolLM2 1.7B) fallback plan against the [DEVICE-SPEC](../specs/DEVICE-SPEC.md) floor — peak RAM within budget and tokens/sec above the playability threshold — **physical-device measurement gated on human sign-off** (kept explicitly *pending* until then). *Method documented in `docs/reports/phase-1-exit-report.md`; desktop peak RSS ~3.75 GB. Physical-device measurement remains pending.*
 - [ ] Measure **sustained throughput under thermal load**: a multi-turn run on mobile (not a single cold shot), recording whether tokens/sec collapses under throttling — the real playability risk on minimum-spec devices. *Requires physical device; not measured.*
-- [x] Record **warm vs cold first-token latency** separately (the 1.1 warm-up pass) and a **rough per-turn energy/battery draw** on mobile against a budget, so playability accounts for the second turn and the battery cost, not just the first token. *Cold/warm first-token latency measured on Linux desktop; mobile energy/battery draw requires physical device.*
+- [ ] Record **warm vs cold first-token latency** separately (the 1.1 warm-up pass) and a **rough per-turn energy/battery draw** on mobile against a budget, so playability accounts for the second turn and the battery cost, not just the first token. *Cold/warm first-token latency measured on Linux desktop; mobile energy/battery draw requires physical device.*
 - [x] **Record the greedy-decode reproducibility scope explicitly**: byte-identical on the same build + architecture + pinned thread count, with the expected x86-emulator-vs-arm64-device divergence (float matmul) documented — so the determinism artifact is not misread as a bug and Phase 2/3 replay expectations are correctly scoped. *Verified byte-identical on same Linux build; cross-architecture divergence documented.*
-- [x] Record the **0.7 performance-budget baselines** vs their targets (cold-start, tokens/sec + latency, peak RAM vs the DEVICE-SPEC ceiling, frame budget, binary size incl. model delivery) and confirm the app **survives OS memory pressure** on a minimum-spec device (the 0.9 rule). *(⏭ hardened later: any telemetry/crash collection stays local-only here; the opt-in, privacy-scrubbed pipeline is built in 0.7/Phase 6.6.)* *Partial: cold-start, first-token latency, prefix-cache reuse, and APK size recorded; peak RAM ~3.75 GB on desktop is above the 4 GB floor before model delivery and needs physical-device validation.*
+- [ ] Record the **0.7 performance-budget baselines** vs their targets (cold-start, tokens/sec + latency, peak RAM vs the DEVICE-SPEC ceiling, frame budget, binary size incl. model delivery) and confirm the app **survives OS memory pressure** on a minimum-spec device (the 0.9 rule). *(⏭ hardened later: any telemetry/crash collection stays local-only here; the opt-in, privacy-scrubbed pipeline is built in 0.7/Phase 6.6.)* *Partial: cold-start, first-token latency, prefix-cache reuse, and APK size recorded; peak RAM ~3.75 GB on desktop is above the 4 GB floor before model delivery and needs physical-device validation.*
 - [x] **Run a prompt-injection / template-isolation smoke test as a recorded gate**: feed a hostile manifest/history string end-to-end and confirm it neither alters model behaviour nor leaks the T1 frame (0.12 / 1.3) — the injection-defense contract validated through the running loop, not only in unit tests (integrity). *Passed in `app/test/poc_gate_exit_report_test.dart`.*
 - [x] Record all artifacts in `docs/reports/` under a **PoC exit-report template** and state the **decision gate explicitly**: any red gate revisits the architecture (or drops to Tier B) before Phase 2 spend — "it produced text" is not a pass (§1). *Recorded in `docs/reports/phase-1-exit-report.md`.*
 
@@ -1341,9 +1372,11 @@ oracle; the exit report records solvability, economy (sources/sinks / inflation 
 dead-currency), and win-rate-by-skill as distributions (median/p95), with the
 decision stated.
 
-- [x] Author a **representative offline case corpus** (small but tier-spanning) exercising the four card types (2.1), the capped loadout (2.2), fictional pharmacology + the lifecycle branches (2.3), and at least one **multi-session siege** case (2.4) — each a typed, checksum-guarded manifest drawn **only** from the 0.12 fictional-taxonomy registry; authored up **alongside 2.3–2.7** and finalized here so 2.4 and 2.8 have real content to run on.
+- [ ] Author a **representative offline case corpus** (small but tier-spanning) exercising the four card types (2.1), the capped loadout (2.2), fictional pharmacology + the lifecycle branches (2.3), and at least one **multi-session siege** case (2.4) — each a typed, checksum-guarded manifest drawn **only** from the 0.12 fictional-taxonomy registry; authored up **alongside 2.3–2.7** and finalized here so 2.4 and 2.8 have real content to run on.
 - [x] Run a **corpus-wide integrity + solvability pass**: every case passes the CI content-integrity lint (no real DSM/ICD label or drug brand, 0.12) and is proven **mechanically solvable on the 2.0 core-only path with no model binary present** by the 2.8 oracle — an unsolvable or non-compliant case fails the gate, not playtest.
-- [x] Record the **Phase 2 exit report** in `docs/reports/` under the 1.6 exit-report template: the 2.8 solvability + economy distributions (sources/sinks, inflation, dead-currency, win-rate by skill, median/p95), a byte-identical replay confirmation from the golden fixture (2.0), and an explicit **go / revisit decision** before Phase 3 spend.
+- [ ] Record the **Phase 2 exit report** in `docs/reports/` under the 1.6 exit-report template: the 2.8 solvability + economy distributions (sources/sinks, inflation, dead-currency, win-rate by skill, median/p95), a byte-identical replay confirmation from the golden fixture (2.0), and an explicit **go / revisit decision** before Phase 3 spend.
+
+Current repair evidence proves both bundled cases at seed 42, but their two-manifest corpus does not yet establish the required tier-spanning coverage. The refreshed sandbox records four dead-currency flags and uneven bot outcomes; no dedicated Phase 2 exit report exists in `docs/reports/`. W5 generation and W6 economy work must supply the missing corpus/evidence and an explicit revisit decision.
 
 ---
 
@@ -1367,9 +1400,10 @@ does **not** re-run the Dart sim math (the "fat backend that re-derives outcomes
 ADR-0001 explicitly rejected). Any bounded server-side computation added here
 stays on that side of the ADR-0006 line.
 
-**Why now.** The offline game is proven (Phase 2) and the C-3 cost model has
-cleared its gate, so the authoritative spine can be built against real, tuned
-mechanics. This is the first phase where the client stops being self-trusted:
+**Why now.** The offline core provides implemented mechanics for the
+authoritative spine. The 2026-09-10 assessment reopened the integrated offline
+flow and found the C-3 cost gate still unvalidated; complete those acceptance
+gates alongside local server implementation before claiming online readiness. This is the first phase where the client stops being self-trusted:
 identity, the profile, the economy ledger, ownership, and presence all move
 behind the server.
 
@@ -1532,17 +1566,19 @@ contract test; a cold start stays within the C-3 scale-to-zero budget.
 - [x] **Reconcile the Go schema mirror to the exact 2.3 shape (contract-fork fix).** Migrate [`server/internal/schemas`](../../server/internal/schemas/schemas.go) from its **stale `0.1.0` camelCase** `SessionReceipt` (untyped `[]map[string]any` deltas, `deltaMillis`) to the shipped **`0.3.0` snake_case** canonical shape — typed `StructuredDelta`s (`delta_millis`, `axis`, `card_type`, `card_signature`, `context_fit`), `idempotency_key`, `correlation_id`, `start_state`, the ordered `InteractionPattern` actions, and the additive `LedgerEvent` list — matching the 2.0 `CanonicalJson` bytes, and refresh the stale `test_fixtures/receipts/sample_receipt.json` the Go test still pins at `0.1.0`. **A divergence must fail the contract test**, not surface in production.
 - [x] **Define the signed transport envelope (additive, 0.8 wire-compat).** The shipped receipt carries *no* signature (signature correction above), so specify a wrapper — `{ canonical_receipt_bytes, signature, suite_id, signing_key_id }` — that travels over the wire and in the 2.9 queue, so the exact bytes signed on the client are the exact bytes 3.3 verifies (**no re-canonicalization**, ADR-0006). The **suite id** keeps the algorithm rotatable (crypto-agility); the **signing-key id** lets 3.3 resolve the signer's published public half without guessing. This is the single producer/consumer contract 3.5 (client signing) and 3.3 (verify) both bind to — defined here so neither invents its own.
 - [x] **Bind the receipt's `start_state` to the typed `SessionStartState`** (loadout + card library + controller settings + initial axes + root seed) in both the Dart schema and the Go mirror — it ships as an untyped `Map<String, Object?>`, but the 3.3 loadout-membership check (reject actions referencing un-owned cards) needs the loadout + library as a **typed** contract, not a raw map the validator must re-parse defensively. Doing this in 3.0 keeps the un-owned-card guard a compile-time-typed check rather than a stringly-typed one.
-- [x] Implement **schema migrations + a rollback path** as first-class, ordered, reviewable steps run at deploy, using **backward-compatible / online migrations** (expand-then-contract) so a rolling deploy never breaks an in-flight older instance and a bad migration is revertible (reliability).
+- [ ] Implement **schema migrations + a rollback path** as first-class, ordered, reviewable steps run at deploy, using **backward-compatible / online migrations** (expand-then-contract) so a rolling deploy never breaks an in-flight older instance and a bad migration is revertible (reliability).
 - [x] Wire the **config authority server-side** (0.2): endpoints, the store DSN (by secret *reference*), rate-limit constants, per-tier plausibility bounds, and feature flags/kill-switches resolve through one validated config, never raw env. *(⏭ hardened later: production secret resolution/custody → 3.7 / the 0.6 implementation; here the reference + interface exist, values come from the local dev environment.)*
-- [x] Implement the **idempotency + request-context middleware**: every mutating request carries the 0.7 idempotency key + correlation/session id, deduped at the store boundary, so a retried request applies **exactly once** (the server half of the 2.9 / 3.4 contract) — with a **bounded dedupe-key retention + GC policy** so the dedupe table cannot grow without limit.
+- [ ] Implement the **idempotency + request-context middleware**: every mutating request carries the 0.7 idempotency key + correlation/session id, deduped at the store boundary, so a retried request applies **exactly once** (the server half of the 2.9 / 3.4 contract) — with a **bounded dedupe-key retention + GC policy** so the dedupe table cannot grow without limit.
 - [x] Implement a **transactional multi-entity write primitive**: the profile + ledger + ownership + audit-trail mutations for one accepted receipt commit in a **single atomic transaction** (or a durable outbox), so a crash mid-write can never half-apply an outcome or lose an audit row (reliability + integrity).
 - [x] Implement **defensive request decoding at the trust boundary** (the server analog of the 0.12 / 2.9 untrusted-input rule): a hard request-body size cap, JSON nesting-depth + per-field length caps, bounded array counts, a decompression-bomb guard, and **reject-before-parse** so a hostile or malformed payload fails closed rather than exhausting memory or CPU (integrity + stability).
 - [x] Implement the **verify-in-place signature seam** (ADR-0006): a helper that verifies the envelope signature over the **exact received bytes** and only *parses* the enforced fields — never re-serializing or re-simulating to check — with a **crypto-agility hook** (suite id carried in the envelope) so the algorithm can rotate.
 - [x] Implement the **authoritative server-time seam + a time-sync endpoint** (0.8): one injected clock is the source of truth for TTLs / leases / sunsets / cadence, a monotonic source measures server-side durations, and a lightweight **server-time endpoint lets the client reconcile its untrusted device clock** (feeding the 3.4 lease + cooldown logic) rather than trusting local time.
-- [x] Implement **graceful lifecycle + connection pooling**: readiness vs liveness probes, a warmed store connection pool with prepared statements, in-flight-request draining on shutdown, and a **cold-start budget measured against the C-3 scale-to-zero target** — the Go static-binary advantage from ADR-0006 made real, not assumed.
+- [ ] Implement **graceful lifecycle + connection pooling**: readiness vs liveness probes, a warmed store connection pool with prepared statements, in-flight-request draining on shutdown, and a **cold-start budget measured against the C-3 scale-to-zero target** — the Go static-binary advantage from ADR-0006 made real, not assumed.
 - [x] **Extend the Dart↔Go contract test** (0.5 / 0.8) to the full reconciled 2.3 `SessionReceipt` (typed deltas, the `LedgerEvent` list, idempotency key, correlation id, start state, ordered actions) **and** the profile payload — not just the manifest — so the boundary cannot silently fork; a schema change breaks the contract test, not production.
 
 ### 3.1 — Identity, authentication & session tokens
+
+> **Current execution boundary:** Implement and test real provider verification against controlled local JWKS/OAuth fixtures. Live five-platform sign-in remains pending provider registrations, test accounts and target platforms; do not replace it with stub-verifier success.
 
 **What.** Implement server-authoritative identity via **Google/Apple OAuth**
 across all five platforms per [ADR-0002](../design/ADR-0002-desktop-distribution-and-auth.md)
@@ -1564,17 +1600,17 @@ later endpoint one authenticated request context to authorize against.
 verified server-side, refreshed, and revocable; an unauthenticated or over-quota
 request is rejected; profile rows are inaccessible across accounts.
 
-- [x] Implement **OAuth sign-in (Google + Apple)** producing one server-authoritative account across iOS / Android / Windows / macOS / Linux (ADR-0002), with **server-side token/JWT verification in Go** (issuer, audience, signature, expiry, nonce) — the trust decision lives in our service, not in a BaaS identity SDK.
+- [ ] Implement **OAuth sign-in (Google + Apple)** producing one server-authoritative account across iOS / Android / Windows / macOS / Linux (ADR-0002), with **server-side token/JWT verification in Go** (issuer, audience, signature, expiry, nonce) — the trust decision lives in our service, not in a BaaS identity SDK.
 - [x] Harden the **desktop deep-link OAuth flow** (0.9 / 1.5 callback) with **PKCE + a signed `state` / nonce** so the browser→app redirect cannot be intercepted, replayed, or CSRF'd — the desktop channel's specific attack surface (ADR-0002).
-- [x] Implement **account linking**: multiple providers (Google *and* Apple) resolving to **one** account, so a player who signs in with a different provider on a new platform is not forked into a second profile (ADR-0002 portability).
+- [ ] Implement **account linking**: multiple providers (Google *and* Apple) resolving to **one** account, so a player who signs in with a different provider on a new platform is not forked into a second profile (ADR-0002 portability).
 - [x] Implement the **session-token lifecycle**: short-lived access token + **refresh-token rotation** (a replayed / rotated-out refresh token is rejected), server-side **revocation / logout**, and reissue on reinstall / device-switch (ties to the 3.5 key-recovery path) — so a lost device or a ban takes effect on authoritative state.
-- [x] **Register the client's device signing key to the authenticated account** at first sign-in / device-switch: this account↔key binding is the identity anchor the 3.5 key provisioning and the 3.3 *signer-∈-account* check both resolve against, so a receipt's signature is always traceable to a device key that is traceable to one account (an unregistered signer is rejected). *(⏭ hardened later: device attestation + full key custody are 3.5 / the 0.6 implementation; here the registration + rejection exist.)*
-- [x] Implement the **authorization model + row-level security**: a request can only read or mutate its own account's profile, ledger, owned cases, and receipts — the enforcement, not just a schema note.
+- [ ] **Register the client's device signing key to the authenticated account** at first sign-in / device-switch: this account↔key binding is the identity anchor the 3.5 key provisioning and the 3.3 *signer-∈-account* check both resolve against, so a receipt's signature is always traceable to a device key that is traceable to one account (an unregistered signer is rejected). *(⏭ hardened later: device attestation + full key custody are 3.5 / the 0.6 implementation; here the registration + rejection exist.)*
+- [ ] Implement the **authorization model + row-level security**: a request can only read or mutate its own account's profile, ledger, owned cases, and receipts — the enforcement, not just a schema note.
 - [x] Stand up the **operator/admin authorization seam** — a distinct role claim + separate auth path, no player token can assume it — so the Phase 7.3 moderation backdoor and the 3.7 kill-switches ride a real privilege boundary from day one. *(⏭ hardened later: full admin custody / MFA / audited-access controls are 7.3 / the 0.6 implementation; here the role boundary + rejection exist.)*
-- [x] Bind the **desktop distribution channels** from ADR-0002 (Steam for Windows/macOS; signed direct download for Linux) to the OAuth flow.
-- [x] Implement the **0.6 abuse-prevention enforcement**: authenticated-requests-only, **per-account + per-endpoint + per-IP (pre-auth)** rate limiting + throttling, and request quotas — the shared seam anti-farming / anomaly detection (§3, §17, §21) builds on — emitting **429 / `Retry-After`** honoured by the 0.10 client resilience policy.
+- [ ] Bind the **desktop distribution channels** from ADR-0002 (Steam for Windows/macOS; signed direct download for Linux) to the OAuth flow.
+- [ ] Implement the **0.6 abuse-prevention enforcement**: authenticated-requests-only, **per-account + per-endpoint + per-IP (pre-auth)** rate limiting + throttling, and request quotas — the shared seam anti-farming / anomaly detection (§3, §17, §21) builds on — emitting **429 / `Retry-After`** honoured by the 0.10 client resilience policy.
 - [x] Tie client-held tokens to **platform secure storage** (0.6 / 0.9 data-at-rest): Keychain / Keystore / OS credential store, never plaintext. *(⏭ hardened later: full token-custody + rotation review → the 0.6 implementation / 3.7 hardening pass.)*
-- [x] **Test:** five-platform sign-in resolves to one account; a tampered / expired / wrong-audience token is rejected; a rotated-out refresh token is rejected; a revoked session cannot mutate state; cross-account access is denied; a device signing key registers to exactly one account and an unregistered signer is rejected; an admin-only route rejects a player token; rate-limit + quota trip and then recover.
+- [ ] **Test:** five-platform sign-in resolves to one account; a tampered / expired / wrong-audience token is rejected; a rotated-out refresh token is rejected; a revoked session cannot mutate state; cross-account access is denied; a device signing key registers to exactly one account and an unregistered signer is rejected; an admin-only route rejects a player token; rate-limit + quota trip and then recover.
 
 ### 3.2 — Profile store & session handshake
 
@@ -1604,7 +1640,7 @@ integrity.
 - [x] Implement the **server-side profile + ledger schema-migration path** (mirrors the 2.9 local migration, on the 3.0 online-migration discipline) so stored state evolves forward or fails loudly, never partially.
 - [x] Implement the **data-lifecycle & erasure hook** (0.6): a right-to-erasure path that removes account-linked PII while the **ledger retains only pseudonymous IDs and stays conservation-valid** (§17) — designed in now, feeding the §17 revocation path and the C-6 consent data.
 - [x] **Stand up backup + point-in-time recovery** for the profile / ledger store against the **0.6 RPO ≤ 1 h / RTO ≤ 4 h** targets, and run a **documented restore drill** proving "ironclad progress preservation" (§3). *(⏭ hardened later: production backup cadence, automated DR drill, and PITR automation are the 0.6 posture's server implementation — the interface + a manual drill land here.)*
-- [x] **Test:** the boot handshake hydrates a known profile; a direct client write is rejected; a concurrent double-write resolves without a lost update; a profile + ledger mutation commits atomically or not at all; migration loads an older stored profile; an erasure request leaves the ledger conservation-valid; a compacted ledger replays to the same balances.
+- [ ] **Test:** the boot handshake hydrates a known profile; a direct client write is rejected; a concurrent double-write resolves without a lost update; a profile + ledger mutation commits atomically or not at all; migration loads an older stored profile; an erasure request leaves the ledger conservation-valid; a compacted ledger replays to the same balances.
 
 ### 3.3 — Session receipt validation (verify-in-place)
 
@@ -1638,14 +1674,14 @@ anomaly detection.
 - [x] **Ingest the session's `LedgerEvent` stream into the authoritative ledger (3.2) and enforce conservation**: dedupe on each event's idempotency key, reject any event whose fixed-point micros fall outside the tier bounds, and verify the accepted events **balance** (no currency minted or destroyed) — a trivial integer check that catches a whole class of economy tampering **with no sim engine**. This **replaces the old "economy-delta variant" assumption** (economy is the 2.5 `LedgerEvent` stream, not a `StructuredDelta`).
 - [x] **Re-stamp authoritative time; never trust client timestamps.** The shipped `LedgerEvent.timestamp_seconds` (and any device time on the receipt) is client wall-clock — untrusted (0.8). The server records its **own authoritative receive-time** for ordering, cadence, ledger recency, TTL, and the audit trail, and treats the client value as an opaque non-authoritative hint only, so a device-clock lie can never shift economy timing, a cooldown, or a lease window.
 - [x] Reject a receipt whose **ordered actions reference cards not in the recorded start-state loadout** (the 2.2 guard) — a receipt-forgery vector closed cheaply at the boundary.
-- [x] Compute **only the bounded high-value outputs derivable without the sim engine** (fee / payout ledger postings, cure retirement, and the ownership-affecting transitions arbitrated in 3.6) server-side; **explicitly defer** the derived-quantity math — Trauma Severity (5.3), Doubt + operational pressure (5.5) — to Phase 5 per [C-9](../specs/SERVER-DERIVED-QUANTITIES.md) (building them here is the wrong assumption the old plan carried), while making the **accepted-receipt + ledger stream** they will read available now.
+- [ ] Compute **only the bounded high-value outputs derivable without the sim engine** (fee / payout ledger postings, cure retirement, and the ownership-affecting transitions arbitrated in 3.6) server-side; **explicitly defer** the derived-quantity math — Trauma Severity (5.3), Doubt + operational pressure (5.5) — to Phase 5 per [C-9](../specs/SERVER-DERIVED-QUANTITIES.md) (building them here is the wrong assumption the old plan carried), while making the **accepted-receipt + ledger stream** they will read available now.
 - [x] Commit profile + ledger + ownership + audit **in the 3.0 atomic transaction**, so an accepted receipt applies **exactly once and completely** — or not at all (reliability + integrity).
 - [x] Implement **idempotent dedupe + replay protection** on the receipt idempotency key (3.0) so a re-submitted or replayed receipt never double-applies (the server half of 3.4 / 2.9).
-- [x] Implement **`ruleset_version` pinning + the sunset schedule** (reject unknown or sunset versions, on the server clock, 0.8) — the authoritative counterpart to the 2.3 local ruleset-change policy — with the 3.7 kill-switch able to extend or close a window without a deploy.
-- [x] Implement the **append-only, hash-chained audit trail** (0.6 schema): every receipt acceptance / rejection and every high-value authoritative action, **tamper-evident (each row chains the prior row's hash)**, correlation-id-stamped, **transcript-free** — the forensic record Phase 7.3 moderation reads.
+- [ ] Implement **`ruleset_version` pinning + the sunset schedule** (reject unknown or sunset versions, on the server clock, 0.8) — the authoritative counterpart to the 2.3 local ruleset-change policy — with the 3.7 kill-switch able to extend or close a window without a deploy.
+- [ ] Implement the **append-only, hash-chained audit trail** (0.6 schema): every receipt acceptance / rejection and every high-value authoritative action, **tamper-evident (each row chains the prior row's hash)**, correlation-id-stamped, **transcript-free** — the forensic record Phase 7.3 moderation reads.
 - [x] Route an **un-processable receipt to a dead-letter path** (rejected-with-reason on the 0.7 taxonomy, recorded in the audit trail) rather than silently dropping or infinitely retrying it (reliability).
-- [x] Add **backpressure / load-shedding** on the validation path (a bounded queue, fast-reject over quota) so a submission spike degrades gracefully rather than collapsing the service (stability).
-- [x] **Test:** a golden accepted signed receipt mutates profile + ledger + ownership exactly once and atomically; bad-signature / signer-not-in-account / out-of-bounds / replayed / sunset-version / non-conserving-ledger / un-owned-card receipts are each rejected with the right taxonomy code; a forged client timestamp does not shift authoritative ordering or cadence; the hash-chained audit trail records every decision and detects a tampered row; an A→B→A-style anomaly is flagged from the persisted provenance signal.
+- [ ] Add **backpressure / load-shedding** on the validation path (a bounded queue, fast-reject over quota) so a submission spike degrades gracefully rather than collapsing the service (stability).
+- [ ] **Test:** a golden accepted signed receipt mutates profile + ledger + ownership exactly once and atomically; bad-signature / signer-not-in-account / out-of-bounds / replayed / sunset-version / non-conserving-ledger / un-owned-card receipts are each rejected with the right taxonomy code; a forged client timestamp does not shift authoritative ordering or cadence; the hash-chained audit trail records every decision and detects a tampered row; an A→B→A-style anomaly is flagged from the persisted provenance signal.
 
 ### 3.4 — Offline receipt protocol & reconciliation
 
@@ -1670,10 +1706,10 @@ to a single deterministic outcome with the loser reconciled, not dropped.
 - [x] Implement a **batched drain endpoint**: the queue submits multiple receipts in one authenticated request (each still individually idempotent + atomically applied) so a client reconnecting after a long offline stretch does not pay per-receipt round-trip overhead — directly serving the C-3 #2/#3 cost drivers.
 - [x] Implement **client idempotency keys + server dedupe** (3.0 / 3.3) so exactly-once holds across retries, app kills, batched delivery, and duplicate delivery.
 - [x] Implement a **reconciliation cursor / checkpoint**: the client tracks the last server-acknowledged receipt so a resumed drain continues from the cursor rather than re-sending the whole queue (efficiency + reliability).
-- [x] Implement the **ownership lease TTL** on the **server clock** (0.8, reconciled via the 3.0 time-sync endpoint): a client holds a case under a lease; an expired lease is reclaimable, and offline actions past expiry are **reconciled, not blindly applied** (ties to 3.6), with a **bounded clock-skew tolerance window** so a small honest drift is not punished while a large one cannot extend a lease.
-- [x] Implement the **offline cure/transfer race resolution**: a deterministic, server-arbitrated winner when two clients act on the same case offline, with the losing side reconciled to a consistent state and surfaced on the 0.7 taxonomy — never a silent drop.
-- [x] Implement **reconciliation feedback to the client**: an accepted / rejected / superseded status per queued receipt (plus a server queue-depth / backpressure hint) so the client converges its cached state and rolls back a provisionally-rendered outcome (the 0.9 crash-recovery + the C-9 client-proposes / server-decides contract).
-- [x] **Test (property-based):** a queue replayed after N interruptions applies each receipt exactly once; a batched drain of the same queue yields the identical state as one-by-one; an expired lease is reclaimed; a simulated two-client offline race resolves to one deterministic outcome with the loser reconciled; a device-clock advance beyond the skew window cannot extend a lease.
+- [ ] Implement the **ownership lease TTL** on the **server clock** (0.8, reconciled via the 3.0 time-sync endpoint): a client holds a case under a lease; an expired lease is reclaimable, and offline actions past expiry are **reconciled, not blindly applied** (ties to 3.6), with a **bounded clock-skew tolerance window** so a small honest drift is not punished while a large one cannot extend a lease.
+- [ ] Implement the **offline cure/transfer race resolution**: a deterministic, server-arbitrated winner when two clients act on the same case offline, with the losing side reconciled to a consistent state and surfaced on the 0.7 taxonomy — never a silent drop.
+- [ ] Implement **reconciliation feedback to the client**: an accepted / rejected / superseded status per queued receipt (plus a server queue-depth / backpressure hint) so the client converges its cached state and rolls back a provisionally-rendered outcome (the 0.9 crash-recovery + the C-9 client-proposes / server-decides contract).
+- [ ] **Test (property-based):** a queue replayed after N interruptions applies each receipt exactly once; a batched drain of the same queue yields the identical state as one-by-one; an expired lease is reclaimed; a simulated two-client offline race resolves to one deterministic outcome with the loser reconciled; a device-clock advance beyond the skew window cannot extend a lease.
 
 ### 3.5 — Managed PKI (presence & signing)
 
@@ -1694,14 +1730,14 @@ reinstall re-provisions without orphaning the account; a revoked key is rejected
 and its revocation propagates; the signature suite can rotate without breaking
 older records.
 
-- [x] Implement **key provisioning + server-signed presence records**, with the **signature suite pinned in the envelope** (crypto-agility) so the algorithm can rotate without a flag day, and **rate-limited provisioning** (0.6) so key issuance cannot be abused.
+- [ ] Implement **key provisioning + server-signed presence records**, with the **signature suite pinned in the envelope** (crypto-agility) so the algorithm can rotate without a flag day, and **rate-limited provisioning** (0.6) so key issuance cannot be abused.
 - [x] Implement **client-side device-key provisioning + receipt signing** — the *producer* side 3.3 verify depends on and the piece **missing from the shipped code**: the client generates a per-device keypair held in platform secure storage (0.6/0.9), the server **certifies its public half and binds it to the account** (3.1) at rate-limited provisioning, and the client **signs each 3.0 envelope** before it enters the 2.9 queue. Without this, 3.3 has nothing to verify. *(⏭ hardened later: device attestation + hardware-backed key storage are the 0.6 implementation; here the keypair + signing + account binding exist.)*
-- [x] Stand up the **presence store + query seam** — who is signable / present, the inputs matchmaking + referrals read — because signing alone is not enough: 4.5 routing and the 5.x social systems need to *read* signed presence, so the store + query path exists here even though its consumers land later. Presence is a **hot, read/write-heavy, DB-connection-bound dataset (the C-3 #3 driver)**, so the query seam is designed against a connection budget + a short cache TTL from the start, not left to scale by accident.
-- [x] Implement the **revocation list + public-key publication** with a **cacheable, versioned distribution** (ETag / TTL) and a **documented propagation-latency budget** so clients drop revoked entries cheaply and predictably (0.10) — the seam §17 revocation and Phase 7.3 moderation consume.
+- [ ] Stand up the **presence store + query seam** — who is signable / present, the inputs matchmaking + referrals read — because signing alone is not enough: 4.5 routing and the 5.x social systems need to *read* signed presence, so the store + query path exists here even though its consumers land later. Presence is a **hot, read/write-heavy, DB-connection-bound dataset (the C-3 #3 driver)**, so the query seam is designed against a connection budget + a short cache TTL from the start, not left to scale by accident.
+- [ ] Implement the **revocation list + public-key publication** with a **cacheable, versioned distribution** (ETag / TTL) and a **documented propagation-latency budget** so clients drop revoked entries cheaply and predictably (0.10) — the seam §17 revocation and Phase 7.3 moderation consume.
 - [x] Implement **key recovery on reinstall / device-switch** against the server-authoritative identity (3.1) so a returning player re-provisions rather than orphaning presence / ownership.
 - [x] Implement **key-rotation readiness**: overlapping validity windows and re-signing of long-lived records, so rotation never invalidates an in-flight signed artifact.
 - [x] *(⏭ hardened later)* **Signing-key custody + rotation cadence** (HSM/KMS locations, access control, rotation schedule) is the 0.6 key-custody plan's server implementation — the **interface + rotation mechanism** land here; production custody lands in the hardening pass / Phase 7.6. **No private key in-repo.**
-- [x] **Test:** a valid presence record verifies; a tampered one fails; a revoked key is rejected and revocation propagates to a client within the budget; a reinstall re-provisions; a record signed under the previous suite still verifies during the rotation window; provisioning is rate-limited.
+- [ ] **Test:** a valid presence record verifies; a tampered one fails; a revoked key is rejected and revocation propagates to a client within the budget; a reinstall re-provisions; a record signed under the previous suite still verifies during the rotation window; provisioning is rate-limited.
 
 ### 3.6 — Patient ownership arbitration & lifecycle (C-8)
 
@@ -1724,14 +1760,16 @@ transfer) is rejected; concurrent transfer attempts resolve to exactly one owner
 
 - [x] **Map the local `CaseLifecycle` (2.3) onto the C-8 ownership machine before encoding it** — they are *different vocabularies*, not the same names (lifecycle correction above). The shipped offline enum (`open`/`in-treatment`/`crisis`/`cured`/`abandoned`/`hard-failed`/`archived`) is the *treatment* view; C-8 is the *ownership* view (`pool`/`owned`/`hospitalized`/`cured`/`archived`). Define + document the mapping (`crisis → hospitalized`, `open`/`in-treatment → owned`, `abandoned → owned → pool`, `hard-failed → owned → archived`) and note the server introduces `pool` (unowned), which has **no offline single-owner equivalent** — so 3.6 layers the ownership axis onto the treatment states rather than renaming them.
 - [x] Implement the **authoritative owner record + single-owner lock** (the double-spend analog) with **optimistic concurrency** so two simultaneous `pool → owned` claims resolve to exactly one owner, the other cleanly rejected.
-- [x] Implement the **full C-8 lifecycle state machine** — `pool ⇄ owned`, `owned → owned′`, `owned ⇄ hospitalized`, `owned → cured → archived`, `owned → archived` — each transition with its **server-enforced guard** (routing eligibility; **referral compatibility: receiver free + compatible + similar-tier** per C-8; freeze-trigger recording; cure computed / accepted server-side).
-- [x] Make every transition **transactional, idempotent + audited**: ownership changes commit in the 3.0 atomic transaction alongside any profile/ledger effect, a retried transfer / referral applies once (3.0 idempotency), and every transition writes to the hash-chained audit trail (3.3) with its trigger recorded (in-fiction derangement vs bug-recovery, per C-8).
-- [x] Integrate the **3.4 ownership lease**: a transition proposed against an expired or reclaimed lease is reconciled, not applied — ownership and the offline protocol share **one** authoritative lock.
+- [ ] Implement the **full C-8 lifecycle state machine** — `pool ⇄ owned`, `owned → owned′`, `owned ⇄ hospitalized`, `owned → cured → archived`, `owned → archived` — each transition with its **server-enforced guard** (routing eligibility; **referral compatibility: receiver free + compatible + similar-tier** per C-8; freeze-trigger recording; cure computed / accepted server-side).
+- [ ] Make every transition **transactional, idempotent + audited**: ownership changes commit in the 3.0 atomic transaction alongside any profile/ledger effect, a retried transfer / referral applies once (3.0 idempotency), and every transition writes to the hash-chained audit trail (3.3) with its trigger recorded (in-fiction derangement vs bug-recovery, per C-8).
+- [ ] Integrate the **3.4 ownership lease**: a transition proposed against an expired or reclaimed lease is reconciled, not applied — ownership and the offline protocol share **one** authoritative lock.
 - [x] Enforce the **illegal-transition rejections by construction**: `hospitalized → archived` direct, double-owner, and any client-initiated ownership change without a server round-trip.
-- [x] Enforce **`memory_class` discipline**: stateless / social-chronic patients follow the states minus a persistent history envelope (§17 / C-8), matching the 2.4 local rule.
-- [x] **Test (incl. concurrency):** every legal transition passes; the local→C-8 mapping is covered (a local `crisis` freeze surfaces as `hospitalized` under the same owner); re-pool on walkout / transfer, referral hand-off, and temporary hospitalization are covered; every illegal transition is rejected; **many concurrent double-claims yield exactly one owner** under load; a retried transition does not double-apply.
+- [ ] Enforce **`memory_class` discipline**: stateless / social-chronic patients follow the states minus a persistent history envelope (§17 / C-8), matching the 2.4 local rule.
+- [ ] **Test (incl. concurrency):** every legal transition passes; the local→C-8 mapping is covered (a local `crisis` freeze surfaces as `hospitalized` under the same owner); re-pool on walkout / transfer, referral hand-off, and temporary hospitalization are covered; every illegal transition is rejected; **many concurrent double-claims yield exactly one owner** under load; a retried transition does not double-apply.
 
 ### 3.7 — Server observability, resilience & deployment
+
+> **Current execution boundary:** Local load/cold-start/restore and deployment-definition tests are authorized. No cloud provision/deploy, production rollout or public endpoint is authorized; live production SLO/custody/rollout acceptance remains pending.
 
 **What.** Wire the server into the 0.7 observability conventions (structured
 logging, metrics, correlation-id tracing across the trust boundary),
@@ -1754,16 +1792,16 @@ the scale-to-zero budget.
 
 - [x] Implement **server-side structured logging** on the 0.7 schema (the same rendered line + JSON payload, secrets redacted, **never a raw transcript** §17) via the Go `psylog` package, with **correlation / session-id propagation across the trust boundary** so one session's client + server lines share an id.
 - [x] Implement the **0.7 metrics contract** server-side (counters / timers / gauges: receipt accept/reject rate, validation latency, per-receipt compute cost, auth failures, store latency + pool saturation, queue depth) — the minimal signal set the C-3 cost model and the Phase 6.6 balance oracle consume — and define **SLOs + alert thresholds** (accept-latency p95, error rate, store saturation) so a regression pages rather than silently degrades.
-- [x] Add **request tracing spans** across the request lifecycle (auth → decode → verify → validate → commit) keyed to the correlation id, so a slow or failing receipt is diagnosable without a transcript.
-- [x] Implement **health / readiness / liveness + graceful degradation**: extend the existing Phase 0.1 `/health` stub into a **split readiness (can-serve / deps up) vs liveness (process healthy)** probe, add dependency health checks, a circuit-breaker / degrade path when the store is slow, and the 3.3 load-shedding tie-in so partial failure never cascades.
-- [x] Implement the **server-side feature-flag + kill-switch surface** (0.2): receipt validation, matchmaking, and the economy have a documented off-switch, and the `ruleset_version` sunset has a runtime toggle, so a bad release degrades safely without an app-store push.
-- [x] Implement the **deployment shape + cold-start budget** for C-3 **scale-to-zero** (the Go static-binary advantage from ADR-0006) with a **canary / rollback-capable rollout**, and a recorded cold-start / warm-latency baseline against the cost model.
-- [x] Run a **load / soak test against the C-3 concurrency cap** (the #3 cost driver): sustained receipt-submission + handshake load holds p95 latency and the per-receipt compute budget, and back-pressure / load-shedding engages instead of collapsing — "it compiles" is not a scale proof.
+- [ ] Add **request tracing spans** across the request lifecycle (auth → decode → verify → validate → commit) keyed to the correlation id, so a slow or failing receipt is diagnosable without a transcript.
+- [ ] Implement **health / readiness / liveness + graceful degradation**: extend the existing Phase 0.1 `/health` stub into a **split readiness (can-serve / deps up) vs liveness (process healthy)** probe, add dependency health checks, a circuit-breaker / degrade path when the store is slow, and the 3.3 load-shedding tie-in so partial failure never cascades.
+- [ ] Implement the **server-side feature-flag + kill-switch surface** (0.2): receipt validation, matchmaking, and the economy have a documented off-switch, and the `ruleset_version` sunset has a runtime toggle, so a bad release degrades safely without an app-store push.
+- [ ] Implement the **deployment shape + cold-start budget** for C-3 **scale-to-zero** (the Go static-binary advantage from ADR-0006) with a **canary / rollback-capable rollout**, and a recorded cold-start / warm-latency baseline against the cost model.
+- [ ] Run a **load / soak test against the C-3 concurrency cap** (the #3 cost driver): sustained receipt-submission + handshake load holds p95 latency and the per-receipt compute budget, and back-pressure / load-shedding engages instead of collapsing — "it compiles" is not a scale proof.
 - [x] Define the **audit-trail + metrics/log retention + redaction policy** (0.7 / 0.6 data-lifecycle): how long forensic and observability data live, redacted of PII, so retention is a decision, not an accident (integrity).
 - [x] Define the **receipt + anomaly-history retention / age-to-aggregate policy** — a named **C-3 cost lever** for the #2 write-heavy driver: raw accepted receipts age out on a bounded window while the **derived aggregates are kept** (the 3.3 provenance signal, the hash-chained audit trail, the ledger snapshots), so the largest write-heavy dataset stays cost-bounded without losing the forensic + anti-farming trail. **No raw transcript is ever retained** (§17).
 - [x] Write the **migration + rollback runbook** (3.0 migrations) so a schema change is deployable and revertible under a documented procedure.
 - [x] *(⏭ hardened later)* **Secret management**: the config authority resolves secrets **by reference** (0.2 / 0.6) and the interface exists here; the production secret store / rotation (KMS / Vault) is the 0.6 secret-handling implementation, landing in the hardening pass / Phase 7.6. **No secret value committed.**
-- [x] **Test:** a correlation id + trace threads client → server for one flow; a kill-switch disables a subsystem in a test; a simulated store outage degrades rather than crashes; the cold-start + load baselines are measured and recorded.
+- [ ] **Test:** a correlation id + trace threads client → server for one flow; a kill-switch disables a subsystem in a test; a simulated store outage degrades rather than crashes; the cold-start + load baselines are measured and recorded.
 
 ### 3.8 — Phase 3 integration harness & exit report
 
@@ -1788,11 +1826,11 @@ the exit report records auth, receipt-validation, offline-reconciliation, and
 ownership results with the decision stated.
 
 - [x] Stand up the **client↔local-server integration harness** (headless where possible) — the reduced precursor to the Phase 5.6 sandbox — exercising boot handshake → receipt submission (single + batched) → offline queue drain → ownership transition end-to-end.
-- [x] **Expand the Dart↔Go contract + integration tests** (0.5): the full **reconciled** receipt (incl. the typed `start_state`, ordered actions, and `LedgerEvent` list) / **signed envelope** / profile / presence schemas round-trip **byte-identically** — a **regression test that fails on any camelCase/snake_case, stale-schema-version, or missing-field drift**, closing the 3.0 fork permanently — and the auth / validation / ownership flows pass against the running service.
-- [x] Implement **failure injection** (timeouts, duplicate + partial + batched submissions, disconnect / reconnect, expired lease, store slowness) proving exactly-once + reconciliation + graceful degradation hold under adverse conditions (0.10 / 3.4 / 3.7).
-- [x] Include a **lightweight load pass** in the harness (a burst of concurrent receipts + claims) that reproduces the 3.6 concurrency and 3.7 backpressure behaviour, so the exit report cites measured numbers, not assertions.
-- [x] Ship the **Phase 3 capability showcase** (Appendix B): headless scripts under `tools/showcase/phase3/` emitting human-readable Markdown to `docs/reports/showcase/phase3/` demonstrating auth, receipt + ledger validation, offline reconciliation, and the ownership state machine — it **demonstrates**, never substitutes for `make verify`.
-- [x] Record the **Phase 3 exit report** in `docs/reports/` under the 1.6 / 2.10 template: auth coverage, receipt accept/reject + ledger-conservation behaviour, offline-reconciliation results, C-8 transition coverage, and cost / cold-start / load baselines (C-3), with an explicit **go / revisit decision** before Phase 4 spend.
+- [ ] **Expand the Dart↔Go contract + integration tests** (0.5): the full **reconciled** receipt (incl. the typed `start_state`, ordered actions, and `LedgerEvent` list) / **signed envelope** / profile / presence schemas round-trip **byte-identically** — a **regression test that fails on any camelCase/snake_case, stale-schema-version, or missing-field drift**, closing the 3.0 fork permanently — and the auth / validation / ownership flows pass against the running service.
+- [ ] Implement **failure injection** (timeouts, duplicate + partial + batched submissions, disconnect / reconnect, expired lease, store slowness) proving exactly-once + reconciliation + graceful degradation hold under adverse conditions (0.10 / 3.4 / 3.7).
+- [ ] Include a **lightweight load pass** in the harness (a burst of concurrent receipts + claims) that reproduces the 3.6 concurrency and 3.7 backpressure behaviour, so the exit report cites measured numbers, not assertions.
+- [ ] Ship the **Phase 3 capability showcase** (Appendix B): headless scripts under `tools/showcase/phase3/` emitting human-readable Markdown to `docs/reports/showcase/phase3/` demonstrating auth, receipt + ledger validation, offline reconciliation, and the ownership state machine — it **demonstrates**, never substitutes for `make verify`.
+- [ ] Record the **Phase 3 exit report** in `docs/reports/` under the 1.6 / 2.10 template: auth coverage, receipt accept/reject + ledger-conservation behaviour, offline-reconciliation results, C-8 transition coverage, and cost / cold-start / load baselines (C-3), with an explicit **go / revisit decision** before Phase 4 spend.
 
 ---
 
@@ -1860,6 +1898,8 @@ sample + after model updates.
 - [ ] Implement toxicity/safety screening + versioning/rollback.
 
 ### 4.4 — CDN delivery & signing
+
+> **Current execution boundary:** Implement and test signing, delivery, client verification and revocation against a local object-store/CDN adapter. Public CDN deployment and live delivery evidence remain pending under the no-cloud/no-publishing restriction.
 
 **What.** Implement signed-manifest delivery from a CDN/object store fronted by
 the server (§2.3, §3).
@@ -2076,6 +2116,8 @@ dashboard surfaces at-risk associates before blow-ups.
 
 ### 6.4 — Open authoring portal & moderation (C-10)
 
+> **Current execution boundary:** Build and exercise the complete portal workflow against the local catalog. Public portal opening remains pending and unauthorized; actual reviewer staffing/SLA acceptance requires human capacity, not a drafted policy.
+
 **What.** Open the web authoring portal to external contributors (§2.4) **only
 after** the moderation staffing model + review SLA exists.
 
@@ -2231,6 +2273,8 @@ stored; PII kept separate from gameplay data.
 
 ### 7.6 — Launch readiness & release process
 
+> **Current execution boundary:** Build and test local release preparation, provenance and dry-run definitions only. Actual signing/distribution for release, store submission and publishing remain excluded; unavailable target hosts/credentials and real release acceptance remain pending.
+
 **What.** Establish the release process: build/sign/distribute across the five
 platforms, a `CHANGELOG.md`, and a launch checklist.
 
@@ -2285,7 +2329,7 @@ A phase is **done** when:
 
 ## Appendix C — Blueprint cross-reference map
 
-Which [`STARTER.md`](../../STARTER.md) sections each phase realizes.
+Which [`STARTER.md`](../design/STARTER.md) sections each phase realizes.
 
 | Phase | Blueprint sections |
 |---|---|

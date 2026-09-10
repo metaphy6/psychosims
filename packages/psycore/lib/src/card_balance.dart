@@ -7,17 +7,12 @@ import 'package:psyconfig/psyconfig.dart';
 class CardBalance {
   /// Builds a [CardBalance] from the central config authority's [BalanceConfig].
   ///
-  /// Percentage-like config values are converted to fixed-point integer ratios
-  /// once at this boundary, so no `double` multiplication ever enters a
-  /// deterministic rule.
+  /// Only matching units map across this boundary. Per-card trust increments
+  /// are not the patient trust threshold used to classify a context fit.
   factory CardBalance.fromConfig(BalanceConfig cfg) {
     return CardBalance(
       activeCardSlots: cfg.activeCardSlots,
       postponingFreezeTurns: cfg.postponingFreezeTurns,
-      // Config trust-bump range is surfaced as a fixed midpoint; the resolver
-      // band function owns the exact distribution.
-      fitBufferTrust:
-          (cfg.relatableTrustBumpMin + cfg.relatableTrustBumpMax) ~/ 2,
     );
   }
 
@@ -85,4 +80,29 @@ class CardBalance {
     this.dependencyPerDose = 1,
     this.medicationAgitationShift = 3,
   });
+
+  /// Exact effective rules bound into trusted core-generated evidence.
+  Map<String, int> toJson() => {
+        'active_card_slots': activeCardSlots,
+        'postponing_freeze_turns': postponingFreezeTurns,
+        'postponing_decay_per_session': postponingDecayPerSession,
+        'postponing_decay_max': postponingDecayMax,
+        'manipulative_success_trust': manipulativeSuccessTrust,
+        'manipulative_partial_trust': manipulativePartialTrust,
+        'transference_spike_trauma': transferenceSpikeTrauma,
+        'transference_spike_agitation': transferenceSpikeAgitation,
+        'fit_breaker_resistance': fitBreakerResistance,
+        'fit_buffer_trust': fitBufferTrust,
+        'fit_buffer_agitation': fitBufferAgitation,
+        'fit_freeze_agitation': fitFreezeAgitation,
+        'fit_gambit_trust': fitGambitTrust,
+        'crisis_threshold': crisisThreshold,
+        'walkout_threshold': walkoutThreshold,
+        'calm_threshold': calmThreshold,
+        'stable_trust_floor': stableTrustFloor,
+        'success_progress_threshold': successProgressThreshold,
+        'tolerance_per_dose': tolerancePerDose,
+        'dependency_per_dose': dependencyPerDose,
+        'medication_agitation_shift': medicationAgitationShift,
+      };
 }

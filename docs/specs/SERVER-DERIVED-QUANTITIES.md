@@ -3,7 +3,7 @@
 > **Closes register item C-9** ([ROADMAP](../planning/ROADMAP.md#-conceptual-corrections-register)).
 > The three cross-session quantities that drive server-authoritative outcomes must
 > be **derived server-side from accepted receipts** — never client-reported
-> (resolving audit findings GM-2/GM-3). Section refs (§N) → [`STARTER.md`](../../STARTER.md).
+> (resolving audit findings GM-2/GM-3). Section refs (§N) → [`STARTER.md`](../design/STARTER.md).
 
 - **Status:** spec complete (implemented in Phase 5.3 + 5.5)
 - **Owner:** @maintainer

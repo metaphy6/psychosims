@@ -68,5 +68,3 @@ func deriveSignals(accountID string, receipt schemas.SessionReceipt) AnomalySign
 		CadenceBucket: time.Now().UTC().Format("2006-01-02T15"),
 	}
 }
-
-

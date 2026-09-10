@@ -3,7 +3,7 @@
 > **Closes register item C-4** ([ROADMAP](../planning/ROADMAP.md#-conceptual-corrections-register)).
 > The §9 entry gate and the **single authoritative owner of every constant,
 > percentage, and formula** in the design. Skeleton now; tuned in the sandbox
-> (Phase 2.8). Section refs (§N) → [`STARTER.md`](../../STARTER.md).
+> (Phase 2.8). Section refs (§N) → [`STARTER.md`](../design/STARTER.md).
 
 - **Status:** skeleton (currencies + sources/sinks enumerated; constants are placeholders)
 - **Owner:** @maintainer

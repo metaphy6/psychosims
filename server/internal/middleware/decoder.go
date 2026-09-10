@@ -44,6 +44,9 @@ func DecodeJSON(r *http.Request, dst any, limits DecoderLimits) error {
 	}
 
 	// Decompress if gzipped.
+	if encoding := r.Header.Get("Content-Encoding"); encoding != "" && encoding != "identity" && encoding != "gzip" {
+		return api.NewMalformedPayload("unsupported content encoding")
+	}
 	var bodyReader io.Reader = io.LimitReader(r.Body, limits.MaxBodyBytes+1)
 	if r.Header.Get("Content-Encoding") == "gzip" {
 		if !limits.AllowGzip {
@@ -66,9 +69,15 @@ func DecodeJSON(r *http.Request, dst any, limits DecoderLimits) error {
 	}
 
 	// Validate structure and bounds before unmarshalling into dst.
+	if err := checkObjectKeys(json.NewDecoder(bytes.NewReader(body)), 1, limits); err != nil {
+		return err
+	}
 	var raw any
 	if err := json.Unmarshal(body, &raw); err != nil {
 		return api.NewMalformedPayload("invalid json: " + err.Error())
+	}
+	if _, ok := raw.(map[string]any); !ok {
+		return api.NewMalformedPayload("JSON object required")
 	}
 	if err := validateJSONGraph(raw, 1, limits); err != nil {
 		return err
@@ -79,6 +88,58 @@ func DecodeJSON(r *http.Request, dst any, limits DecoderLimits) error {
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(dst); err != nil {
 		return api.NewMalformedPayload("decode error: " + err.Error())
+	}
+	return nil
+}
+
+func checkObjectKeys(dec *json.Decoder, depth int, limits DecoderLimits) error {
+	if depth > limits.MaxJSONDepth {
+		return api.NewMalformedPayload("JSON nesting exceeds limit")
+	}
+	tok, err := dec.Token()
+	if err != nil {
+		return api.NewMalformedPayload("invalid JSON")
+	}
+	delim, ok := tok.(json.Delim)
+	if !ok {
+		return nil
+	}
+	switch delim {
+	case '{':
+		seen := map[string]bool{}
+		for dec.More() {
+			key, err := dec.Token()
+			if err != nil {
+				return api.NewMalformedPayload("invalid object key")
+			}
+			name, ok := key.(string)
+			if !ok || seen[name] || int64(len(name)) > limits.MaxStringFieldBytes {
+				return api.NewMalformedPayload("duplicate or invalid object key")
+			}
+			seen[name] = true
+			if len(seen) > limits.MaxObjectKeys {
+				return api.NewMalformedPayload("too many object keys")
+			}
+			if err := checkObjectKeys(dec, depth+1, limits); err != nil {
+				return err
+			}
+		}
+	case '[':
+		count := 0
+		for dec.More() {
+			count++
+			if count > limits.MaxArrayLength {
+				return api.NewMalformedPayload("too many array entries")
+			}
+			if err := checkObjectKeys(dec, depth+1, limits); err != nil {
+				return err
+			}
+		}
+	default:
+		return api.NewMalformedPayload("invalid JSON delimiter")
+	}
+	if _, err := dec.Token(); err != nil {
+		return api.NewMalformedPayload("invalid JSON terminator")
 	}
 	return nil
 }

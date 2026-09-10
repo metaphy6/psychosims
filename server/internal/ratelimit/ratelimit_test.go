@@ -76,3 +76,43 @@ func TestMiddlewareUsesAccountBucket(t *testing.T) {
 		t.Errorf("second status = %d, want %d", rec.Code, http.StatusTooManyRequests)
 	}
 }
+
+func TestAuthAttemptsReserveBeforeVerificationAndExpire(t *testing.T) {
+	now := time.Unix(100, 0)
+	gate := NewAuthAttemptGate(1, time.Minute)
+	gate.now = func() time.Time { return now }
+	gate.maxPeers = 2
+	finish, retry := gate.Begin("one")
+	if finish == nil || retry != 0 {
+		t.Fatal("first attempt denied")
+	}
+	if f, _ := gate.Begin("one"); f != nil {
+		t.Fatal("concurrent expensive verification admitted")
+	}
+	finish(false)
+	finish(false) // Completion is exactly once.
+	if f, _ := gate.Begin("one"); f != nil {
+		t.Fatal("failed attempt was not charged")
+	}
+	f, _ := gate.Begin("two")
+	f(false)
+	if f, _ := gate.Begin("three"); f != nil {
+		t.Fatal("peer storage cap exceeded")
+	}
+	now = now.Add(time.Minute)
+	f, _ = gate.Begin("three")
+	if f == nil {
+		t.Fatal("expired peers not collected")
+	}
+	f(true)
+	if len(gate.peers) != 0 {
+		t.Fatal("expired or successful peers retained")
+	}
+	for i := 0; i < 10; i++ {
+		f, _ := gate.Begin("one")
+		if f == nil {
+			t.Fatal("success consumed failure budget")
+		}
+		f(true)
+	}
+}

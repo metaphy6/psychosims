@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'app/app_routes.dart';
+import 'features/online/online_screen.dart';
 import 'features/loadout/loadout_bindings.dart';
 import 'features/loadout/loadout_screen.dart';
 import 'features/model_fetch/model_fetch_bindings.dart';
@@ -38,6 +39,7 @@ class PsychosimsApp extends StatelessWidget {
       ),
       initialRoute: AppRoutes.home,
       getPages: [
+        GetPage(name: AppRoutes.online, page: () => const OnlineScreen()),
         GetPage(
           name: AppRoutes.home,
           page: () => const HomeScreen(),

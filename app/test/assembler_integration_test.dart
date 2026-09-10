@@ -34,7 +34,9 @@ void main() {
         libraryPath: _libraryPath(),
         logger: logger,
       );
-      await service.loadModel(modelPath ?? '/tmp/model.gguf');
+      await service.loadModel(modelPath ?? '/tmp/model.gguf',
+          params: ModelLoadParams(
+              backend: modelPath == null ? 'stub' : 'llama.cpp'));
 
       // With the real backend the token count differs from a naive whitespace
       // split, proving the assembler is wired to the model tokenizer.
@@ -60,7 +62,9 @@ void main() {
         libraryPath: _libraryPath(),
         logger: logger,
       );
-      await service.loadModel(modelPath ?? '/tmp/model.gguf');
+      await service.loadModel(modelPath ?? '/tmp/model.gguf',
+          params: ModelLoadParams(
+              backend: modelPath == null ? 'stub' : 'llama.cpp'));
 
       final manifest = testManifest();
       final assembler = core.PromptAssembler(

@@ -41,3 +41,22 @@ func TestInFlightMiddlewareAcquiresAndReleases(t *testing.T) {
 		t.Errorf("depth = %d, want 0", counter.Depth())
 	}
 }
+
+func TestInFlightOverloadGivesRetryAfterAndReleasesAfterCancellation(t *testing.T) {
+	counter := NewInFlightCounter(1)
+	if !counter.Acquire() {
+		t.Fatal("fixture reservation failed")
+	}
+	h := InFlightMiddleware(counter)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(200) }))
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("GET", "/", nil))
+	if w.Code != 503 || w.Header().Get("Retry-After") == "" {
+		t.Fatal("overload has no retry guidance")
+	}
+	counter.Release()
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("GET", "/", nil))
+	if w.Code != 200 || counter.Depth() != 0 {
+		t.Fatal("admission did not recover")
+	}
+}

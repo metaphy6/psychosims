@@ -81,6 +81,21 @@ const _capability = DeviceCapability(
 );
 
 void main() {
+  test('AVX2 requires measured support on every advertised CPU', () {
+    expect(
+        DefaultDeviceCapabilityProvider.hasAvx2InCpuInfo(
+            'flags : sse avx avx2\nflags : sse avx avx2'),
+        isTrue);
+    expect(
+        DefaultDeviceCapabilityProvider.hasAvx2InCpuInfo(
+            'flags : sse avx2\nflags : sse'),
+        isFalse);
+    expect(DefaultDeviceCapabilityProvider.hasAvx2InCpuInfo(''), isFalse);
+    expect(
+        DefaultDeviceCapabilityProvider.hasAvx2InCpuInfo('flags : sse notavx2'),
+        isFalse);
+  });
+
   final selector = TierSelector();
   final config = _testConfig();
 

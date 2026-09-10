@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Control plane v1 responses",
+  "$defs": {
+    "receipt_verdict": {
+      "type": "object",
+      "required": [
+        "id",
+        "idempotency_key",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "rejected",
+            "retryable"
+          ]
+        },
+        "profile_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reward_status": {
+          "const": "held_unproven"
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "batch": {
+      "type": "object",
+      "required": [
+        "results",
+        "queue_depth_hint"
+      ],
+      "properties": {
+        "results": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/receipt_verdict"
+          }
+        },
+        "queue_depth_hint": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        }
+      }
+    },
+    "auth_pair": {
+      "type": "object",
+      "required": [
+        "account_id",
+        "access_token",
+        "refresh_token",
+        "token_type",
+        "access_expires_at",
+        "refresh_expires_at"
+      ],
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "access_token": {
+          "type": "string",
+          "maxLength": 16384
+        },
+        "refresh_token": {
+          "type": "string",
+          "maxLength": 16384
+        },
+        "token_type": {
+          "const": "Bearer"
+        },
+        "access_expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "refresh_expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "session_authorization": {
+      "type": "object",
+      "required": [
+        "id",
+        "patient_id",
+        "ruleset_version",
+        "start_state",
+        "expires_at",
+        "reward_status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "patient_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "ruleset_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "start_state": {
+          "$ref": "receipt.schema.json#/properties/start_state"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reward_status": {
+          "const": "held_unproven"
+        }
+      }
+    },
+    "device_key": {
+      "type": "object",
+      "required": [
+        "id",
+        "account_id",
+        "public_key",
+        "suite_id",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "account_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "public_key": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "minLength": 44,
+          "maxLength": 44
+        },
+        "suite_id": {
+          "const": "ed25519-v1"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

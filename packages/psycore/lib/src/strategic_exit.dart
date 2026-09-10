@@ -1,4 +1,3 @@
-
 /// Outcome of a strategic exit choice for an over-matched case (§13).
 enum StrategicExitChoice {
   /// Reject the case; it returns to the pool with no penalty.

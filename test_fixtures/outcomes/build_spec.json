@@ -1,0 +1,83 @@
+{
+  "build_schema_version": "1.0.0",
+  "catalog_version": "bundled.v1",
+  "environment": "prod",
+  "limits": {
+    "max_actions": 120,
+    "max_deltas": 1024,
+    "max_transitions": 20000,
+    "max_receipt_bytes": 131072,
+    "max_proof_bytes": 262144
+  },
+  "entries": [
+    {
+      "manifest_path": "content/manifests/siege_brumosis.json",
+      "root_seed": 1729,
+      "loadout": {
+        "card_ids": [
+          "open_question",
+          "reframe",
+          "validate",
+          "reflect"
+        ],
+        "slot_cap": 5
+      },
+      "library": {
+        "owned_card_ids": [
+          "open_question",
+          "reframe",
+          "validate",
+          "reflect"
+        ]
+      },
+      "controllers": {
+        "focus": "balanced",
+        "emotional_delivery": "balanced"
+      }
+    },
+    {
+      "manifest_path": "content/manifests/poc_sample.json",
+      "root_seed": 1729,
+      "loadout": {
+        "card_ids": [
+          "open_question",
+          "validate",
+          "reframe",
+          "set_boundary"
+        ],
+        "slot_cap": 5
+      },
+      "library": {
+        "owned_card_ids": [
+          "open_question",
+          "validate",
+          "reframe",
+          "set_boundary"
+        ]
+      },
+      "controllers": {
+        "focus": "balanced",
+        "emotional_delivery": "balanced"
+      }
+    },
+    {
+      "manifest_path": "content/manifests/siege_brumosis.json",
+      "root_seed": 1729,
+      "loadout": {
+        "card_ids": [
+          "open_question"
+        ],
+        "slot_cap": 5
+      },
+      "library": {
+        "owned_card_ids": [
+          "open_question"
+        ]
+      },
+      "controllers": {
+        "focus": "balanced",
+        "emotional_delivery": "balanced"
+      }
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"sync"
 	"time"
 
 	"psychosims.dev/server/internal/api"
@@ -16,18 +17,19 @@ import (
 
 // PrimitiveProfile is the <0.5 KB atomic player snapshot.
 type PrimitiveProfile struct {
-	AccountID        string         `json:"account_id"`
-	Version          int            `json:"version"`
-	Level            int            `json:"level"`
-	XP               int            `json:"xp"`
-	StudyPoints      int            `json:"study_points"`
-	SubspecialtyPoints int          `json:"subspecialty_points"`
-	Reputation       int            `json:"reputation"`
-	Prestige         int            `json:"prestige"`
-	CashMicros       int64          `json:"cash_micros"`
-	ClinicTier       int            `json:"clinic_tier"`
-	OnboardingDone   bool           `json:"onboarding_done"`
-	UpdatedAt        time.Time      `json:"updated_at"`
+	OwnedCardIDs       []string  `json:"owned_card_ids"`
+	AccountID          string    `json:"account_id"`
+	Version            int       `json:"version"`
+	Level              int       `json:"level"`
+	XP                 int       `json:"xp"`
+	StudyPoints        int       `json:"study_points"`
+	SubspecialtyPoints int       `json:"subspecialty_points"`
+	Reputation         int       `json:"reputation"`
+	Prestige           int       `json:"prestige"`
+	CashMicros         int64     `json:"cash_micros"`
+	ClinicTier         int       `json:"clinic_tier"`
+	OnboardingDone     bool      `json:"onboarding_done"`
+	UpdatedAt          time.Time `json:"updated_at"`
 }
 
 // Repository persists primitive profiles.
@@ -40,6 +42,21 @@ type Repository interface {
 // SQLRepository is the Postgres-backed profile store.
 type SQLRepository struct {
 	db *sql.DB
+	tx *sql.Tx
+}
+
+type queryer interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+	ExecContext(context.Context, string, ...any) (sql.Result, error)
+}
+
+// NewSQLRepositoryTx binds every profile read/write to the receipt transaction.
+func NewSQLRepositoryTx(tx *sql.Tx) *SQLRepository { return &SQLRepository{tx: tx} }
+func (r *SQLRepository) queryer() queryer {
+	if r.tx != nil {
+		return r.tx
+	}
+	return r.db
 }
 
 // NewSQLRepository creates a new SQL profile repository.
@@ -49,7 +66,11 @@ func NewSQLRepository(db *sql.DB) *SQLRepository {
 
 // Get implements Repository.
 func (r *SQLRepository) Get(ctx context.Context, accountID string) (*PrimitiveProfile, error) {
-	row := r.db.QueryRowContext(ctx, `SELECT version, payload, updated_at FROM profiles WHERE account_id = $1`, accountID)
+	query := `SELECT version, payload, updated_at FROM profiles WHERE account_id = $1`
+	if r.tx != nil {
+		query += ` FOR UPDATE`
+	}
+	row := r.queryer().QueryRowContext(ctx, query, accountID)
 	var version int
 	var payload []byte
 	var updatedAt time.Time
@@ -89,24 +110,56 @@ func (r *SQLRepository) Erase(ctx context.Context, accountID string) error {
 	return err
 }
 
-// Update implements optimistic-concurrency update.
-func (r *SQLRepository) Update(ctx context.Context, profile *PrimitiveProfile) error {
-	payload, err := json.Marshal(profile)
+// Update creates version-zero profiles and optimistically updates existing snapshots.
+// The caller's version changes only after a successful write.
+func (r *SQLRepository) Update(ctx context.Context, p *PrimitiveProfile) error {
+	if p.AccountID == "" {
+		return api.NewUnauthorized("account id required")
+	}
+	if p.Version == 0 && r.tx == nil {
+		tx, err := r.db.BeginTx(ctx, nil)
+		if err != nil {
+			return err
+		}
+		defer tx.Rollback()
+		copy := *p
+		if err := NewSQLRepositoryTx(tx).Update(ctx, &copy); err != nil {
+			return err
+		}
+		if err := tx.Commit(); err != nil {
+			return err
+		}
+		*p = copy
+		return nil
+	}
+	next := *p
+	next.Version++
+	next.UpdatedAt = time.Now().UTC()
+	payload, err := json.Marshal(&next)
 	if err != nil {
 		return err
 	}
-	profile.Version++
-	res, err := r.db.ExecContext(ctx, `
-		UPDATE profiles SET version = $1, payload = $2, updated_at = NOW()
-		WHERE account_id = $3 AND version = $4
-	`, profile.Version, payload, profile.AccountID, profile.Version-1)
+	q := r.queryer()
+	var res sql.Result
+	if p.Version == 0 {
+		if _, err := q.ExecContext(ctx, `INSERT INTO accounts(id) VALUES($1) ON CONFLICT DO NOTHING`, p.AccountID); err != nil {
+			return err
+		}
+		res, err = q.ExecContext(ctx, `INSERT INTO profiles(account_id,version,payload,updated_at) VALUES($1,1,$2,$3) ON CONFLICT DO NOTHING`, p.AccountID, payload, next.UpdatedAt)
+	} else {
+		res, err = q.ExecContext(ctx, `UPDATE profiles SET version=$1,payload=$2,updated_at=$3 WHERE account_id=$4 AND version=$5`, next.Version, payload, next.UpdatedAt, p.AccountID, p.Version)
+	}
 	if err != nil {
 		return err
 	}
-	n, _ := res.RowsAffected()
-	if n == 0 {
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
 		return api.NewConflict(api.CodeConflict, "profile version conflict")
 	}
+	*p = next
 	return nil
 }
 
@@ -199,7 +252,9 @@ func (l *InMemoryLedger) Append(ctx context.Context, tx *sql.Tx, accountID strin
 }
 
 // Events returns recorded events.
-func (l *InMemoryLedger) Events() []schemas.LedgerEvent { return append([]schemas.LedgerEvent(nil), l.events...) }
+func (l *InMemoryLedger) Events() []schemas.LedgerEvent {
+	return append([]schemas.LedgerEvent(nil), l.events...)
+}
 
 // SnapshotRepository manages ledger compaction checkpoints.
 type SnapshotRepository struct {
@@ -227,6 +282,7 @@ func (r *SnapshotRepository) Save(ctx context.Context, accountID string, version
 
 // InMemoryProfileRepository is a test implementation.
 type InMemoryProfileRepository struct {
+	mu       sync.Mutex
 	profiles map[string]*PrimitiveProfile
 }
 
@@ -237,26 +293,36 @@ func NewInMemoryProfileRepository() *InMemoryProfileRepository {
 
 // Get implements Repository.
 func (r *InMemoryProfileRepository) Get(ctx context.Context, accountID string) (*PrimitiveProfile, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	p, ok := r.profiles[accountID]
 	if !ok {
 		return nil, api.NewNotFound("profile not found")
 	}
-	return p, nil
+	copy := *p
+	copy.OwnedCardIDs = append([]string(nil), p.OwnedCardIDs...)
+	return &copy, nil
 }
 
 // Update implements Repository with optimistic concurrency.
 func (r *InMemoryProfileRepository) Update(ctx context.Context, profile *PrimitiveProfile) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	existing, ok := r.profiles[profile.AccountID]
 	if ok && existing.Version != profile.Version {
 		return api.NewConflict(api.CodeConflict, "profile version conflict")
 	}
 	profile.Version++
-	r.profiles[profile.AccountID] = profile
+	copy := *profile
+	copy.OwnedCardIDs = append([]string(nil), profile.OwnedCardIDs...)
+	r.profiles[profile.AccountID] = &copy
 	return nil
 }
 
 // Erase implements Repository by zeroing the profile snapshot.
 func (r *InMemoryProfileRepository) Erase(ctx context.Context, accountID string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.profiles[accountID] = &PrimitiveProfile{AccountID: accountID, Version: 1, UpdatedAt: time.Now().UTC()}
 	return nil
 }

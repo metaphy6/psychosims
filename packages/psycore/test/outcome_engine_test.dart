@@ -106,6 +106,31 @@ void main() {
       expect(output.isTerminal, isTrue);
     });
 
+    test('calm successful treatment finishes instead of stabilizing forever',
+        () {
+      final output = resolver.resolve(input(
+          const SimState(
+              seed: 4, trustScore: 60, agitationLevel: 20, sessionProgress: 99),
+          InteractionPattern.validate));
+      expect(output.outcome, SessionOutcome.succeed);
+      expect(output.lifecycle, CaseLifecycle.cured);
+      expect(output.isTerminal, isTrue);
+    });
+
+    test('crisis and walkout still take priority over progress completion', () {
+      for (final entry
+          in {82: SessionOutcome.crisis, 96: SessionOutcome.fail}.entries) {
+        final output = resolver.resolve(input(
+            SimState(
+                seed: 4,
+                trustScore: 60,
+                agitationLevel: entry.key,
+                sessionProgress: 99),
+            InteractionPattern.reframe));
+        expect(output.outcome, entry.value);
+      }
+    });
+
     test('first turn moves lifecycle from open to in-treatment', () {
       final output = resolver.resolve(input(
         const SimState(seed: 5, turn: 0),

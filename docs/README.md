@@ -17,6 +17,7 @@ humans on **the project's design and history**.
 | [`guides/`](guides/) | Cross-cutting how-tos: agent operating model, model profiles, MCP usage. | Agents + ops. |
 | [`reports/`](reports/) | Generated reports (audit, status snapshots). | Reviewers. |
 | [`.agents/skills/`](../.agents/skills/) | The **skill library** — load on demand. | Agents. |
+| [`server/MAINTENANCE.md`](../server/MAINTENANCE.md) | Implemented local retention, account erasure and backup-journal replay procedure. | Operators + reviewers. |
 
 ## Discoverability rule
 

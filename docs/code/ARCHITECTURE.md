@@ -3,7 +3,7 @@
 > The repo-level architecture and — critically — the **module boundary map** and
 > **configuration authority** that every phase of [`ROADMAP.md`](../planning/ROADMAP.md)
 > must honour (Principles 1 and 2). Section refs (§N) point at
-> [`STARTER.md`](../../STARTER.md). This document is the "where does new code go?"
+> [`STARTER.md`](../design/STARTER.md). This document is the "where does new code go?"
 > contract.
 
 ## 1. System context
@@ -92,7 +92,12 @@ or `packages/`. Nothing reads configuration except through `config/` (§4).
   identifier and idempotency-key strategy lives in [IDENTIFIERS.md](IDENTIFIERS.md)
   (§3).
 - **Trust boundary:** "a client-computed number is a claim, not a fact." High-value
-  economy outputs are computed server-side (§3).
+  economy outputs require bounded server derivation (§3). Exact operator-pinned
+  Dart witnesses certify an initial finite set of cure paths; other schema 0.3
+  receipts remain `held_unproven`. A device signature cannot prove terminal
+  gameplay. See [ADR-0009](../design/ADR-0009-bounded-authoritative-derivation.md), [SECURITY.md](../../SECURITY.md) and
+  [data classification](../project/DATA-LIFECYCLE.md) for current controls and
+  acceptance limits.
 
 ## 5. Invariants you must not break
 

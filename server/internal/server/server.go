@@ -8,15 +8,22 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"math"
+	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"psychosims.dev/server/internal/api"
 	"psychosims.dev/server/internal/authz"
 	"psychosims.dev/server/internal/ctxutil"
 	"psychosims.dev/server/internal/middleware"
+	"psychosims.dev/server/internal/observability"
 	"psychosims.dev/server/internal/profile"
+	"psychosims.dev/server/internal/psylog"
+	"psychosims.dev/server/internal/ratelimit"
 	"psychosims.dev/server/internal/timeutil"
 )
 
@@ -57,10 +64,13 @@ type TokenVerifier interface {
 type Server struct {
 	mux           *http.ServeMux
 	clock         timeutil.Clock
-	ready         func() ReadinessResponse
+	ready         func(context.Context) ReadinessResponse
 	profileRepo   profile.Repository
 	authVerifier  TokenVerifier
 	healthChecker HealthChecker
+	online        *onlineServices
+	inFlight      *middleware.InFlightCounter
+	metrics       *observability.Metrics
 }
 
 // Option configures a Server.
@@ -81,11 +91,17 @@ func WithHealthChecker(h HealthChecker) Option {
 	return func(s *Server) { s.healthChecker = h }
 }
 
+// WithMetrics supplies a bounded in-process metrics sink for inspection.
+func WithMetrics(metrics *observability.Metrics) Option {
+	return func(s *Server) { s.metrics = metrics }
+}
+
 // New builds a Server with the standard middleware stack.
 func New(clock timeutil.Clock, opts ...Option) *Server {
 	s := &Server{
-		mux:   http.NewServeMux(),
-		clock: clock,
+		mux:     http.NewServeMux(),
+		metrics: observability.NewMetrics(),
+		clock:   clock,
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -97,20 +113,39 @@ func New(clock timeutil.Clock, opts ...Option) *Server {
 
 // Handler returns the fully-wrapped HTTP handler.
 func (s *Server) Handler() http.Handler {
-	return middleware.APIVersion(
-		middleware.RequestContext(
-			middleware.RequireIdempotencyKey(
-				s.mux,
-			),
-		),
-	)
+	var work http.Handler = s.mux
+	if s.inFlight != nil {
+		limited := middleware.InFlightMiddleware(s.inFlight)(work)
+		work = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Liveness performs no downstream work and stays available under pressure.
+			if r.Method == http.MethodGet && r.URL.Path == "/health" {
+				s.mux.ServeHTTP(w, r)
+				return
+			}
+			limited.ServeHTTP(w, r)
+		})
+	}
+	work = observability.TraceMiddleware(observability.NewLogger(psylog.Default()), s.metrics)(observability.StatusTracingMiddleware(s.metrics)(middleware.RequireIdempotencyKey(work)))
+	handler := middleware.APIVersion(middleware.RequestContext(work))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+		defer cancel()
+		handler.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func (s *Server) registerRoutes() {
-	s.mux.HandleFunc("/health", s.handleHealth)
-	s.mux.HandleFunc("/ready", s.handleReady)
-	s.mux.HandleFunc("/time", s.handleTime)
-	s.mux.Handle("/v1/boot", s.requireAuth(http.HandlerFunc(s.handleBoot)))
+	s.mux.HandleFunc("GET /health", s.handleHealth)
+	s.mux.HandleFunc("GET /ready", s.handleReady)
+	s.mux.HandleFunc("GET /time", s.handleTime)
+	var boot http.Handler = http.HandlerFunc(s.handleBoot)
+	if s.online != nil {
+		boot = ratelimit.Middleware(s.online.rates)(boot)
+	}
+	s.mux.Handle("GET /v1/boot", s.requireAuth(boot))
+	if s.online != nil {
+		s.onlineRoutes()
+	}
 }
 
 // requireAuth wraps a handler with bearer-token authentication if a verifier is
@@ -118,6 +153,28 @@ func (s *Server) registerRoutes() {
 // bypass verification.
 func (s *Server) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s.online != nil {
+			peer := r.RemoteAddr
+			if host, _, err := net.SplitHostPort(peer); err == nil {
+				peer = host
+			}
+			finish, retry := s.online.authAttempts.Begin(peer)
+			if finish == nil {
+				api.NewRateLimited(max(1, int(math.Ceil(retry.Seconds())))).Write(w, ctxutil.RequestID(r.Context()))
+				return
+			}
+			defer finish(true) // Release even if dependency verification panics.
+			ctx, err := s.authenticateOnline(r)
+			var he api.HTTPError
+			failedAuth := errors.As(err, &he) && he.Status == http.StatusUnauthorized
+			finish(!failedAuth)
+			if err != nil {
+				writeFailure(w, r, err)
+				return
+			}
+			next.ServeHTTP(w, r.WithContext(ctx))
+			return
+		}
 		if ctxutil.AccountID(r.Context()) != "" {
 			next.ServeHTTP(w, r)
 			return
@@ -165,23 +222,29 @@ func (s *Server) handleBoot(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if he, ok := err.(api.HTTPError); ok && he.Body.Code == api.CodeNotFound {
 			// Create a blank profile on first boot.
-			prof = &profile.PrimitiveProfile{AccountID: accountID, Version: 1, UpdatedAt: s.clock.Now()}
+			prof = &profile.PrimitiveProfile{AccountID: accountID, Version: 0, OwnedCardIDs: []string{"open_question"}, UpdatedAt: s.clock.Now()}
 			if err := s.profileRepo.Update(r.Context(), prof); err != nil {
-				api.NewInternalError("profile creation failed: " + err.Error()).Write(w, ctxutil.RequestID(r.Context()))
+				if he, ok := err.(api.HTTPError); !ok || he.Body.Code != api.CodeConflict {
+					api.NewInternalError("profile creation failed").Write(w, ctxutil.RequestID(r.Context()))
+					return
+				}
+			}
+			prof, err = s.profileRepo.Get(r.Context(), accountID)
+			if err != nil {
+				api.NewInternalError("profile read failed").Write(w, ctxutil.RequestID(r.Context()))
 				return
 			}
-			prof, _ = s.profileRepo.Get(r.Context(), accountID)
 		} else {
-			api.NewInternalError("profile read failed: " + err.Error()).Write(w, ctxutil.RequestID(r.Context()))
+			api.NewInternalError("profile read failed: "+err.Error()).Write(w, ctxutil.RequestID(r.Context()))
 			return
 		}
 	}
 	etag := fmt.Sprintf("\"v%d\"", prof.Version)
+	w.Header().Set("ETag", etag)
 	if r.Header.Get("If-None-Match") == etag {
 		w.WriteHeader(http.StatusNotModified)
 		return
 	}
-	w.Header().Set("ETag", etag)
 	writeJSON(w, http.StatusOK, BootResponse{Profile: *prof, ETag: etag})
 }
 
@@ -190,7 +253,9 @@ func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (s *Server) handleReady(w http.ResponseWriter, r *http.Request) {
-	resp := s.ready()
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+	defer cancel()
+	resp := s.ready(ctx)
 	status := http.StatusOK
 	if resp.Status != "ok" {
 		status = http.StatusServiceUnavailable
@@ -202,10 +267,10 @@ func (s *Server) handleTime(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, timeutil.NewServerTimeResponse(s.clock))
 }
 
-func (s *Server) defaultReady() ReadinessResponse {
+func (s *Server) defaultReady(ctx context.Context) ReadinessResponse {
 	deps := map[string]string{"store": "not_configured"}
 	if s.healthChecker != nil {
-		deps = s.healthChecker.Check(context.Background())
+		deps = s.healthChecker.Check(ctx)
 	}
 	status := "ok"
 	for _, v := range deps {

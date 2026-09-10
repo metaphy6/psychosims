@@ -28,6 +28,53 @@ void main() {
 
     const state = SimState(seed: 42, trustScore: 30, agitationLevel: 45);
 
+    test('actor prefix is stable and correction survives window truncation',
+        () {
+      const actor = PromptAssembler(
+          tokenCounter: counter,
+          chatTemplate: template,
+          roleplayFrame: PatientRoleplayFrame());
+      final first = actor.assembleDetailed(
+          rulesetVersion: manifest.rulesetVersion,
+          manifest: manifest,
+          state: state,
+          conversationWindow: const [],
+          inputBudget: 512,
+          outputReserve: 32);
+      final next = actor.assembleDetailed(
+          rulesetVersion: manifest.rulesetVersion,
+          manifest: manifest,
+          state: state.copyWith(turn: 1, agitationLevel: 90),
+          conversationWindow: const [
+            ConversationTurn(role: 'user', text: 'Next question')
+          ],
+          inputBudget: 512,
+          outputReserve: 32);
+      expect(first.stablePrefix, next.stablePrefix);
+      expect(first.prompt, isNot(next.prompt));
+      expect(first.stablePrefix, contains('[ferve-axine]'));
+      expect(first.stablePrefix.split(manifest.modelFacingTemplate).length, 2);
+      expect(first.prompt, isNot(contains('When it feels natural')));
+      final corrected = actor.assembleDetailed(
+          rulesetVersion: manifest.rulesetVersion,
+          manifest: manifest,
+          state: state,
+          conversationWindow: [
+            ConversationTurn(
+                role: 'user', text: List.filled(2000, 'old').join(' '))
+          ],
+          inputBudget: 256,
+          outputReserve: 32,
+          correction: PromptCorrection.missingClues,
+          correctionAttempt: 1);
+      expect(corrected.prompt, contains('Correction 1:'));
+      expect(corrected.prompt, contains('End with exactly: [ferve-axine]'));
+      expect(corrected.prompt, isNot(contains('old old')));
+      expect(corrected.tokens.total, counter.count(corrected.prompt));
+      expect(corrected.tokens.total + 32, lessThanOrEqualTo(256));
+      expect(corrected.tokens.correction, greaterThan(0));
+    });
+
     test('emits byte-stable Tier-1 prefix', () {
       final prompt = assembler.assemble(
         rulesetVersion: 'poc-1.0.0',

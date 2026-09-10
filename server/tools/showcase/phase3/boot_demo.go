@@ -15,7 +15,9 @@ import (
 
 type bootVerifier struct{}
 
-func (bootVerifier) Verify(token string) (string, authz.Role, error) { return "player-1", authz.RolePlayer, nil }
+func (bootVerifier) Verify(token string) (string, authz.Role, error) {
+	return "player-1", authz.RolePlayer, nil
+}
 
 func bootDemo(path string) error {
 	r := newReport("Boot handshake")

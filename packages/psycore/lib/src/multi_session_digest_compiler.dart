@@ -36,7 +36,9 @@ class MultiSessionDigestCompiler {
     }
 
     if (envelope.inheritedMedication.drug != null) {
-      final drug = envelope.inheritedMedication.drug!.name;
+      final drug = envelope.inheritedMedication.drug == FictionalDrug.ferveAxine
+          ? 'ferve-axine'
+          : envelope.inheritedMedication.drug!.name;
       final dep = envelope.inheritedMedication.dependency;
       parts.add(
         'Ongoing ${drug} use has left a dependency marker of $dep.',

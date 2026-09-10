@@ -7,9 +7,9 @@
 package crypto
 
 import (
+	"context"
 	"crypto/ed25519"
 	"errors"
-	"fmt"
 
 	"psychosims.dev/server/internal/api"
 	"psychosims.dev/server/internal/schemas"
@@ -25,11 +25,16 @@ const (
 
 // Verifier verifies signed envelopes.
 type Verifier struct {
-	resolveKey func(signingKeyID string) (ed25519.PublicKey, error)
+	resolveKey func(context.Context, string) (ed25519.PublicKey, error)
 }
 
 // NewVerifier builds a Verifier that looks up public keys by signing-key id.
 func NewVerifier(resolveKey func(signingKeyID string) (ed25519.PublicKey, error)) *Verifier {
+	return NewContextVerifier(func(_ context.Context, id string) (ed25519.PublicKey, error) { return resolveKey(id) })
+}
+
+// NewContextVerifier propagates request cancellation to external key stores.
+func NewContextVerifier(resolveKey func(context.Context, string) (ed25519.PublicKey, error)) *Verifier {
 	return &Verifier{resolveKey: resolveKey}
 }
 
@@ -37,6 +42,10 @@ func NewVerifier(resolveKey func(signingKeyID string) (ed25519.PublicKey, error)
 // using the suite id carried in the envelope. It returns an HTTPError so the
 // caller can fail closed with the right taxonomy code.
 func (v *Verifier) VerifyEnvelope(env schemas.SignedEnvelope) error {
+	return v.VerifyEnvelopeContext(context.Background(), env)
+}
+
+func (v *Verifier) VerifyEnvelopeContext(ctx context.Context, env schemas.SignedEnvelope) error {
 	if len(env.CanonicalReceiptBytes) == 0 {
 		return api.NewUserError(api.CodeInvalidSignature, "missing canonical receipt bytes")
 	}
@@ -49,21 +58,21 @@ func (v *Verifier) VerifyEnvelope(env schemas.SignedEnvelope) error {
 
 	switch SuiteID(env.SuiteID) {
 	case SuiteEd25519V1:
-		return v.verifyEd25519(env)
+		return v.verifyEd25519(ctx, env)
 	case "":
 		return api.NewUserError(api.CodeInvalidSignature, "missing suite id")
 	default:
-		return api.NewUserError(api.CodeInvalidSignature, fmt.Sprintf("unsupported suite id %q", env.SuiteID))
+		return api.NewUserError(api.CodeInvalidSignature, "unsupported suite id")
 	}
 }
 
-func (v *Verifier) verifyEd25519(env schemas.SignedEnvelope) error {
-	pub, err := v.resolveKey(env.SigningKeyID)
+func (v *Verifier) verifyEd25519(ctx context.Context, env schemas.SignedEnvelope) error {
+	pub, err := v.resolveKey(ctx, env.SigningKeyID)
 	if err != nil {
 		if errors.Is(err, ErrKeyNotFound) {
 			return api.NewUserError(api.CodeInvalidSignature, "unknown signing key")
 		}
-		return api.NewInternalError("key resolution failed: " + err.Error())
+		return api.NewServiceUnavailable("key resolution unavailable")
 	}
 	if len(pub) != ed25519.PublicKeySize {
 		return api.NewUserError(api.CodeInvalidSignature, "invalid public key length")

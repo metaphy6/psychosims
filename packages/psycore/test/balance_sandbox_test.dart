@@ -143,12 +143,6 @@ void main() {
               rootSeed: seed,
             ),
       ];
-      const sandbox = BalanceSandbox(
-        runner: runner,
-        scenarios: [], // replaced below
-      );
-      // Construct via reflection of public fields is not possible; create a
-      // new sandbox with the populated configs.
       final activeSandbox = BalanceSandbox(
         runner: runner,
         scenarios: configs,

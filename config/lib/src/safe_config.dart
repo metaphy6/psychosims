@@ -11,6 +11,27 @@ Map<String, Object?> safeConfig(Config cfg) {
       'apiBaseUrl': cfg.network.apiBaseUrl,
       'connectTimeoutMillis': cfg.network.connectTimeoutMillis,
       'receiveTimeoutMillis': cfg.network.receiveTimeoutMillis,
+      'readTimeoutMillis': cfg.network.readTimeoutMillis,
+      'mutationTimeoutMillis': cfg.network.mutationTimeoutMillis,
+      'maxRetries': cfg.network.maxRetries,
+      'retryBaseDelayMillis': cfg.network.retryBaseDelayMillis,
+      'retryMaxDelayMillis': cfg.network.retryMaxDelayMillis,
+      'maxRateLimitRetries': cfg.network.maxRateLimitRetries,
+      'maxRetryAfterMillis': cfg.network.maxRetryAfterMillis,
+      'maxResponseBytes': cfg.network.maxResponseBytes,
+      'maxCanonicalReceiptBytes': cfg.network.maxCanonicalReceiptBytes,
+      'maxReceiptActions': cfg.network.maxReceiptActions,
+      'maxReceiptDeltas': cfg.network.maxReceiptDeltas,
+      'maxBatchEnvelopes': cfg.network.maxBatchEnvelopes,
+      'maxBatchBytes': cfg.network.maxBatchBytes,
+      'maxQueueEntries': cfg.network.maxQueueEntries,
+      'maxQueueBytes': cfg.network.maxQueueBytes,
+      'allowInsecureLoopback': cfg.network.allowInsecureLoopback,
+      'secureStorageNamespace': cfg.network.secureStorageNamespace,
+      'oauthStateTtlSeconds': cfg.network.oauthStateTtlSeconds,
+      'oauthChannel': cfg.network.oauthChannel,
+      'oauthRedirectUri': cfg.network.oauthRedirectUri,
+      'oauthAuthorizationOrigins': cfg.network.oauthAuthorizationOrigins,
     },
     'model': <String, Object?>{
       'tierAPrimaryUrl': cfg.model.tierAPrimaryUrl,
@@ -29,6 +50,7 @@ Map<String, Object?> safeConfig(Config cfg) {
       'maxInputTokens': cfg.promptBudget.maxInputTokens,
       'maxOutputTokens': cfg.promptBudget.maxOutputTokens,
       'prefixCacheTokens': cfg.promptBudget.prefixCacheTokens,
+      'maxRegenerationRetries': cfg.promptBudget.maxRegenerationRetries,
     },
     'balance': <String, Object?>{
       'startingClinicCurrency': cfg.balance.startingClinicCurrency,
@@ -46,6 +68,34 @@ Map<String, Object?> safeConfig(Config cfg) {
           cfg.balance.discountPracticeXpPenaltyPercent,
       'ownershipLeaseTtlHours': cfg.balance.ownershipLeaseTtlHours,
       'rulesetVersionSunsetDays': cfg.balance.rulesetVersionSunsetDays,
+    },
+    'progression': <String, Object?>{
+      'baseXpPerSession': cfg.progression.baseXpPerSession,
+      'difficultyXpExponentMillis': cfg.progression.difficultyXpExponentMillis,
+      'trivialGrindSessionThreshold':
+          cfg.progression.trivialGrindSessionThreshold,
+      'grindPenaltyMultiplierMillis':
+          cfg.progression.grindPenaltyMultiplierMillis,
+      'baseStudyPointsPerSession': cfg.progression.baseStudyPointsPerSession,
+      'baseSubspecialtyPointsPerSession':
+          cfg.progression.baseSubspecialtyPointsPerSession,
+      'reputationHalfLifeSeconds': cfg.progression.reputationHalfLifeSeconds,
+      'reputationDecayBuckets': cfg.progression.reputationDecayBuckets,
+      'reputationCompetencyPerFieldMillis':
+          cfg.progression.reputationCompetencyPerFieldMillis,
+      'currencyTypes': cfg.progression.currencyTypes,
+      'attractionWeights': <String, Object?>{
+        'reputationWeight': cfg.progression.attractionWeights.reputationWeight,
+        'priceAccessibilityWeight':
+            cfg.progression.attractionWeights.priceAccessibilityWeight,
+        'studyFieldCoverageWeight':
+            cfg.progression.attractionWeights.studyFieldCoverageWeight,
+      },
+      'onboarding': <String, Object?>{
+        'safePracticeMaxTier': cfg.progression.onboarding.safePracticeMaxTier,
+        'safePracticeFailureMultiplierMillis':
+            cfg.progression.onboarding.safePracticeFailureMultiplierMillis,
+      },
     },
     'featureFlags': <String, Object?>{
       'enableOfflineQueue': cfg.featureFlags.enableOfflineQueue,

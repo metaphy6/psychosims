@@ -31,6 +31,7 @@ class LoadoutController extends GetxController {
 
   final _owned = <String>[].obs;
   final _active = <String>[].obs;
+  final _actionable = <String>{};
   final errorMessage = ''.obs;
   final isLoading = true.obs;
   final focus = FocusAxis.balanced.obs;
@@ -40,6 +41,12 @@ class LoadoutController extends GetxController {
   List<String> get activeCardIds => _active.toList();
   int get slotCap => config.balance.activeCardSlots;
   bool get isWithinCap => _active.length <= slotCap;
+  bool get canStartSession =>
+      !isLoading.value &&
+      _active.isNotEmpty &&
+      isWithinCap &&
+      _active.toSet().length == _active.length &&
+      _active.every((id) => _owned.contains(id) && _actionable.contains(id));
 
   bool isEquipped(String cardId) => _active.contains(cardId);
   @override
@@ -61,6 +68,10 @@ class LoadoutController extends GetxController {
         catalog: const L10n(),
       );
       final loaded = loader.load(data);
+      _actionable
+        ..clear()
+        ..addAll(loaded.interactionPatterns
+            .map((action) => cardFromInteractionPattern(action).id));
       final resolvedCardIds = loaded.resolvedCards.map((c) => c.id).toList();
       _owned.assignAll(resolvedCardIds);
       if (_active.isEmpty) {

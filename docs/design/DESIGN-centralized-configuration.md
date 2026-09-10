@@ -1,7 +1,7 @@
 # 🎨 Design: Centralized configuration authority
 
 > The concrete design behind Principle 1 of [`ROADMAP.md`](../planning/ROADMAP.md).
-> Built in Phase 0.2. Section refs (§N) point at [`STARTER.md`](../../STARTER.md).
+> Built in Phase 0.2. Section refs (§N) point at [`STARTER.md`](STARTER.md).
 
 - **Status**: accepted
 - **Author**: @maintainer

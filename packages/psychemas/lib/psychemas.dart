@@ -31,3 +31,4 @@ export 'src/memory_class.dart';
 export 'src/receipt.dart';
 export 'src/structured_delta.dart';
 export 'src/style_archetype.dart';
+export 'src/control_plane.dart';
