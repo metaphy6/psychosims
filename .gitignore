@@ -3,7 +3,13 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .DS_Store
+
+# auto-installed/generated on open — never source of truth
+.pydeps/
+*.egg-info/
 
 # scaffold output / per-project agent runtime
 docs/tracking/state/*

@@ -11,7 +11,8 @@ runs via Git Bash / WSL).
 xops/
 ├── README.md         ← you are here
 ├── init/             ← the scaffolder (framework-only; stripped from scaffolded projects)
-│   └── scaffold.sh
+│   ├── scaffold.sh
+│   └── scaffold_codex.py
 ├── agent/            ← runtime scripts agents call directly
 │   ├── tracking_append.sh
 │   ├── safe-run.sh
@@ -24,8 +25,7 @@ xops/
     ├── git_ops.py
     ├── track_ops.py
     ├── roadmap_ops.py
-    ├── skills_ops.py
-    └── doctor.py
+    └── codegraph_ops.py
 ```
 
 ## Conventions
@@ -42,6 +42,11 @@ xops/
 
 ## Key scripts
 
+The framework-only `init/scaffold_codex.py` generates Codex agent TOML,
+prompt-backed skills and correctly escaped MCP configuration. It needs Python
+3.9+ and only the standard library. The scaffold tests additionally use Python
+3.11+'s `tomllib` to parse generated TOML.
+
 | Path | Purpose |
 |---|---|
 | [`agent/safe-run.sh`](agent/safe-run.sh) | Crash-safe wrapper for risky commands. Output survives a killed terminal. |
@@ -52,7 +57,7 @@ xops/
 | [`makefile/git_ops.py`](makefile/git_ops.py) | `make git` / `make git.dry`. |
 | [`makefile/track_ops.py`](makefile/track_ops.py) | `make track.add` / `make track.list`. |
 | [`makefile/roadmap_ops.py`](makefile/roadmap_ops.py) | `make roadmap.status`. |
-| [`makefile/doctor.py`](makefile/doctor.py) | `make doctor` — verify the framework is wired correctly. |
+| [`makefile/codegraph_ops.py`](makefile/codegraph_ops.py) | `make codeg` — initialize or update the CodeGraph index. |
 
 ## Add a new Makefile target
 

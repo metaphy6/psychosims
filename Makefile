@@ -26,7 +26,7 @@ TAG ?=
 
 .DEFAULT_GOAL := help
 
-.PHONY: help git git.dry track.add track.list roadmap.status doctor scaffold skills.status skills.find test verify
+.PHONY: help git git.dry track.add track.list roadmap.status doctor scaffold skills.status skills.find codeg test verify
 
 ## help              List all available targets
 help:
@@ -55,13 +55,19 @@ track.list:
 roadmap.status:
 	@$(XOPS)/roadmap_ops.py status
 
+## codeg             Initialize or update the CodeGraph index
+codeg:
+	@$(XOPS)/codegraph_ops.py update
+
 ## doctor            Sanity-check the framework is wired correctly
 doctor:
 	@$(XOPS)/doctor.py
 
-## scaffold          Print bootstrapper usage (run xops/init/scaffold.sh --help for real)
+## scaffold          Re-sync framework files from the agentic-workspace source repo
 scaffold:
-	@xops/init/scaffold.sh --help
+	@echo "xops/init/ is framework-only and not shipped to scaffolded projects."
+	@echo "Re-run the scaffolder from the agentic-workspace repo instead:"
+	@echo "  /path/to/agentic-workspace/xops/init/scaffold.sh --target $$(pwd) --help"
 
 ## skills.status     List all skills with line count, last-modified, and AGENTS.md refs
 skills.status:

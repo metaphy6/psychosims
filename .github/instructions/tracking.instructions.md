@@ -10,8 +10,12 @@ The long form (state machine, forbidden git ops) lives in [`AGENTS.md`](../../AG
 
 ## The gate
 
-**If you created, edited, or deleted ANY file in this repo during this turn,
-you MUST — before you end your turn / hand control back — do both of these:**
+**When the coordinating parent completes an authorized slice with real changes
+and passing gates, it MUST do both of these before handing control back:**
+
+Delegated agents return evidence to the parent without duplicate tracking or
+staging. Failed gates enter AGENTS.md §5a recovery first; blocked or reverted
+work follows the corresponding terminal state in AGENTS.md §2.
 
 1. **Append exactly one tracking row** to
    [`docs/tracking/tracking.csv`](../../docs/tracking/tracking.csv) via the appender:
@@ -42,7 +46,8 @@ Then STOP. Do **not** `git commit` or `git push` — the human runs `make git`.
   failure this file exists to prevent.
 - **Do not batch or defer.** Append the row for a slice of work when that slice
   is done, not "later". If you made several unrelated changes, prefer one row
-  per logical change (each becomes its own commit via its `run_id`).
+  per logical change. `make git` creates one commit per staging window and
+  includes every pending `run_id` in that commit.
 - If a gate failed and you reverted, append an `--action=revert --status=failed`
   row instead — never leave the change untracked.
 

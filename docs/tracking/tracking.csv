@@ -137,3 +137,4 @@ ts_utc,run_id,agent,scope,action,status,summary,refs,commit_sha
 2026-07-18T14:38:25Z,run-20260718143825-199407,copilot,server,commit,completed,refactor(server): abstract receipt ledger behind LedgerAppender interface,server/internal/receipts/receipts.go,pending
 2026-07-18T14:38:32Z,run-20260718143832-199513,copilot,server,commit,completed,test(server): add Phase 3.8 contract round-trip and failure-injection integration tests,server/internal/integration/receipt_integration_test.go;server/internal/integration/integration_test.go,pending
 2026-07-18T14:38:38Z,run-20260718143838-199616,copilot,docs,commit,completed,docs(roadmap): tick remaining Phase 3 server and client queue bullets,docs/planning/ROADMAP.md,pending
+2026-09-10T09:40:08Z,run-20260910094008-251702,copilot,tooling,commit,completed,"chore(tooling): re-sync agentic-workspace scaffold, wire codex support, drop legacy vendor configs",AGENTS.md;CONVENTIONS.md;.codex/;.mcp.json;Makefile,pending
